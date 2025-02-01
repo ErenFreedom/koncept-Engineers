@@ -1,0 +1,16 @@
+.video-container {
+    width: 700px; /* Same width as the slideshow for alignment */
+    height: 400px; /* Match slideshow height */
+    margin: 20px auto 0; /* Center it and add some spacing */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .video-container iframe {
+    width: 100%; /* Use the full width of the container */
+    height: 100%; /* Use the full height of the container */
+    border-radius: 12px; /* Add rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* Optional shadow for depth */
+  }
+  

@@ -1,0 +1,56 @@
+.dashboard-header {
+  width: 100%;
+  height: 80px;
+  background-color: #000000; /* Black background */
+  display: flex;
+  align-items: center; /* Center content vertically */
+  justify-content: space-between; /* Spread content evenly */
+  padding: 0 20px; /* Adds padding to the left and right */
+  border-bottom: 1px solid #333333; /* Optional border */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  position: relative; /* Needed for positioning */
+  box-sizing: border-box;
+}
+
+/* Logo container */
+.dashboard-logo {
+  display: flex;
+  align-items: center;
+}
+
+/* Logo image */
+.logo-image {
+  height: 50px; /* Adjust the height of the logo */
+  width: auto; /* Maintain aspect ratio */
+}
+
+/* Title container */
+.dashboard-title {
+  flex: 1; /* Take up remaining space */
+  text-align: center; /* Center the title */
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffffff; /* White text */
+}
+
+/* Icons container */
+.dashboard-icons {
+  display: flex;
+  align-items: center;
+  gap: 38px; /* Space between icons */
+  margin-right: 20px; /* Space from the right edge */
+}
+
+/* Notification bell icon */
+.notification-icon {
+  font-size: 4.5rem; /* Adjust size */
+  color: #ffffff; /* White icon */
+  cursor: pointer;
+}
+
+/* Profile icon */
+.profile-icon {
+  font-size: 4.5rem; /* Adjust size */
+  color: #ffffff; /* White icon */
+  cursor: pointer;
+}

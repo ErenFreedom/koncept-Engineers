@@ -1,0 +1,93 @@
+/* Header styling */
+.signup-header {
+    width: 100%;
+    height: 80px;
+    background-color: #000000; /* Black background */
+    display: flex;
+    align-items: center; /* Center content vertically */
+    justify-content: space-between; /* Logo on the left, nav in the center, buttons on the right */
+    padding: 0 20px; /* Adds padding to the left and right */
+    border-bottom: 1px solid #333333; /* Optional border */
+    position: relative; /* Needed for centering the navigation */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  /* Logo container */
+  .signup-logo {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Logo image */
+  .logo-image {
+    height: 50px; /* Adjust the height of the logo */
+    width: auto; /* Maintain aspect ratio */
+  }
+  
+  /* Navigation container */
+  .header-nav {
+    position: absolute; /* Allow centering relative to the header */
+    left: 50%; /* Start from the horizontal center */
+    transform: translateX(-50%); /* Offset to center */
+    display: flex;
+    gap: 48px; /* Space between the navigation links */
+  }
+  
+  /* Navigation links */
+  .nav-link {
+    color: #ffffff; /* White text */
+    text-decoration: none; /* Remove underline */
+    font-size: 24px; /* Font size */
+    font-weight: bold; /* Thick text */
+    transition: color 0.3s ease; /* Smooth color transition */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  
+  /* Hover effect for navigation links */
+  .nav-link:hover {
+    color: #ffd700; /* Golden yellow color on hover */
+  }
+  
+  /* Buttons container */
+  .header-buttons {
+    display: flex;
+    gap: 35px; /* Space between the buttons */
+    align-items: center;
+    margin-right: 40px; /* Add margin from the right edge of the screen */
+  }
+  
+  /* Button styling */
+  .button-81 {
+    align-items: center;
+    background-color: #ffffff; /* White background */
+    border-radius: 12px;
+    box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, 0.1) 0 6px 20px;
+    box-sizing: border-box;
+    color: #121212; /* Black text */
+    cursor: pointer;
+    display: inline-flex;
+    flex: 1 1 auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 1.2rem;
+    font-weight: 700; /* Bold text */
+    justify-content: center;
+    line-height: 1;
+    margin: 0;
+    outline: none;
+    padding: 1rem 1.2rem;
+    text-align: center;
+    text-decoration: none;
+    transition: color 0.3s ease, box-shadow 0.2s;
+    white-space: nowrap;
+    border: 0;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  /* Button hover effect */
+  .button-81:hover {
+    background-color: #ffd700; /* Golden yellow background */
+    color: #ffffff; /* White text on hover */
+    box-shadow: rgba(255, 215, 0, 0.4) 0px 0px 10px; /* Subtle yellow glow */
+  }
+  

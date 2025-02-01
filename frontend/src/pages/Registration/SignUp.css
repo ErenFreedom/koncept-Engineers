@@ -1,0 +1,100 @@
+/* Admin body styling */
+.admin-body {
+  display: flex;
+  flex-direction: column; /* Stack content vertically */
+  align-items: center; /* Center horizontally */
+  justify-content: flex-start; /* Start at the top */
+  height: calc(100vh - 160px); /* Full height minus header and footer */
+  padding-top: 100px; /* Gap from the header */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #ffffff; /* White text */
+  text-align: center; /* Center text */
+  box-sizing: border-box; /* Include padding in height calculations */
+}
+
+/* Question text styling */
+.admin-question {
+  font-size: 2.5rem; /* Large font size */
+  font-weight: bold; /* Bold font */
+  margin: 0; /* Remove default margin */
+  line-height: 1.4; /* Adjust line spacing */
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* Checkbox container styling */
+.checkbox-container {
+  display: flex;
+  flex-direction: column; /* Stack checkboxes vertically */
+  gap: 30px; /* Vertical spacing between checkboxes */
+  margin-top: 30px; /* Space below the question */
+}
+
+/* Label for each checkbox */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  font-size: 1.5rem; /* Larger font size for labels */
+  font-weight: 500; /* Medium weight */
+  color: #ffffff; /* White text */
+  cursor: pointer; /* Pointer cursor on hover */
+  gap: 15px; /* Space between checkbox and text */
+}
+
+/* Checkbox input styling */
+.checkbox-input {
+  width: 25px; /* Checkbox size */
+  height: 25px;
+  margin: 0;
+  border-radius: 50%; /* Make the checkbox round */
+  accent-color: #ffffff; /* Default checkbox color */
+  cursor: pointer; /* Pointer cursor */
+  transition: all 0.3s ease; /* Smooth transition */
+}
+
+/* Checkbox hover and checked effect */
+.checkbox-input:hover {
+  accent-color: #ffd700; /* Golden hover effect */
+}
+
+.checkbox-input:checked {
+  accent-color: #ffd700; /* Golden checked color */
+}
+
+/* Button styling */
+.button-47 {
+  align-items: center;
+  background: #FFFFFF;
+  border: 0 solid #E2E8F0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+  color: #1A202C;
+  display: inline-flex;
+  font-family: Inter, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  justify-content: center;
+  padding: 1rem 6.5rem; /* Increased padding for wider button */
+  text-decoration: none;
+  width: auto;
+  border-radius: 8px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  margin-top: 30px; /* Space above the button */
+}
+
+/* Hover effect for Button 47 */
+.button-47:hover {
+  background: #1e293b;
+  color: #fff;
+}
+
+/* Disabled Button Styling */
+.button-47:disabled {
+  background: #cccccc; /* Grey background */
+  color: #666666; /* Grey text */
+  cursor: not-allowed;
+  box-shadow: none;
+}

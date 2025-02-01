@@ -1,0 +1,10 @@
+flask
+pytesseract
+opencv-python
+
+
+pillow
+regex
+numpy
+
+

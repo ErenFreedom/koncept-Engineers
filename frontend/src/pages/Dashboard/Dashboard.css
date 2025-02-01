@@ -1,0 +1,33 @@
+/* Main container styling */
+.dashboard-container {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    min-height: 100vh; /* Ensure the dashboard covers the full viewport height */
+    background-color: #000000; /* Black background */
+    color: #ffffff; /* White text */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    text-align: center; /* Center text alignment */
+  }
+  
+  /* Content styling */
+  .dashboard-content {
+    flex: 1; /* Take remaining height between header and footer */
+    display: flex;
+    flex-direction: column; /* Stack text vertically */
+    align-items: center; /* Center content horizontally */
+    justify-content: center; /* Center content vertically */
+    padding: 20px; /* Add padding */
+  }
+  
+  .dashboard-content h1 {
+    font-size: 2rem; /* Title font size */
+    font-weight: bold; /* Bold title */
+    margin-bottom: 10px; /* Space below the title */
+  }
+  
+  .dashboard-content p {
+    font-size: 1.2rem; /* Paragraph font size */
+    color: #cccccc; /* Lighter grey for description */
+    margin: 0; /* Remove default margin */
+  }
+  
