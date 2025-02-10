@@ -1,0 +1,128 @@
+{
+	"info": {
+		"_postman_id": "3c5c085f-d2ca-4992-aa23-7b83771992c8",
+		"name": "Test",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "24002506"
+	},
+	"item": [
+		{
+			"name": "Get Token",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "desigo",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "defaultadmin",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"name": "Content-Type",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "grant_type=password&username=defaultadmin&password=desigo"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/token",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"token"
+					]
+				},
+				"description": "Get Token"
+			},
+			"response": []
+		},
+		{
+			"name": "Read Multiple values",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "AQAAANCMnd8BFdERjHoAwE_Cl-sBAAAATTOsR9lJ9EicpfaUMxCFpwAAAAACAAAAAAAQZgAAAAEAACAAAAC4-YxeFKYit2z-Z2Z2pdHAqEm1n8xZgbr-Zrx13bFV4wAAAAAOgAAAAAIAACAAAADoY23eKFV9kz_HZwoUJQ4O1aFWuNOjN8l9u0_YcKL3RnABAAA4Y4w5ClGXb6UiNVVB24vGkC-bKziGn4W_fpNVISPs0rlxn__vzvHd70C2KLjMt8V_GaxkCRNqBBzF0XBN7PrZh3BajirTwI40ETas9uMcVymefSlzh57v7D6sjVcXF_zKiis1y5FMNmsKxvYmfyXsOWS1CmGTTJOLDTA_urSmKSngT_1d4sj1Ag5FvL7tgvPCDrjG1BxL1lGtudHh1_s0VpMMdaZycg4bdb1fTVOOGlP5Xa24bZl-Zeooyz2QmfKetjdQAHL2aGPVbyORzi8aENwTFXdSiEB0NRByzwwPbxkt0Z6Wxptg3izHT3YMsUtVwAbqfaLUMHGnBeW3yjYbN8KIZ1LLS97So3E3luBC8g5ED6ahfXauNllYCWLqH_2eI7PZX4FBkoh2Sg8G6nL7hae85kKrSaafVJMuZc8uEKliX332-ZNsR3d-cMgOvHsSYFRPu4aGT2Zv4Kw4HUNqroHCzR4Zf5cgp7Nf8hOUcEAAAADciGilsrH7-DWtWeu-LI7bSbO1R60rjXCppt7Azm4maIoux8fW3JzPkm0hW81Gcy0XycGyWTgxNDoctEvY3EBO",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "[\"ApplicationView_Logics_VirtualObjects_AI1.Value\",\r\n\"ApplicationView_Logics_VirtualObjects_TestDI.Value\"]",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/values",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"values"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read CO2 Value",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Read Temp Value",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "Read RH Value",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "New Request",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		}
+	]
+}

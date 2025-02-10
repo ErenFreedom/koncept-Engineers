@@ -1,10 +1,16 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS  # Enable CORS
 import boto3
 import re
+
+app = Flask(__name__)
+CORS(app)  # Enable CORS for API Access
 
 # Initialize Textract Client
 textract = boto3.client("textract", region_name="us-east-1")
 
-# Aadhaar Validation using Verhoeff
+
+# Aadhaar Validation using Verhoeff Algorithm
 def validate_aadhaar_checksum(aadhaar_number):
     verhoeff_table_d = (
         (0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
@@ -42,17 +48,17 @@ def validate_aadhaar_checksum(aadhaar_number):
     return checksum == 0
 
 
-# Regex for PAN Validation
+# PAN Validation
 def validate_pan(pan):
     return bool(re.match(r"^[A-Z]{5}[0-9]{4}[A-Z]$", pan))
 
 
-# Regex for GST Validation
+# GST Validation
 def validate_gst(gst):
     return bool(re.match(r"^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$", gst))
 
 
-# Extract Text from S3
+# Extract Text from S3 using AWS Textract
 def extract_text_from_s3(bucket, document):
     response = textract.analyze_document(
         Document={"S3Object": {"Bucket": bucket, "Name": document}},
@@ -65,27 +71,23 @@ def extract_text_from_s3(bucket, document):
     return extracted_text
 
 
-# Clean Text
-def clean_text(text):
-    text = re.sub(r"[^a-zA-Z0-9\s]", "", text)  # Remove special characters
-    text = re.sub(r"\s+", " ", text).strip()  # Remove extra spaces
-    return text
+# API Route: Validate Documents
+@app.route('/validate-docs', methods=['POST'])
+def validate_documents():
+    data = request.json
+    bucket = data.get("bucket")
+    documents = data.get("documents", [])
 
-
-# Unified Validator
-def validate_documents(bucket, documents):
     results = []
 
     for doc in documents:
-        print(f"\n=== Processing {doc} ===")
         extracted_text = extract_text_from_s3(bucket, doc)
-        cleaned_text = clean_text(extracted_text)
-
+        
         # Aadhaar Validation
         if "aadhaar" in doc.lower():
-            aadhaar = re.search(r"\b\d{4}\s\d{4}\s\d{4}\b", cleaned_text)
-            if aadhaar:
-                aadhaar_number = aadhaar.group().replace(" ", "")
+            match = re.search(r"\b\d{4}\s\d{4}\s\d{4}\b", extracted_text)
+            if match:
+                aadhaar_number = match.group().replace(" ", "")
                 is_valid = validate_aadhaar_checksum(aadhaar_number)
                 results.append({"Document": doc, "Type": "Aadhaar", "Number": aadhaar_number, "Valid": is_valid})
             else:
@@ -93,29 +95,18 @@ def validate_documents(bucket, documents):
 
         # PAN Validation
         elif "pan" in doc.lower():
-            pan = re.search(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b", cleaned_text)
-            if pan:
-                is_valid = validate_pan(pan.group())
-                results.append({"Document": doc, "Type": "PAN", "Number": pan.group(), "Valid": is_valid})
-            else:
-                results.append({"Document": doc, "Type": "PAN", "Number": "Not Found", "Valid": False})
+            match = re.search(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b", extracted_text)
+            is_valid = validate_pan(match.group()) if match else False
+            results.append({"Document": doc, "Type": "PAN", "Number": match.group() if match else "Not Found", "Valid": is_valid})
 
         # GST Validation
         elif "gst" in doc.lower():
-            gst = re.search(r"\b\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}\b", cleaned_text)
-            if gst:
-                is_valid = validate_gst(gst.group())
-                results.append({"Document": doc, "Type": "GST", "Number": gst.group(), "Valid": is_valid})
-            else:
-                results.append({"Document": doc, "Type": "GST", "Number": "Not Found", "Valid": False})
+            match = re.search(r"\b\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}\b", extracted_text)
+            is_valid = validate_gst(match.group()) if match else False
+            results.append({"Document": doc, "Type": "GST", "Number": match.group() if match else "Not Found", "Valid": is_valid})
 
-    return results
+    return jsonify(results)
 
 
-# Run Validation
-s3_bucket = "koncept-engineers-bucket"
-documents = ["sample_aadhaar.jpg", "sample_pancard.jpg", "sample_gstcard.jpg"]
-validation_results = validate_documents(s3_bucket, documents)
-
-for result in validation_results:
-    print(result)
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
