@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS  # Enable CORS
 import boto3
 import re
 
 app = Flask(__name__)
+CORS(app)  # Enable CORS for API Access
 
 # Initialize Textract Client
 textract = boto3.client("textract", region_name="us-east-1")
