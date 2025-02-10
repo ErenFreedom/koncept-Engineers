@@ -5,12 +5,19 @@ const db = require('./db/connector'); // Adjust path as per your folder structur
 // Load environment variables from .env file
 dotenv.config();
 
+// Import routes
+const adminRoutes = require("./routes/adminRoutes");
+
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 
 // Middleware to parse JSON requests
 app.use(express.json());
+
+
+//Use Routes
+app.use("/admin", adminRoutes);
 
 // Test database connection
 (async () => {
