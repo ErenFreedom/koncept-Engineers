@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const axios = require("axios");
 const { uploadFile } = require("../utils/s3Uploader");
 
-const PYTHON_API_URL = "http://ec2-98-84-241-148.compute-1.amazonaws.com:5000/validate-docs"; // Change this to actual EC2 IP
+const PYTHON_API_URL = "https://ec2-98-84-241-148.compute-1.amazonaws.com:5000/validate-docs"; // Change this to actual EC2 IP
 
 const registerAdmin = async (req, res) => {
     try {

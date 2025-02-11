@@ -1,4 +1,5 @@
-const { S3Client, PutObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client } = require("@aws-sdk/client-s3");
+const { Upload } = require("@aws-sdk/lib-storage");
 const multer = require("multer");
 const multerS3 = require("multer-s3");
 const path = require("path");
@@ -41,20 +42,21 @@ const upload = multer({
     })
 });
 
-// **Upload File Function (For Manual Upload)**
+// **Upload File Function Using @aws-sdk/lib-storage**
 const uploadFile = async (fileBuffer, key, mimeType) => {
     try {
-        const uploadParams = {
-            Bucket: BUCKET_NAME,
-            Key: key,
-            Body: fileBuffer,
-            ContentType: mimeType
-        };
+        const upload = new Upload({
+            client: s3,
+            params: {
+                Bucket: BUCKET_NAME,
+                Key: key,
+                Body: fileBuffer,
+                ContentType: mimeType
+            }
+        });
 
-        const command = new PutObjectCommand(uploadParams);
-        await s3.send(command);
-
-        return `https://${BUCKET_NAME}.s3.amazonaws.com/${key}`;
+        const response = await upload.done();
+        return response.Location; // Returns the S3 URL
     } catch (error) {
         console.error("S3 Upload Error:", error);
         throw new Error("Failed to upload file to S3.");
