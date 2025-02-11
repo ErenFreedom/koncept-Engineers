@@ -19,13 +19,15 @@ const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "koncept-engineers-bucket"
 
 // **Multer Configuration (Memory Storage)**
 const upload = multer({
-    storage: multer.memoryStorage(), // ✅ No temp files, directly in memory
-    limits: { fileSize: 10 * 1024 * 1024 } // ✅ 10 MB limit
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10 * 1024 * 1024 }, // ✅ 10 MB limit
 });
 
 // **Function to Generate Unique File Path**
 const generateFilePath = (phone_number, file) => {
+    if (!file || !file.originalname) throw new Error("Invalid file data received.");
     if (!phone_number) throw new Error("Phone number is required for unique directory.");
+
     const ext = path.extname(file.originalname);
     const baseName = path.basename(file.originalname, ext);
     return `documents/${phone_number}/${baseName}-${Date.now()}${ext}`;
@@ -50,7 +52,7 @@ const uploadFile = async (file, phone_number) => {
         });
 
         const response = await upload.done();
-        return response.Location; // ✅ Returns the S3 URL of the uploaded file
+        return { location: response.Location, key: filePath }; // ✅ Return both S3 URL and path
     } catch (error) {
         console.error("❌ S3 Upload Error:", error);
         throw new Error("Failed to upload file to S3.");
