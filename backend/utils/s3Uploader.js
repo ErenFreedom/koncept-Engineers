@@ -29,7 +29,7 @@ const upload = multer({
     storage: multerS3({
         s3: s3,
         bucket: BUCKET_NAME,
-        acl: "public-read",  // Change if needed
+       
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: function (req, file, cb) {
             if (!req.body.phone_number) {
