@@ -4,6 +4,7 @@ const multer = require("multer");
 const multerS3 = require("multer-s3");
 const path = require("path");
 const dotenv = require("dotenv");
+const fs = require("fs");
 
 dotenv.config();
 
@@ -27,36 +28,32 @@ const generateFileName = (file) => {
 
 // **Multer Storage for Uploading to S3**
 const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: BUCKET_NAME,
-        contentType: multerS3.AUTO_CONTENT_TYPE,
-        key: function (req, file, cb) {
-            if (!req.body.phone_number) {
-                return cb(new Error("Phone number is required for file upload directory."));
-            }
-            const uniqueDir = `documents/${req.body.phone_number}`; // Creates a unique directory per admin
-            const filePath = `${uniqueDir}/${file.fieldname}-${Date.now()}-${file.originalname}`;
-            cb(null, filePath);
-        }
-    })
+    storage: multer.memoryStorage(), // ✅ Use memoryStorage instead of multerS3
+    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit
 });
 
 // **Upload File Function Using @aws-sdk/lib-storage**
-const uploadFile = async (fileBuffer, key, mimeType) => {
+const uploadFile = async (file) => {
     try {
+        if (!file || !file.buffer) {
+            throw new Error("File buffer is missing.");
+        }
+
+        const uniqueDir = `documents/${Date.now()}`;
+        const filePath = `${uniqueDir}/${file.originalname}`;
+
         const upload = new Upload({
             client: s3,
             params: {
                 Bucket: BUCKET_NAME,
-                Key: key,
-                Body: fileBuffer,
-                ContentType: mimeType
+                Key: filePath,
+                Body: file.buffer, // ✅ Use file.buffer from multer's memoryStorage
+                ContentType: file.mimetype
             }
         });
 
         const response = await upload.done();
-        return response.Location; // Returns the S3 URL
+        return response.Location; // ✅ Returns the S3 URL of the uploaded file
     } catch (error) {
         console.error("S3 Upload Error:", error);
         throw new Error("Failed to upload file to S3.");
