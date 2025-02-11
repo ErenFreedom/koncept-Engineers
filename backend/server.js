@@ -7,6 +7,7 @@ dotenv.config();
 
 // Import routes
 const adminRoutes = require("./routes/adminRoutes");
+const staffRoutes = require("./routes/staffRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -18,6 +19,7 @@ app.use(express.json());
 
 //Use Routes
 app.use("/api/admin", adminRoutes);
+app.use("/api/staff", staffRoutes);
 
 
 // Test database connection
