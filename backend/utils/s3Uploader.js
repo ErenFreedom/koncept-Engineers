@@ -6,7 +6,7 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-// AWS S3 Client Configuration
+// **AWS S3 Client Configuration**
 const s3 = new S3Client({
     region: process.env.AWS_REGION || "us-east-1",
     credentials: {
@@ -17,19 +17,18 @@ const s3 = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "koncept-engineers-bucket";
 
-// Function to Generate Unique File Names
+// **Function to Generate Unique File Names**
 const generateFileName = (file) => {
     const ext = path.extname(file.originalname);
     const baseName = path.basename(file.originalname, ext);
     return `${baseName}-${Date.now()}${ext}`;
 };
 
-// Multer Storage for Uploading to S3
+// **Multer Storage for Uploading to S3**
 const upload = multer({
     storage: multerS3({
         s3: s3,
         bucket: BUCKET_NAME,
-       
         contentType: multerS3.AUTO_CONTENT_TYPE,
         key: function (req, file, cb) {
             if (!req.body.phone_number) {
@@ -39,18 +38,17 @@ const upload = multer({
             const filePath = `${uniqueDir}/${file.fieldname}-${Date.now()}-${file.originalname}`;
             cb(null, filePath);
         }
-    }),
+    })
 });
 
-// **Upload File Function** (For Manual Upload)
+// **Upload File Function (For Manual Upload)**
 const uploadFile = async (fileBuffer, key, mimeType) => {
     try {
         const uploadParams = {
             Bucket: BUCKET_NAME,
             Key: key,
             Body: fileBuffer,
-            ContentType: mimeType,
-            ACL: "public-read",
+            ContentType: mimeType
         };
 
         const command = new PutObjectCommand(uploadParams);
