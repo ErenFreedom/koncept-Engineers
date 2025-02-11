@@ -1,10 +1,8 @@
 const { S3Client } = require("@aws-sdk/client-s3");
 const { Upload } = require("@aws-sdk/lib-storage");
 const multer = require("multer");
-const multerS3 = require("multer-s3");
 const path = require("path");
 const dotenv = require("dotenv");
-const fs = require("fs");
 
 dotenv.config();
 
@@ -19,35 +17,34 @@ const s3 = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "koncept-engineers-bucket";
 
-// **Function to Generate Unique File Names**
-const generateFileName = (file) => {
-    const ext = path.extname(file.originalname);
-    const baseName = path.basename(file.originalname, ext);
-    return `${baseName}-${Date.now()}${ext}`;
-};
-
-// **Multer Storage for Uploading to S3**
+// **Multer Configuration (Memory Storage)**
 const upload = multer({
-    storage: multer.memoryStorage(), // ✅ Use memoryStorage instead of multerS3
-    limits: { fileSize: 10 * 1024 * 1024 } // 10 MB limit
+    storage: multer.memoryStorage(), // ✅ No temp files, directly in memory
+    limits: { fileSize: 10 * 1024 * 1024 } // ✅ 10 MB limit
 });
 
-// **Upload File Function Using @aws-sdk/lib-storage**
-const uploadFile = async (file) => {
-    try {
-        if (!file || !file.buffer) {
-            throw new Error("File buffer is missing.");
-        }
+// **Function to Generate Unique File Path**
+const generateFilePath = (phone_number, file) => {
+    if (!phone_number) throw new Error("Phone number is required for unique directory.");
+    const ext = path.extname(file.originalname);
+    const baseName = path.basename(file.originalname, ext);
+    return `documents/${phone_number}/${baseName}-${Date.now()}${ext}`;
+};
 
-        const uniqueDir = `documents/${Date.now()}`;
-        const filePath = `${uniqueDir}/${file.originalname}`;
+// **Function to Upload File to S3**
+const uploadFile = async (file, phone_number) => {
+    try {
+        if (!file || !file.buffer) throw new Error("File buffer is missing.");
+        if (!phone_number) throw new Error("Phone number is required for unique directory.");
+
+        const filePath = generateFilePath(phone_number, file);
 
         const upload = new Upload({
             client: s3,
             params: {
                 Bucket: BUCKET_NAME,
                 Key: filePath,
-                Body: file.buffer, // ✅ Use file.buffer from multer's memoryStorage
+                Body: Buffer.from(file.buffer), // ✅ Ensures correct Buffer format
                 ContentType: file.mimetype
             }
         });
@@ -55,7 +52,7 @@ const uploadFile = async (file) => {
         const response = await upload.done();
         return response.Location; // ✅ Returns the S3 URL of the uploaded file
     } catch (error) {
-        console.error("S3 Upload Error:", error);
+        console.error("❌ S3 Upload Error:", error);
         throw new Error("Failed to upload file to S3.");
     }
 };
