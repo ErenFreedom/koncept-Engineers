@@ -17,7 +17,7 @@ app.use(express.json());
 
 
 //Use Routes
-app.use("/admin", adminRoutes);
+app.use("/register", adminRoutes);
 
 // Test database connection
 (async () => {
