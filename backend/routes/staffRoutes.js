@@ -4,6 +4,6 @@ const { upload } = require("../utils/s3Uploader");
 
 const router = express.Router();
 
-router.post("/register", upload.single("document"), registerStaff);
+router.post("/register", upload.fields([{ name: "document", maxCount: 1 }]), registerStaff);
 
 module.exports = router;

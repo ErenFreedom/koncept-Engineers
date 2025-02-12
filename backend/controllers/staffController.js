@@ -10,12 +10,11 @@ const registerStaff = async (req, res) => {
         const {
             first_name, last_name, date_of_birth, gender, nationality,
             phone_number, alt_phone_number, email, alt_email,
-            address1, address2, pincode, position, years_in_company,
-            password, company_id, admin_id
+            address1, address2, pincode, position, years_in_company, password,
+            company_id, admin_id
         } = req.body;
 
-        if (!first_name || !last_name || !date_of_birth || !gender || !nationality ||
-            !phone_number || !email || !password || !company_id || !admin_id) {
+        if (!first_name || !last_name || !date_of_birth || !gender || !nationality || !phone_number || !email || !password || !company_id || !admin_id) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
@@ -25,6 +24,8 @@ const registerStaff = async (req, res) => {
 
         // Generate unique directory for this staff member
         const uploadedFiles = {};
+
+        // Upload documents to S3
         const file = req.files["document"][0];
         const { key } = await uploadFile(file, phone_number);
         uploadedFiles.document = key;
@@ -38,9 +39,9 @@ const registerStaff = async (req, res) => {
         const validationResponse = await axios.post(PYTHON_API_URL, validationPayload);
         const validationResults = validationResponse.data;
 
-        const documentValidation = validationResults.find(doc => doc.Document === uploadedFiles.document);
+        const staffDocument = validationResults.find(doc => doc.Document === uploadedFiles.document);
 
-        if (!documentValidation.Valid) {
+        if (!staffDocument.Valid) {
             return res.status(400).json({
                 message: "Document validation failed",
                 details: validationResults
@@ -50,32 +51,24 @@ const registerStaff = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert staff record
+        // Insert staff into the database
         const staffQuery = `
-            INSERT INTO Staff (first_name, last_name, date_of_birth, gender, nationality, 
-                              phone_number, alt_phone_number, email, alt_email, uploaded_documents_s3,
-                              company_id, admin_id, address1, address2, pincode, position, years_in_company,
-                              password_hash)
+            INSERT INTO Staff (first_name, last_name, date_of_birth, gender, nationality, phone_number, alt_phone_number,
+                              email, alt_email, uploaded_documents_s3, company_id, admin_id, address1, address2, 
+                              pincode, position, years_in_company, password_hash)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
         const staffValues = [
-            first_name, last_name, date_of_birth, gender, nationality,
-            phone_number, alt_phone_number, email, alt_email, uploadedFiles.document,
-            company_id, admin_id, address1, address2, pincode, position, years_in_company,
-            hashedPassword
+            first_name, last_name, date_of_birth, gender, nationality, phone_number, alt_phone_number,
+            email, alt_email, uploadedFiles.document, company_id, admin_id,
+            address1, address2, pincode, position, years_in_company, hashedPassword
         ];
 
         await db.execute(staffQuery, staffValues);
 
         res.status(201).json({
             message: "Staff registered successfully",
-            staff: {
-                first_name,
-                last_name,
-                phone_number,
-                email,
-                company_id
-            }
+            staff_document: uploadedFiles.document
         });
 
     } catch (error) {
