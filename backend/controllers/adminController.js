@@ -18,7 +18,7 @@ const registerAdmin = async (req, res) => {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        // Ensure files are uploaded
+        // Ensure required files are uploaded
         if (!req.files || !req.files["aadhar"] || !req.files["pan"] || !req.files["gst"]) {
             return res.status(400).json({ message: "Aadhar, PAN, and GST files must be uploaded" });
         }
@@ -62,6 +62,9 @@ const registerAdmin = async (req, res) => {
         ];
 
         await db.execute(adminQuery, adminValues);
+
+        // Log success
+        console.log(`✅ Admin and Company registered successfully. Company ID: ${companyId}`);
 
         res.status(201).json({
             message: "Admin and Company registered successfully",
