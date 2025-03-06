@@ -8,28 +8,42 @@ const registerStaff = async (req, res) => {
             first_name, last_name, date_of_birth, gender, nationality,
             phone_number, alt_phone_number, email, alt_email,
             address1, address2, pincode, position, years_in_company, password,
-            company_id, admin_id
+            company_email, admin_email // These are used to find IDs
         } = req.body;
 
         // Validate required fields
-        if (!first_name || !last_name || !date_of_birth || !gender || !nationality || !phone_number || !email || !password || !company_id || !admin_id) {
+        if (!first_name || !last_name || !date_of_birth || !gender || !nationality || !phone_number || !email || !password || !company_email || !admin_email) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
-        // Ensure file is uploaded
+        // Step 1: Validate company email and fetch company_id
+        const [companyResult] = await db.execute("SELECT id FROM Company WHERE email = ?", [company_email]);
+        if (companyResult.length === 0) {
+            return res.status(400).json({ message: "Invalid company email. No company found." });
+        }
+        const company_id = companyResult[0].id;
+
+        // Step 2: Validate admin email and fetch admin_id
+        const [adminResult] = await db.execute("SELECT id FROM Admin WHERE email = ?", [admin_email]);
+        if (adminResult.length === 0) {
+            return res.status(400).json({ message: "Invalid admin email. No admin found." });
+        }
+        const admin_id = adminResult[0].id;
+
+        // Step 3: Ensure file is uploaded
         if (!req.files || !req.files["document"]) {
             return res.status(400).json({ message: "Staff document (Aadhar/PAN) must be uploaded" });
         }
 
-        // Upload document to S3
+        // Step 4: Upload document to S3
         const file = req.files["document"][0];
         const { key } = await uploadFile(file, phone_number);
         const uploadedDocument = key;
 
-        // Hash password
+        // Step 5: Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert staff into the database
+        // Step 6: Insert staff into the database using retrieved company_id and admin_id
         const staffQuery = `
             INSERT INTO Staff (first_name, last_name, date_of_birth, gender, nationality, phone_number, alt_phone_number,
                               email, alt_email, uploaded_documents_s3, company_id, admin_id, address1, address2, 
