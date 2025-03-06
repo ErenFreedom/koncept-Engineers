@@ -39,13 +39,18 @@ const registerAdmin = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Start Transaction to ensure Atomicity
+        await db.beginTransaction();
+
         // Insert company details with email fields
         const companyQuery = `
             INSERT INTO Company (name, email, alt_email, address1, address2, pincode, pan_s3, gst_s3)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         `;
-        const companyValues = [company_name, company_email, company_alt_email, company_address1, company_address2, company_pincode, uploadedFiles.pan, uploadedFiles.gst];
-
+        const companyValues = [
+            company_name, company_email, company_alt_email, company_address1, 
+            company_address2, company_pincode, uploadedFiles.pan, uploadedFiles.gst
+        ];
         const [companyResult] = await db.execute(companyQuery, companyValues);
         const companyId = companyResult.insertId;
 
@@ -60,18 +65,34 @@ const registerAdmin = async (req, res) => {
             address1, address2, pincode, phone_number, landline,
             email, alt_email, hashedPassword, uploadedFiles.aadhar, companyId
         ];
-
         await db.execute(adminQuery, adminValues);
 
-        // Log success
+        // **Call Procedure to Initialize Company-Specific Sensor Tables**
+        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        const procedureParams = [
+            first_name, middle_name, last_name, date_of_birth, nationality,
+            address1, address2, pincode, phone_number, landline, hashedPassword,
+            uploadedFiles.aadhar, company_name, company_address1, company_address2,
+            company_pincode, uploadedFiles.pan, uploadedFiles.gst
+        ];
+
+        await db.execute(procedureCall, procedureParams);
+
+        // Commit Transaction
+        await db.commit();
+
+        // Log Success
         console.log(`✅ Admin and Company registered successfully. Company ID: ${companyId}`);
 
         res.status(201).json({
-            message: "Admin and Company registered successfully",
+            message: "Admin and Company registered successfully, and procedures executed.",
             company_id: companyId
         });
 
     } catch (error) {
+        // Rollback transaction in case of error
+        await db.rollback();
+        
         console.error("❌ Error registering admin and company:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
