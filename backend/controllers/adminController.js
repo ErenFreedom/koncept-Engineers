@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
 
 const registerAdmin = async (req, res) => {
+    let connection;
     try {
         const {
             first_name, middle_name, last_name, date_of_birth, nationality,
@@ -39,8 +40,9 @@ const registerAdmin = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Start Transaction to ensure Atomicity
-        await db.beginTransaction();
+        // **Use a single connection instead of the pool**
+        connection = await db.getConnection();
+        await connection.beginTransaction();
 
         // Insert company details with email fields
         const companyQuery = `
@@ -51,7 +53,7 @@ const registerAdmin = async (req, res) => {
             company_name, company_email, company_alt_email, company_address1, 
             company_address2, company_pincode, uploadedFiles.pan, uploadedFiles.gst
         ];
-        const [companyResult] = await db.execute(companyQuery, companyValues);
+        const [companyResult] = await connection.execute(companyQuery, companyValues);
         const companyId = companyResult.insertId;
 
         // Insert admin details with email fields
@@ -65,7 +67,7 @@ const registerAdmin = async (req, res) => {
             address1, address2, pincode, phone_number, landline,
             email, alt_email, hashedPassword, uploadedFiles.aadhar, companyId
         ];
-        await db.execute(adminQuery, adminValues);
+        await connection.execute(adminQuery, adminValues);
 
         // **Call Procedure to Initialize Company-Specific Sensor Tables**
         const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
@@ -75,13 +77,11 @@ const registerAdmin = async (req, res) => {
             uploadedFiles.aadhar, company_name, company_address1, company_address2,
             company_pincode, uploadedFiles.pan, uploadedFiles.gst
         ];
-
-        await db.execute(procedureCall, procedureParams);
+        await connection.execute(procedureCall, procedureParams);
 
         // Commit Transaction
-        await db.commit();
+        await connection.commit();
 
-        // Log Success
         console.log(`✅ Admin and Company registered successfully. Company ID: ${companyId}`);
 
         res.status(201).json({
@@ -90,11 +90,12 @@ const registerAdmin = async (req, res) => {
         });
 
     } catch (error) {
-        // Rollback transaction in case of error
-        await db.rollback();
+        if (connection) await connection.rollback();
         
         console.error("❌ Error registering admin and company:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
+    } finally {
+        if (connection) await connection.release(); // Ensure connection is released
     }
 };
 
