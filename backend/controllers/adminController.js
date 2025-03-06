@@ -7,11 +7,14 @@ const registerAdmin = async (req, res) => {
         const {
             first_name, middle_name, last_name, date_of_birth, nationality,
             address1, address2, pincode, phone_number, landline, password,
-            company_name, company_address1, company_address2, company_pincode
+            email, alt_email, // Admin Email
+            company_name, company_email, company_alt_email, // Company Emails
+            company_address1, company_address2, company_pincode
         } = req.body;
 
         // Validate required fields
-        if (!first_name || !last_name || !date_of_birth || !phone_number || !password || !company_name || !company_address1 || !company_pincode) {
+        if (!first_name || !last_name || !date_of_birth || !phone_number || !password || 
+            !email || !company_name || !company_email || !company_address1 || !company_pincode) {
             return res.status(400).json({ message: "Missing required fields" });
         }
 
@@ -36,26 +39,26 @@ const registerAdmin = async (req, res) => {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert company details
+        // Insert company details with email fields
         const companyQuery = `
-            INSERT INTO Company (name, address1, address2, pincode, pan_s3, gst_s3)
-            VALUES (?, ?, ?, ?, ?, ?);
+            INSERT INTO Company (name, email, alt_email, address1, address2, pincode, pan_s3, gst_s3)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
         `;
-        const companyValues = [company_name, company_address1, company_address2, company_pincode, uploadedFiles.pan, uploadedFiles.gst];
+        const companyValues = [company_name, company_email, company_alt_email, company_address1, company_address2, company_pincode, uploadedFiles.pan, uploadedFiles.gst];
 
         const [companyResult] = await db.execute(companyQuery, companyValues);
         const companyId = companyResult.insertId;
 
-        // Insert admin details
+        // Insert admin details with email fields
         const adminQuery = `
             INSERT INTO Admin (first_name, middle_name, last_name, date_of_birth, nationality, address1, address2, pincode,
-                               phone_number, landline, password_hash, aadhar_pan_passport_s3, company_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+                               phone_number, landline, email, alt_email, password_hash, aadhar_pan_passport_s3, company_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
         const adminValues = [
             first_name, middle_name, last_name, date_of_birth, nationality,
             address1, address2, pincode, phone_number, landline,
-            hashedPassword, uploadedFiles.aadhar, companyId
+            email, alt_email, hashedPassword, uploadedFiles.aadhar, companyId
         ];
 
         await db.execute(adminQuery, adminValues);
