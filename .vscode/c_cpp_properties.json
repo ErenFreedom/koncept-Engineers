@@ -1,0 +1,29 @@
+{
+  "configurations": [
+      {
+          "name": "linux-gcc-x64",
+          "includePath": [
+              "${workspaceFolder}/**",
+              "/usr/local/include/wx-3.3",
+              "/usr/local/include/wx-3.3/wx",
+              "/usr/local/include"
+          ],
+          "browse": {
+              "path": [
+                  "/usr/local/include/wx-3.3",
+                  "/usr/local/include/wx-3.3/wx",
+                  "/usr/local/include"
+              ],
+              "limitSymbolsToIncludedHeaders": true,
+              "databaseFilename": ""
+          },
+          "defines": [],
+          "compilerPath": "/usr/bin/g++",
+          "cStandard": "c11",
+          "cppStandard": "c++17",
+          "intelliSenseMode": "linux-gcc-x64",
+          "compilerArgs": []
+      }
+  ],
+  "version": 4
+}
