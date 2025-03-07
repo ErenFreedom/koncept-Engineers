@@ -1,7 +1,7 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const { sendOtpSms } = require("../utils/sendOtpSms"); // ✅ Twilio for SMS
+const sendOtpSms = require("../utils/sendOtpSms"); // ✅ Same as Admin Controller
 const { sendOtpToEmail } = require("../utils/sendOtpEmail"); // ✅ Nodemailer for Email
 
 // **Send OTP for Staff Registration**
@@ -20,7 +20,7 @@ const sendRegistrationOtp = async (req, res) => {
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
-            otpSent = await sendOtpSms(identifier, otp);
+            otpSent = await sendOtpSms(identifier, otp); // ✅ Same function call as in Admin Controller
         }
 
         if (!otpSent.success) {
