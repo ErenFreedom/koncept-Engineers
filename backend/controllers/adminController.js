@@ -1,7 +1,7 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const { sendOtpToPhone } = require("../utils/sendOtpSms"); // Updated Twilio OTP Utility
+const sendOtpSms = require("../utils/sendOtpSms"); // ✅ Fixed Import
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
 // **Send OTP for Admin Registration**
@@ -21,11 +21,11 @@ const sendRegistrationOtp = async (req, res) => {
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
-            otpSent = await sendOtpToPhone(identifier, otp);
+            otpSent = await sendOtpSms(identifier, otp); // ✅ Fixed function call
         }
 
-        if (!otpSent) {
-            return res.status(500).json({ message: "Failed to send OTP" });
+        if (!otpSent.success) {
+            return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
         // Store OTP in the `RegisterOtp` table
