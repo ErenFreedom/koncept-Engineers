@@ -1,18 +1,20 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const { sendOtpToPhone } = require("../utils/sendOtpAWS");
+const { sendOtpToPhone } = require("../utils/sendOtpSms"); // Updated Twilio OTP Utility
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
 // **Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { identifier } = req.body; // Can be phone number or email
+        const { identifier } = req.body; // Can be email or phone number
+
         if (!identifier) {
             return res.status(400).json({ message: "Identifier (email or phone) is required" });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Send OTP via Email or Phone
         let otpSent = false;
