@@ -8,6 +8,7 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 const sendRegistrationOtp = async (req, res) => {
     try {
         const { identifier } = req.body; // Can be phone number or email
+
         if (!identifier) {
             return res.status(400).json({ message: "Identifier (email or phone) is required" });
         }
@@ -28,17 +29,16 @@ const sendRegistrationOtp = async (req, res) => {
         }
 
         // ✅ Convert IST Time to UTC before storing
-        const currentTimeIST = new Date();
-        const currentTimeUTC = new Date(currentTimeIST.getTime() - (5.5 * 60 * 60 * 1000));
+        const currentTimeUTC = new Date();
         const expiresAtUTC = new Date(currentTimeUTC.getTime() + (2 * 60 * 1000)); // Add 2 minutes for expiry
 
-        // Store OTP in UTC format
+        // ✅ Store OTP in UTC format for both Email & Phone
         const otpQuery = `
             INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
             VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE otp = ?, expires_at = ?;
+            ON DUPLICATE KEY UPDATE otp = ?, created_at = ?, expires_at = ?;
         `;
-        await db.execute(otpQuery, [identifier, otp, currentTimeUTC, expiresAtUTC, otp, expiresAtUTC]);
+        await db.execute(otpQuery, [identifier, otp, currentTimeUTC, expiresAtUTC, otp, currentTimeUTC, expiresAtUTC]);
 
         res.status(200).json({ message: "OTP sent successfully" });
 
@@ -70,7 +70,8 @@ const registerAdmin = async (req, res) => {
             const otpQueryEmail = `
                 SELECT * FROM RegisterOtp 
                 WHERE identifier = ? AND otp = ? 
-                AND expires_at > CONVERT_TZ(NOW(), '+00:00', '+05:30')`;
+                AND expires_at > UTC_TIMESTAMP();
+            `;
             const [otpResultsEmail] = await db.execute(otpQueryEmail, [email, otp]);
             if (otpResultsEmail.length > 0) {
                 otpValid = true;
@@ -81,7 +82,8 @@ const registerAdmin = async (req, res) => {
             const otpQueryPhone = `
                 SELECT * FROM RegisterOtp 
                 WHERE identifier = ? AND otp = ? 
-                AND expires_at > CONVERT_TZ(NOW(), '+00:00', '+05:30')`;
+                AND expires_at > UTC_TIMESTAMP();
+            `;
             const [otpResultsPhone] = await db.execute(otpQueryPhone, [phone_number, otp]);
             if (otpResultsPhone.length > 0) {
                 otpValid = true;
