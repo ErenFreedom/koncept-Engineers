@@ -1,8 +1,8 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const { sendOtpSms } = require("../utils/sendOtpSms"); // ✅ Updated to use Twilio SMS
-const { sendOtpToEmail } = require("../utils/sendOtpEmail");
+const { sendOtpSms } = require("../utils/sendOtpSms"); // ✅ Twilio for SMS
+const { sendOtpToEmail } = require("../utils/sendOtpEmail"); // ✅ Nodemailer for Email
 
 // **Send OTP for Staff Registration**
 const sendRegistrationOtp = async (req, res) => {
@@ -16,24 +16,26 @@ const sendRegistrationOtp = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
 
         // Send OTP via Email or SMS
-        let otpSent = false;
+        let otpSent = { success: false };
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
-            otpSent = await sendOtpSms(identifier, otp); // ✅ Uses Twilio instead of AWS SNS
+            otpSent = await sendOtpSms(identifier, otp);
         }
 
         if (!otpSent.success) {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // Store OTP in the `RegisterOtp` table
+        // ✅ Store OTP directly in UTC format
         const otpQuery = `
-            INSERT INTO RegisterOtp (identifier, otp, expires_at)
-            VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 2 MINUTE))
-            ON DUPLICATE KEY UPDATE otp = ?, expires_at = DATE_ADD(NOW(), INTERVAL 2 MINUTE);
+            INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
+            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 2 MINUTE))
+            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 MINUTE);
         `;
         await db.execute(otpQuery, [identifier, otp, otp]);
+
+        console.log(`✅ OTP stored successfully for ${identifier}`);
 
         res.status(200).json({ message: "OTP sent successfully" });
 
@@ -54,19 +56,42 @@ const registerStaff = async (req, res) => {
             company_email, admin_email, otp
         } = req.body;
 
-        if (!email || !company_email || !admin_email || !otp) {
-            return res.status(400).json({ message: "Missing required fields" });
+        if ((!phone_number && !email) || !company_email || !admin_email || !otp) {
+            return res.status(400).json({ message: "Phone number or email is required for OTP validation" });
         }
 
-        // **Validate OTP**
-        const otpQuery = `SELECT * FROM RegisterOtp WHERE identifier = ? AND otp = ? AND expires_at > NOW()`;
-        const [otpResults] = await db.execute(otpQuery, [email, otp]);
+        // ✅ Validate OTP using UTC_TIMESTAMP()
+        let otpValid = false;
 
-        if (otpResults.length === 0) {
+        if (email) {
+            const otpQueryEmail = `
+                SELECT * FROM RegisterOtp 
+                WHERE identifier = ? AND otp = ? 
+                AND expires_at > UTC_TIMESTAMP();
+            `;
+            const [otpResultsEmail] = await db.execute(otpQueryEmail, [email, otp]);
+            if (otpResultsEmail.length > 0) {
+                otpValid = true;
+            }
+        }
+
+        if (phone_number && !otpValid) {
+            const otpQueryPhone = `
+                SELECT * FROM RegisterOtp 
+                WHERE identifier = ? AND otp = ? 
+                AND expires_at > UTC_TIMESTAMP();
+            `;
+            const [otpResultsPhone] = await db.execute(otpQueryPhone, [phone_number, otp]);
+            if (otpResultsPhone.length > 0) {
+                otpValid = true;
+            }
+        }
+
+        if (!otpValid) {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        // OTP is valid, proceed with registration
+        // ✅ OTP is valid, proceed with registration
         connection = await db.getConnection();
         await connection.beginTransaction();
 
@@ -106,8 +131,8 @@ const registerStaff = async (req, res) => {
 
         await connection.execute(staffQuery, staffValues);
 
-        // **Delete OTP after successful registration**
-        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [email]);
+        // ✅ Delete OTP after successful registration
+        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ? OR identifier = ?`, [email, phone_number]);
 
         await connection.commit();
 
