@@ -7,7 +7,7 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 // **Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { identifier } = req.body; // Can be phone number or email
+        const { identifier } = req.body; // Can be email or phone number
 
         if (!identifier) {
             return res.status(400).json({ message: "Identifier (email or phone) is required" });
@@ -17,7 +17,7 @@ const sendRegistrationOtp = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // Send OTP via Email or Phone
-        let otpSent = false;
+        let otpSent = { success: false };
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
@@ -40,6 +40,8 @@ const sendRegistrationOtp = async (req, res) => {
         `;
         await db.execute(otpQuery, [identifier, otp, currentTimeUTC, expiresAtUTC, otp, currentTimeUTC, expiresAtUTC]);
 
+        console.log(`✅ OTP stored successfully for ${identifier}`);
+
         res.status(200).json({ message: "OTP sent successfully" });
 
     } catch (error) {
@@ -47,6 +49,7 @@ const sendRegistrationOtp = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // **Verify OTP & Register Admin**
 const registerAdmin = async (req, res) => {

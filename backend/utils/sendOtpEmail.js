@@ -19,11 +19,12 @@ const sendOtpToEmail = async (email, otp) => {
         };
 
         const info = await transporter.sendMail(mailOptions);
-        console.log("📧 OTP Sent Successfully via Email:", info.messageId);
-        return true;
+        console.log(`📧 OTP Sent Successfully to ${email}, Message ID: ${info.messageId}`);
+
+        return { success: true, messageId: info.messageId };
     } catch (error) {
         console.error("❌ Nodemailer Error:", error);
-        return false;
+        return { success: false, error: error.message };
     }
 };
 
