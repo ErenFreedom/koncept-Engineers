@@ -7,7 +7,7 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 // **Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { identifier } = req.body; // Can be email or phone number
+        const { identifier } = req.body; // Can be phone number or email
 
         if (!identifier) {
             return res.status(400).json({ message: "Identifier (email or phone) is required" });
@@ -29,7 +29,8 @@ const sendRegistrationOtp = async (req, res) => {
         }
 
         // ✅ Convert IST Time to UTC before storing
-        const currentTimeUTC = new Date();
+        const currentTimeIST = new Date(); // Get current IST time
+        const currentTimeUTC = new Date(currentTimeIST.getTime() - (5.5 * 60 * 60 * 1000)); // Convert IST to UTC
         const expiresAtUTC = new Date(currentTimeUTC.getTime() + (2 * 60 * 1000)); // Add 2 minutes for expiry
 
         // ✅ Store OTP in UTC format for both Email & Phone
@@ -49,7 +50,6 @@ const sendRegistrationOtp = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-
 
 // **Verify OTP & Register Admin**
 const registerAdmin = async (req, res) => {
