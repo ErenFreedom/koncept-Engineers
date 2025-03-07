@@ -45,6 +45,7 @@ const sendRegistrationOtp = async (req, res) => {
 };
 
 // **Verify OTP & Register Admin**
+// **Verify OTP & Register Admin**
 const registerAdmin = async (req, res) => {
     let connection;
     try {
@@ -55,19 +56,34 @@ const registerAdmin = async (req, res) => {
             company_address1, company_address2, company_pincode, otp
         } = req.body;
 
-        if (!email || !company_email || !otp) {
-            return res.status(400).json({ message: "Missing required fields" });
+        if ((!phone_number && !email) || !otp) {
+            return res.status(400).json({ message: "Phone number or email is required for OTP validation" });
         }
 
-        // **Validate OTP**
-        const otpQuery = `SELECT * FROM RegisterOtp WHERE identifier = ? AND otp = ? AND expires_at > NOW()`;
-        const [otpResults] = await db.execute(otpQuery, [email, otp]);
+        // **Check OTP in RegisterOtp table for both email & phone**
+        let otpValid = false;
 
-        if (otpResults.length === 0) {
+        if (email) {
+            const otpQueryEmail = `SELECT * FROM RegisterOtp WHERE identifier = ? AND otp = ? AND expires_at > NOW()`;
+            const [otpResultsEmail] = await db.execute(otpQueryEmail, [email, otp]);
+            if (otpResultsEmail.length > 0) {
+                otpValid = true;
+            }
+        }
+
+        if (phone_number && !otpValid) {
+            const otpQueryPhone = `SELECT * FROM RegisterOtp WHERE identifier = ? AND otp = ? AND expires_at > NOW()`;
+            const [otpResultsPhone] = await db.execute(otpQueryPhone, [phone_number, otp]);
+            if (otpResultsPhone.length > 0) {
+                otpValid = true;
+            }
+        }
+
+        if (!otpValid) {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        // OTP is valid, proceed with registration
+        // ✅ OTP is valid, proceed with registration
         connection = await db.getConnection();
         await connection.beginTransaction();
 
@@ -120,7 +136,7 @@ const registerAdmin = async (req, res) => {
         await connection.execute(procedureCall, procedureParams);
 
         // **Delete OTP after successful registration**
-        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [email]);
+        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ? OR identifier = ?`, [email, phone_number]);
 
         await connection.commit();
 
@@ -139,5 +155,6 @@ const registerAdmin = async (req, res) => {
         if (connection) await connection.release();
     }
 };
+
 
 module.exports = { sendRegistrationOtp, registerAdmin };

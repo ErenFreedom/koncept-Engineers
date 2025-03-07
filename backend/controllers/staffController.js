@@ -1,29 +1,30 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const { sendOtpToPhone } = require("../utils/sendOtpAWS");
+const { sendOtpSms } = require("../utils/sendOtpSms"); // ✅ Updated to use Twilio SMS
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
 // **Send OTP for Staff Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
         const { identifier } = req.body; // Can be phone number or email
+
         if (!identifier) {
             return res.status(400).json({ message: "Identifier (email or phone) is required" });
         }
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
 
-        // Send OTP via Email or Phone
+        // Send OTP via Email or SMS
         let otpSent = false;
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
-            otpSent = await sendOtpToPhone(identifier, otp);
+            otpSent = await sendOtpSms(identifier, otp); // ✅ Uses Twilio instead of AWS SNS
         }
 
-        if (!otpSent) {
-            return res.status(500).json({ message: "Failed to send OTP" });
+        if (!otpSent.success) {
+            return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
         // Store OTP in the `RegisterOtp` table
