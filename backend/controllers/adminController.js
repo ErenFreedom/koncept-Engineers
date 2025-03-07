@@ -28,18 +28,13 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Convert IST Time to UTC before storing
-        const currentTimeIST = new Date(); // Get current IST time
-        const currentTimeUTC = new Date(currentTimeIST.getTime() - (5.5 * 60 * 60 * 1000)); // Convert IST to UTC
-        const expiresAtUTC = new Date(currentTimeUTC.getTime() + (2 * 60 * 1000)); // Add 2 minutes for expiry
-
-        // ✅ Store OTP in UTC format for both Email & Phone
+        // ✅ **Store OTP directly with NOW() (which is UTC in MySQL)**
         const otpQuery = `
             INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
-            VALUES (?, ?, ?, ?)
-            ON DUPLICATE KEY UPDATE otp = ?, created_at = ?, expires_at = ?;
+            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 2 MINUTE))
+            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 MINUTE);
         `;
-        await db.execute(otpQuery, [identifier, otp, currentTimeUTC, expiresAtUTC, otp, currentTimeUTC, expiresAtUTC]);
+        await db.execute(otpQuery, [identifier, otp, otp]);
 
         console.log(`✅ OTP stored successfully for ${identifier}`);
 
@@ -50,6 +45,7 @@ const sendRegistrationOtp = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 // **Verify OTP & Register Admin**
 const registerAdmin = async (req, res) => {
@@ -66,7 +62,7 @@ const registerAdmin = async (req, res) => {
             return res.status(400).json({ message: "Phone number or email is required for OTP validation" });
         }
 
-        // ✅ **Check OTP in RegisterOtp table for both email & phone**
+        // ✅ **Use UTC_TIMESTAMP() for OTP validation**
         let otpValid = false;
 
         if (email) {
@@ -171,3 +167,5 @@ const registerAdmin = async (req, res) => {
 };
 
 module.exports = { sendRegistrationOtp, registerAdmin };
+
+
