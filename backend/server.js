@@ -10,6 +10,9 @@ const adminRoutes = require("./routes/adminRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const adminAuthRoutes = require("./routes/authAdminRoutes");
 const staffAuthRoutes = require("./routes/authStaffRoutes");
+const appAuthRoutes = require("./routes/appAuthRoutes");
+const staffAppAuthRoutes = require("./routes/authStaffAppRoutes");
+const desigoAuthRoutes = require("./routes/desigoAuthRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -24,6 +27,10 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
 app.use("/api/staff/auth", staffAuthRoutes);
+app.use("/api/app/auth", appAuthRoutes);
+app.use("/api/staff/app/auth", staffAppAuthRoutes); 
+app.use("/api/desigo/auth", desigoAuthRoutes);
+
 
 
 // Test database connection
