@@ -52,8 +52,8 @@ const registerAdmin = async (req, res) => {
     try {
         const {
             first_name, middle_name, last_name, date_of_birth, nationality,
-            address1, address2, pincode, phone_number, landline, password,
-            email, alt_email, company_name, company_email, company_alt_email,
+            address1, address2, pincode, phone_number, email, landline, password,
+            alt_email, company_name, company_email, company_alt_email,
             company_address1, company_address2, company_pincode, otp
         } = req.body;
 
@@ -92,8 +92,8 @@ const registerAdmin = async (req, res) => {
         // ✅ Hash password before storing
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ **Call Stored Procedure (Make Sure Email is Passed!)**
-        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        // ✅ **Call Stored Procedure with Correct Parameters**
+        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const procedureParams = [
             first_name, middle_name, last_name, date_of_birth, nationality,
             address1, address2, pincode, phone_number, email, landline, hashedPassword,
