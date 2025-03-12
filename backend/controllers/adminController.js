@@ -4,7 +4,7 @@ const { uploadFile } = require("../utils/s3Uploader");
 const sendOtpSms = require("../utils/sendOtpSms"); // Twilio for SMS OTP
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
-// **Send OTP for Admin Registration**
+// **✅ Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
         const { identifier } = req.body; // Can be phone number or email
@@ -46,8 +46,7 @@ const sendRegistrationOtp = async (req, res) => {
     }
 };
 
-
-// **Verify OTP & Register Admin**
+// **✅ Verify OTP & Register Admin**
 const registerAdmin = async (req, res) => {
     let connection;
     try {
@@ -112,38 +111,19 @@ const registerAdmin = async (req, res) => {
         // **Hash password**
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // **Insert Company**
-        const companyQuery = `
-            INSERT INTO Company (name, email, alt_email, address1, address2, pincode, pan_s3, gst_s3)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-        `;
-        const companyValues = [company_name, company_email, company_alt_email, company_address1, company_address2, company_pincode, uploadedFiles.pan, uploadedFiles.gst];
-
-        const [companyResult] = await connection.execute(companyQuery, companyValues);
-        const companyId = companyResult.insertId;
-
-        // **Insert Admin**
-        const adminQuery = `
-            INSERT INTO Admin (first_name, middle_name, last_name, date_of_birth, nationality, address1, address2, pincode,
-                               phone_number, landline, email, alt_email, password_hash, aadhar_pan_passport_s3, company_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
-        `;
-        const adminValues = [
-            first_name, middle_name, last_name, date_of_birth, nationality,
-            address1, address2, pincode, phone_number, landline,
-            email, alt_email, hashedPassword, uploadedFiles.aadhar, companyId
-        ];
-        await connection.execute(adminQuery, adminValues);
-
-        // **Call Procedure to Initialize Company-Specific Sensor Tables**
-        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        // ✅ **Only Call the Stored Procedure (Avoid Manual Insert)**
+        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const procedureParams = [
             first_name, middle_name, last_name, date_of_birth, nationality,
             address1, address2, pincode, phone_number, landline, hashedPassword,
-            uploadedFiles.aadhar, company_name, company_address1, company_address2,
-            company_pincode, uploadedFiles.pan, uploadedFiles.gst
+            uploadedFiles.aadhar, company_name, company_email, company_alt_email,
+            company_address1, company_address2, company_pincode,
+            uploadedFiles.pan, uploadedFiles.gst
         ];
-        await connection.execute(procedureCall, procedureParams);
+        const [procedureResult] = await connection.execute(procedureCall, procedureParams);
+
+        // ✅ Extract the correct company ID from the procedure response
+        const companyId = procedureResult[0][0].companyId;
 
         // ✅ **Delete OTP after successful registration**
         await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ? OR identifier = ?`, [email, phone_number]);
@@ -167,5 +147,3 @@ const registerAdmin = async (req, res) => {
 };
 
 module.exports = { sendRegistrationOtp, registerAdmin };
-
-
