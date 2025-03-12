@@ -77,7 +77,8 @@ const verifyStaffLoginOtp = async (req, res) => {
 
         // ✅ Fetch Staff Details
         const [[staff]] = await db.execute(
-            `SELECT id, email, phone_number FROM Staff WHERE email = ? OR phone_number = ?`,
+            `SELECT id, first_name, last_name, phone_number, email, company_id, nationality, position 
+             FROM Staff WHERE email = ? OR phone_number = ?`,
             [identifier, identifier]
         );
 
@@ -87,7 +88,16 @@ const verifyStaffLoginOtp = async (req, res) => {
 
         // ✅ Generate JWT Access & Refresh Tokens
         const accessToken = jwt.sign(
-            { staffId: staff.id, email: staff.email },
+            { 
+                staffId: staff.id,
+                firstName: staff.first_name,
+                lastName: staff.last_name,
+                phoneNumber: staff.phone_number,
+                email: staff.email,
+                companyId: staff.company_id,
+                nationality: staff.nationality,
+                position: staff.position
+            },
             process.env.JWT_SECRET,
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
@@ -107,7 +117,20 @@ const verifyStaffLoginOtp = async (req, res) => {
         // ✅ Delete OTP after successful login
         await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
 
-        res.status(200).json({ message: "Login successful", accessToken });
+        res.status(200).json({ 
+            message: "Login successful", 
+            accessToken,
+            staff: {
+                id: staff.id,
+                firstName: staff.first_name,
+                lastName: staff.last_name,
+                phoneNumber: staff.phone_number,
+                email: staff.email,
+                companyId: staff.company_id,
+                nationality: staff.nationality,
+                position: staff.position
+            }
+        });
 
     } catch (error) {
         console.error("❌ Error verifying OTP:", error);
@@ -126,14 +149,24 @@ const refreshStaffToken = async (req, res) => {
             if (err) return res.status(403).json({ message: "Forbidden" });
 
             const [[staff]] = await db.execute(
-                `SELECT id, email FROM Staff WHERE id = ?`,
+                `SELECT id, first_name, last_name, phone_number, email, company_id, nationality, position 
+                 FROM Staff WHERE id = ?`,
                 [decoded.staffId]
             );
 
             if (!staff) return res.status(404).json({ message: "Staff member not found" });
 
             const newAccessToken = jwt.sign(
-                { staffId: staff.id, email: staff.email },
+                { 
+                    staffId: staff.id,
+                    firstName: staff.first_name,
+                    lastName: staff.last_name,
+                    phoneNumber: staff.phone_number,
+                    email: staff.email,
+                    companyId: staff.company_id,
+                    nationality: staff.nationality,
+                    position: staff.position
+                },
                 process.env.JWT_SECRET,
                 { expiresIn: ACCESS_TOKEN_EXPIRY }
             );
@@ -143,7 +176,7 @@ const refreshStaffToken = async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error refreshing token:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 

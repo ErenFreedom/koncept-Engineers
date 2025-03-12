@@ -88,7 +88,9 @@ const verifyStaffAppLoginOtp = async (req, res) => {
 
         // ✅ Ensure Staff Exists & is Linked to Admin
         const [[staff]] = await db.execute(
-            `SELECT s.id, s.email, s.phone_number FROM Staff s
+            `SELECT s.id, s.first_name, s.phone_number, s.email, s.company_id, 
+                    s.admin_id, s.admin_email, s.position, s.years_in_company
+             FROM Staff s
              JOIN Admin a ON s.company_id = a.company_id
              WHERE (s.email = ? OR s.phone_number = ?) 
              AND (a.email = ? OR a.phone_number = ?)`,
@@ -101,7 +103,17 @@ const verifyStaffAppLoginOtp = async (req, res) => {
 
         // ✅ Generate JWT Access & Refresh Tokens
         const accessToken = jwt.sign(
-            { staffId: staff.id, email: staff.email },
+            { 
+                staffId: staff.id,
+                firstName: staff.first_name,
+                phoneNumber: staff.phone_number,
+                email: staff.email,
+                companyId: staff.company_id,
+                adminId: staff.admin_id,
+                adminEmail: staff.admin_email,
+                position: staff.position,
+                yearsInCompany: staff.years_in_company
+            },
             process.env.JWT_SECRET_APP,
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
@@ -121,7 +133,21 @@ const verifyStaffAppLoginOtp = async (req, res) => {
         // ✅ Delete OTP after successful login
         await db.execute(`DELETE FROM AppLoginOtp WHERE identifier = ?`, [adminIdentifier]);
 
-        res.status(200).json({ message: "Login successful", accessToken });
+        res.status(200).json({ 
+            message: "Login successful", 
+            accessToken,
+            staff: {
+                id: staff.id,
+                firstName: staff.first_name,
+                phoneNumber: staff.phone_number,
+                email: staff.email,
+                companyId: staff.company_id,
+                adminId: staff.admin_id,
+                adminEmail: staff.admin_email,
+                position: staff.position,
+                yearsInCompany: staff.years_in_company
+            }
+        });
 
     } catch (error) {
         console.error("❌ Error verifying OTP:", error);
@@ -140,14 +166,26 @@ const refreshStaffAppToken = async (req, res) => {
             if (err) return res.status(403).json({ message: "Forbidden" });
 
             const [[staff]] = await db.execute(
-                `SELECT id, email FROM Staff WHERE id = ?`,
+                `SELECT id, first_name, phone_number, email, company_id, 
+                        admin_id, admin_email, position, years_in_company 
+                 FROM Staff WHERE id = ?`,
                 [decoded.staffId]
             );
 
             if (!staff) return res.status(404).json({ message: "Staff not found" });
 
             const newAccessToken = jwt.sign(
-                { staffId: staff.id, email: staff.email },
+                { 
+                    staffId: staff.id,
+                    firstName: staff.first_name,
+                    phoneNumber: staff.phone_number,
+                    email: staff.email,
+                    companyId: staff.company_id,
+                    adminId: staff.admin_id,
+                    adminEmail: staff.admin_email,
+                    position: staff.position,
+                    yearsInCompany: staff.years_in_company
+                },
                 process.env.JWT_SECRET_APP,
                 { expiresIn: ACCESS_TOKEN_EXPIRY }
             );

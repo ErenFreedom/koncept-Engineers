@@ -77,7 +77,8 @@ const verifyAdminLoginOtp = async (req, res) => {
 
         // ✅ Fetch Admin Details
         const [[admin]] = await db.execute(
-            `SELECT id, email, phone_number FROM Admin WHERE email = ? OR phone_number = ?`,
+            `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
+             FROM Admin WHERE email = ? OR phone_number = ?`,
             [identifier, identifier]
         );
 
@@ -87,7 +88,15 @@ const verifyAdminLoginOtp = async (req, res) => {
 
         // ✅ Generate JWT Access & Refresh Tokens
         const accessToken = jwt.sign(
-            { adminId: admin.id, email: admin.email },
+            { 
+                adminId: admin.id,
+                firstName: admin.first_name,
+                lastName: admin.last_name,
+                phoneNumber: admin.phone_number,
+                email: admin.email,
+                companyId: admin.company_id,
+                nationality: admin.nationality
+            },
             process.env.JWT_SECRET,
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
@@ -107,7 +116,19 @@ const verifyAdminLoginOtp = async (req, res) => {
         // ✅ Delete OTP after successful login
         await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
 
-        res.status(200).json({ message: "Login successful", accessToken });
+        res.status(200).json({ 
+            message: "Login successful", 
+            accessToken,
+            admin: {
+                id: admin.id,
+                firstName: admin.first_name,
+                lastName: admin.last_name,
+                phoneNumber: admin.phone_number,
+                email: admin.email,
+                companyId: admin.company_id,
+                nationality: admin.nationality
+            }
+        });
 
     } catch (error) {
         console.error("❌ Error verifying OTP:", error);
@@ -126,14 +147,23 @@ const refreshAdminToken = async (req, res) => {
             if (err) return res.status(403).json({ message: "Forbidden" });
 
             const [[admin]] = await db.execute(
-                `SELECT id, email FROM Admin WHERE id = ?`,
+                `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
+                 FROM Admin WHERE id = ?`,
                 [decoded.adminId]
             );
 
             if (!admin) return res.status(404).json({ message: "Admin not found" });
 
             const newAccessToken = jwt.sign(
-                { adminId: admin.id, email: admin.email },
+                { 
+                    adminId: admin.id,
+                    firstName: admin.first_name,
+                    lastName: admin.last_name,
+                    phoneNumber: admin.phone_number,
+                    email: admin.email,
+                    companyId: admin.company_id,
+                    nationality: admin.nationality
+                },
                 process.env.JWT_SECRET,
                 { expiresIn: ACCESS_TOKEN_EXPIRY }
             );
@@ -143,7 +173,7 @@ const refreshAdminToken = async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error refreshing token:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
