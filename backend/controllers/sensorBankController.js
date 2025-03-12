@@ -5,15 +5,17 @@ require("dotenv").config();
 /** ✅ Middleware: Extract Admin & Company ID from JWT */
 const getAdminDetailsFromToken = (req) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1]; // Bearer Token
+        const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer Token
         if (!token) return null;
 
-        return jwt.verify(token, process.env.JWT_SECRET); // Decode JWT
+        // ✅ Use JWT_SECRET_APP instead of JWT_SECRET
+        return jwt.verify(token, process.env.JWT_SECRET_APP); // Decode JWT with the correct secret
     } catch (error) {
         console.error("❌ Error decoding JWT:", error.message);
         return null;
     }
 };
+
 
 /** ✅ Add a Sensor to the Correct `SensorBank_X` Table */
 const addSensor = async (req, res) => {
