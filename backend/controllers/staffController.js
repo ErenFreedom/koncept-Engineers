@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
 const { sendOtpToEmail } = require("../utils/sendOtpEmail"); // ✅ Nodemailer for Email
 
-// **Send OTP to Admin for Staff Registration**
+// **✅ Send OTP to Admin for Staff Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
         const { admin_email, staff_name, staff_phone } = req.body; // ✅ Admin Email, Staff Name & Phone Required
@@ -63,7 +63,7 @@ const sendRegistrationOtp = async (req, res) => {
     }
 };
 
-// **Verify OTP & Register Staff**
+// **✅ Verify OTP & Register Staff**
 const registerStaff = async (req, res) => {
     let connection;
     try {
