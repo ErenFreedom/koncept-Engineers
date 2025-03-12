@@ -1,10 +1,10 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const sendOtpSms = require("../utils/sendOtpSms"); 
+const sendOtpSms = require("../utils/sendOtpSms");
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
-// **✅ Send OTP for Admin Registration**
+// ✅ **Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
         const { identifier } = req.body; // Can be phone number or email
@@ -28,7 +28,7 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in MySQL with UTC timestamp
+        // ✅ Store OTP in MySQL (UTC timestamp)
         const otpQuery = `
             INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
             VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
@@ -37,7 +37,6 @@ const sendRegistrationOtp = async (req, res) => {
         await db.execute(otpQuery, [identifier, otp, otp]);
 
         console.log(`✅ OTP stored successfully for ${identifier}`);
-
         res.status(200).json({ message: "OTP sent successfully" });
 
     } catch (error) {
@@ -46,7 +45,7 @@ const sendRegistrationOtp = async (req, res) => {
     }
 };
 
-// **✅ Verify OTP & Register Admin**
+// ✅ **Verify OTP & Register Admin**
 const registerAdmin = async (req, res) => {
     let connection;
     try {
@@ -92,7 +91,7 @@ const registerAdmin = async (req, res) => {
         // ✅ Hash password before storing
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ **Call Stored Procedure with Correct Parameters**
+        // ✅ **Call Stored Procedure to Register Admin & Company**
         const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const procedureParams = [
             first_name, middle_name, last_name, date_of_birth, nationality,
@@ -103,8 +102,22 @@ const registerAdmin = async (req, res) => {
         ];
         const [procedureResult] = await connection.execute(procedureCall, procedureParams);
 
-        // ✅ Extract the correct company ID from the procedure response
+        // ✅ Extract `companyId` from the procedure response
         const companyId = procedureResult[0][0].companyId;
+
+        // ✅ **Ensure Company-Specific Tables Are Created**
+        const tables = ["SensorBank_", "Sensor_", "SensorData_", "ApiToken_"];
+        for (let table of tables) {
+            const tableName = `${table}${companyId}`;
+            const checkTableQuery = `SHOW TABLES LIKE ?`;
+            const [tableExists] = await connection.execute(checkTableQuery, [tableName]);
+
+            if (tableExists.length === 0) {
+                console.error(`❌ Table ${tableName} was not created.`);
+                await connection.rollback();
+                return res.status(500).json({ message: `Failed to create table ${tableName}` });
+            }
+        }
 
         // ✅ **Delete OTP after successful registration**
         await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [email]);
@@ -112,7 +125,6 @@ const registerAdmin = async (req, res) => {
         await connection.commit();
 
         console.log(`✅ Admin and Company registered successfully. Company ID: ${companyId}`);
-
         res.status(201).json({
             message: "Admin and Company registered successfully",
             company_id: companyId
