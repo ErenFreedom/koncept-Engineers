@@ -1,33 +1,50 @@
-const db = require("../db/localdb"); // SQLite local DB
 const axios = require("axios");
+require("dotenv").config();
 
-/** ✅ Add New Sensor */
+/** ✅ Add a Sensor (Connector Backend → Cloud Backend) */
 const addSensor = async (req, res) => {
     try {
-        const { sensorName, sensorApiUrl, requestRate, isRealTime } = req.body;
+        const { sensorApi, sensorName, rateLimit } = req.body;
+        const { adminId, companyId, email } = req.user; // Extracted from Token
 
-        if (!sensorName || !sensorApiUrl || requestRate === undefined || isRealTime === undefined) {
-            return res.status(400).json({ message: "Missing required sensor details" });
+        if (!sensorApi || !sensorName || !rateLimit) {
+            return res.status(400).json({ message: "Sensor API, name, and rate limit are required" });
         }
 
-        // ✅ Verify if Sensor Exists in Desigo CC
+        // ✅ Verify if the sensor API is accessible
+        let sensorData;
         try {
-            const response = await axios.get(sensorApiUrl);
-            if (!response.data || !response.data.ObjectId) {
-                return res.status(400).json({ message: "Invalid sensor API response" });
-            }
+            const response = await axios.get(sensorApi);
+            sensorData = response.data;
         } catch (error) {
-            return res.status(500).json({ message: "Failed to verify sensor with Desigo CC", error: error.message });
+            return res.status(400).json({ message: "Invalid Sensor API. No response received." });
         }
 
-        // ✅ Insert into Local Database
-        await db.run(
-            `INSERT INTO SensorBank (name, api_url, request_rate, is_real_time, is_active) 
-             VALUES (?, ?, ?, ?, ?)`,
-            [sensorName, sensorApiUrl, requestRate, isRealTime, 0] // Sensor starts as inactive
-        );
+        // ✅ Extract required fields from Desigo CC response
+        const { DataType, Value, ObjectId, PropertyName } = sensorData;
 
-        res.status(201).json({ message: "Sensor added successfully" });
+        if (!DataType || !Value || !ObjectId || !PropertyName) {
+            return res.status(400).json({ message: "Invalid sensor API response format" });
+        }
+
+        // ✅ Push Sensor to Cloud Backend
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/add`;
+        const cloudResponse = await axios.post(cloudApiUrl, {
+            sensorName,
+            description: `Sensor added by ${email}`,
+            objectId: ObjectId,
+            propertyName: PropertyName,
+            dataType: DataType,
+            isActive: false, // Initially inactive
+            companyId,
+            adminId
+        });
+
+        if (cloudResponse.status !== 200) {
+            return res.status(500).json({ message: "Failed to add sensor to cloud" });
+        }
+
+        res.status(200).json({ message: "Sensor added successfully", cloudResponse: cloudResponse.data });
 
     } catch (error) {
         console.error("❌ Error adding sensor:", error);
@@ -35,26 +52,36 @@ const addSensor = async (req, res) => {
     }
 };
 
-/** ✅ Fetch All Sensors */
+/** ✅ Get All Sensors (Connector Fetches from Cloud) */
 const getAllSensors = async (req, res) => {
     try {
-        const sensors = await db.all("SELECT * FROM SensorBank");
-        res.status(200).json(sensors);
+        const { companyId } = req.user;
+
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/${companyId}`;
+        const cloudResponse = await axios.get(cloudApiUrl);
+
+        res.status(200).json({ sensors: cloudResponse.data });
+
     } catch (error) {
         console.error("❌ Error fetching sensors:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
-/** ✅ Delete a Sensor */
+/** ✅ Delete a Sensor (Connector Requests Cloud to Delete Sensor) */
 const deleteSensor = async (req, res) => {
     try {
         const { id } = req.params;
-        await db.run("DELETE FROM SensorBank WHERE id = ?", [id]);
-        res.status(200).json({ message: "Sensor deleted successfully" });
+        const { companyId } = req.user;
+
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/delete/${id}`;
+        const cloudResponse = await axios.delete(cloudApiUrl);
+
+        res.status(200).json({ message: "Sensor deleted successfully", cloudResponse: cloudResponse.data });
+
     } catch (error) {
         console.error("❌ Error deleting sensor:", error);
-        res.status(500).json({ message: "Internal Server Error" });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 

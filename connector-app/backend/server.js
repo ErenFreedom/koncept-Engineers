@@ -1,5 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
+const db = require('./db/localDB'); // Import Local Database for storing tokens
 
 dotenv.config();
 
@@ -26,5 +27,5 @@ app.get('/', (req, res) => {
 
 // Start the server
 app.listen(PORT, () => {
-    console.log(`Connector App Backend is running on http://localhost:${PORT}`);
+    console.log(`✅ Connector App Backend is running on http://localhost:${PORT}`);
 });
