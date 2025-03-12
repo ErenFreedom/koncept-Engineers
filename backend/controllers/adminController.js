@@ -1,7 +1,7 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const sendOtpSms = require("../utils/sendOtpSms"); // Twilio for SMS OTP
+const sendOtpSms = require("../utils/sendOtpSms"); 
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
 // **✅ Send OTP for Admin Registration**
@@ -16,7 +16,7 @@ const sendRegistrationOtp = async (req, res) => {
         // Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Send OTP via Email or Phone
+        // ✅ Send OTP via Email or Phone
         let otpSent = { success: false };
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
@@ -28,11 +28,11 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ **Store OTP directly with NOW() (which is UTC in MySQL)**
+        // ✅ Store OTP in MySQL with UTC timestamp
         const otpQuery = `
             INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
-            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 2 MINUTE))
-            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 MINUTE);
+            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
+            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);
         `;
         await db.execute(otpQuery, [identifier, otp, otp]);
 
@@ -57,38 +57,19 @@ const registerAdmin = async (req, res) => {
             company_address1, company_address2, company_pincode, otp
         } = req.body;
 
-        if ((!phone_number && !email) || !otp) {
-            return res.status(400).json({ message: "Phone number or email is required for OTP validation" });
+        if (!phone_number || !email || !otp) {
+            return res.status(400).json({ message: "Email, phone number, and OTP are required" });
         }
 
-        // ✅ **Use UTC_TIMESTAMP() for OTP validation**
-        let otpValid = false;
+        // ✅ Validate OTP for email
+        const otpQuery = `
+            SELECT * FROM RegisterOtp 
+            WHERE identifier = ? AND otp = ? 
+            AND expires_at > UTC_TIMESTAMP();
+        `;
+        const [otpResults] = await db.execute(otpQuery, [email, otp]);
 
-        if (email) {
-            const otpQueryEmail = `
-                SELECT * FROM RegisterOtp 
-                WHERE identifier = ? AND otp = ? 
-                AND expires_at > UTC_TIMESTAMP();
-            `;
-            const [otpResultsEmail] = await db.execute(otpQueryEmail, [email, otp]);
-            if (otpResultsEmail.length > 0) {
-                otpValid = true;
-            }
-        }
-
-        if (phone_number && !otpValid) {
-            const otpQueryPhone = `
-                SELECT * FROM RegisterOtp 
-                WHERE identifier = ? AND otp = ? 
-                AND expires_at > UTC_TIMESTAMP();
-            `;
-            const [otpResultsPhone] = await db.execute(otpQueryPhone, [phone_number, otp]);
-            if (otpResultsPhone.length > 0) {
-                otpValid = true;
-            }
-        }
-
-        if (!otpValid) {
+        if (otpResults.length === 0) {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
@@ -96,7 +77,7 @@ const registerAdmin = async (req, res) => {
         connection = await db.getConnection();
         await connection.beginTransaction();
 
-        // **Upload Documents to S3**
+        // ✅ Upload Documents to S3
         const uploadedFiles = {};
         const fileFields = ["aadhar", "pan", "gst"];
         for (const field of fileFields) {
@@ -108,14 +89,14 @@ const registerAdmin = async (req, res) => {
             uploadedFiles[field] = key;
         }
 
-        // **Hash password**
+        // ✅ Hash password before storing
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ **Only Call the Stored Procedure (Avoid Manual Insert)**
-        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+        // ✅ **Call Stored Procedure (Make Sure Email is Passed!)**
+        const procedureCall = `CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
         const procedureParams = [
             first_name, middle_name, last_name, date_of_birth, nationality,
-            address1, address2, pincode, phone_number, landline, hashedPassword,
+            address1, address2, pincode, phone_number, email, landline, hashedPassword,
             uploadedFiles.aadhar, company_name, company_email, company_alt_email,
             company_address1, company_address2, company_pincode,
             uploadedFiles.pan, uploadedFiles.gst
@@ -126,7 +107,7 @@ const registerAdmin = async (req, res) => {
         const companyId = procedureResult[0][0].companyId;
 
         // ✅ **Delete OTP after successful registration**
-        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ? OR identifier = ?`, [email, phone_number]);
+        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [email]);
 
         await connection.commit();
 
