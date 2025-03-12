@@ -17,12 +17,9 @@ const sendRegistrationOtp = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // ✅ Send OTP via Email or Phone
-        let otpSent = { success: false };
-        if (identifier.includes("@")) {
-            otpSent = await sendOtpToEmail(identifier, otp);
-        } else {
-            otpSent = await sendOtpSms(identifier, otp);
-        }
+        let otpSent = identifier.includes("@")
+            ? await sendOtpToEmail(identifier, otp)
+            : await sendOtpSms(identifier, otp);
 
         if (!otpSent.success) {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
@@ -51,8 +48,8 @@ const registerAdmin = async (req, res) => {
     try {
         const {
             first_name, middle_name, last_name, date_of_birth, nationality,
-            address1, address2, pincode, phone_number, email, landline, password,
-            alt_email, company_name, company_email, company_alt_email,
+            address1, address2, pincode, phone_number, landline, password,
+            email, alt_email, company_name, company_email, company_alt_email,
             company_address1, company_address2, company_pincode, otp
         } = req.body;
 
@@ -109,8 +106,8 @@ const registerAdmin = async (req, res) => {
         const tables = ["SensorBank_", "Sensor_", "SensorData_", "ApiToken_"];
         for (let table of tables) {
             const tableName = `${table}${companyId}`;
-            const checkTableQuery = `SHOW TABLES LIKE ?`;
-            const [tableExists] = await connection.execute(checkTableQuery, [tableName]);
+            const checkTableQuery = `SHOW TABLES LIKE '${tableName}'`;
+            const [tableExists] = await connection.execute(checkTableQuery);
 
             if (tableExists.length === 0) {
                 console.error(`❌ Table ${tableName} was not created.`);
