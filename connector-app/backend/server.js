@@ -8,6 +8,7 @@ dotenv.config();
 const cloudAdminAuthRoutes = require("./routes/cloudAdminAuthRoutes");
 const cloudStaffAuthRoutes = require("./routes/cloudStaffAuthRoutes");
 const sensorRoutes = require("./routes/sensorRoutes");
+const activateSensorRoutes = require("./routes/activateSensorRoutes"); 
 
 const app = express();
 const PORT = process.env.PORT || 5004;
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use("/api/admin/auth", cloudAdminAuthRoutes);
 app.use("/api/staff/auth", cloudStaffAuthRoutes);
 app.use("/api/sensor", sensorRoutes);
+app.use("/api/sensors", activateSensorRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

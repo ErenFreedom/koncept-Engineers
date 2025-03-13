@@ -1,54 +1,80 @@
 const express = require("express");
 const cors = require("cors");
+const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
-const PORT = 8085; // Port for Desigo CC Server
+const PORT = 8085; // Port for Dummy Desigo CC Server
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Enable JSON parsing
 
-// ✅ Sensor Definitions (6 fake sensors)
-const sensors = [
-    { id: 1, name: "Temperature Sensor", objectId: "System1:TempSensor1", propertyName: "Value" },
-    { id: 2, name: "CO2 Sensor", objectId: "System1:CO2Sensor1", propertyName: "Value" },
-    { id: 3, name: "Humidity Sensor", objectId: "System1:HumiditySensor1", propertyName: "Value" },
-    { id: 4, name: "Pressure Sensor", objectId: "System1:PressureSensor1", propertyName: "Value" },
-    { id: 5, name: "Air Quality Sensor", objectId: "System1:AirQualitySensor1", propertyName: "Value" },
-    { id: 6, name: "Water Flow Sensor", objectId: "System1:WaterFlowSensor1", propertyName: "Value" },
-];
+// ✅ Connect to SQLite database
+const db = new sqlite3.Database("./desigo_sensors.db", sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+        console.error("❌ Error opening database:", err.message);
+    } else {
+        console.log("✅ Connected to SQLite database.");
+    }
+});
 
-// ✅ Generate random sensor values
-const generateSensorValue = (sensor) => {
-    let value = (Math.random() * 100).toFixed(2); // Random float between 0-100
-    let qualityGood = Math.random() > 0.2; // 80% chance of being "good"
-    let timestamp = new Date().toISOString();
+// ✅ Fetch **latest** sensor data for a given sensor ID (Simulating Real API Response)
+app.get("/api/sensor/:id", (req, res) => {
+    const sensorId = req.params.id;
+    const query = `
+        SELECT * FROM sensor_data 
+        WHERE sensor_id = ? 
+        ORDER BY timestamp DESC 
+        LIMIT 1;
+    `;
 
-    return {
-        DataType: "BasicFloat",
-        Value: {
-            Value: value,
-            Quality: Math.floor(Math.random() * 10000000000000000000), // Fake Quality ID
-            QualityGood: qualityGood,
-            Timestamp: timestamp,
-        },
-        OriginalObjectOrPropertyId: `${sensor.objectId}.${sensor.propertyName}`,
-        ObjectId: sensor.objectId,
-        PropertyName: sensor.propertyName,
-        AttributeId: `${sensor.objectId}.${sensor.propertyName}:_online.._value`,
-        ErrorCode: 0,
-        IsArray: false
-    };
-};
+    db.get(query, [sensorId], (err, row) => {
+        if (err) {
+            console.error(`❌ Error fetching sensor ${sensorId}:`, err.message);
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ message: "Sensor not found" });
+        }
 
-// ✅ API Route for fetching data of each sensor
-sensors.forEach(sensor => {
-    app.get(`/api/sensor/${sensor.id}`, (req, res) => {
-        res.json(generateSensorValue(sensor));
+        // ✅ **Convert Database Row to Real API Format**
+        const responseData = [
+            {
+                DataType: row.data_type,
+                Value: {
+                    Value: row.value,
+                    Quality: row.quality,
+                    QualityGood: row.quality_good === 1, // Convert to Boolean
+                    Timestamp: row.timestamp
+                },
+                OriginalObjectPropertyId: row.original_object_property_id,
+                ObjectId: row.object_id,
+                PropertyName: row.property_name,
+                AttributeId: row.attribute_id,
+                ErrorCode: row.error_code,
+                IsArray: Boolean(row.is_array)
+            }
+        ];
+
+        res.json(responseData); // ✅ Send response as an array (same as real Desigo API)
     });
 });
 
-// ✅ API Route for fetching **all sensors at once**
+// ✅ Fetch **latest 10 sensor readings** (General route)
 app.get("/api/sensors", (req, res) => {
-    res.json(sensors.map(sensor => generateSensorValue(sensor)));
+    const query = `
+        SELECT * FROM (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY sensor_id ORDER BY timestamp DESC) AS rn
+            FROM sensor_data
+        ) WHERE rn <= 10;  -- Last 10 entries per sensor
+    `;
+
+    db.all(query, [], (err, rows) => {
+        if (err) {
+            console.error("❌ Error fetching sensors:", err.message);
+            res.status(500).json({ error: err.message });
+        } else {
+            res.json(rows);
+        }
+    });
 });
 
 // ✅ Start the Dummy Server

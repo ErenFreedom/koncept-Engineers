@@ -58,12 +58,18 @@ const addSensor = async (req, res) => {
             return res.status(400).json({ message: "Invalid Sensor API. No response received." });
         }
 
+        // ✅ Check if the response is an array and extract the first element
+        if (Array.isArray(sensorData)) {
+            sensorData = sensorData[0]; // Take the first object from the array
+        }
+
         // ✅ Extract required fields from Desigo CC response
-        const { DataType, Value, ObjectId, PropertyName } = sensorData;
-        if (!DataType || !Value || !ObjectId || !PropertyName) {
+        if (!sensorData || !sensorData.DataType || !sensorData.Value || !sensorData.ObjectId || !sensorData.PropertyName) {
             console.error("❌ Invalid sensor API response format:", sensorData);
             return res.status(400).json({ message: "Invalid sensor API response format" });
         }
+
+        const { DataType, Value, ObjectId, PropertyName } = sensorData;
 
         // ✅ Push Sensor to Cloud Backend
         const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/add`;
