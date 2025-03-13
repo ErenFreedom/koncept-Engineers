@@ -83,7 +83,7 @@ const deactivateSensor = async (req, res) => {
         }
 
         // ✅ Send deactivation request to Cloud Backend
-        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor/deactivate`;
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/deactivate`;
         console.log(`📤 Deactivating Sensor in Cloud: ${cloudApiUrl}`);
 
         try {
@@ -119,7 +119,7 @@ const removeActiveSensor = async (req, res) => {
         }
 
         // ✅ Send removal request to Cloud Backend
-        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor/remove`;
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/remove`;
         console.log(`📤 Removing Sensor from Active in Cloud: ${cloudApiUrl}`);
 
         try {
