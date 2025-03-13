@@ -1,5 +1,5 @@
 const express = require("express");
-const { activateSensor, deactivateSensor, removeActiveSensor } = require("../controllers/activateSensorController");
+const { activateSensor, deactivateSensor, removeActiveSensor } = require("../controllers/sensorActivationController.js");
 
 const router = express.Router();
 
