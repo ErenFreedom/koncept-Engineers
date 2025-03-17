@@ -9,6 +9,7 @@ const cloudAdminAuthRoutes = require("./routes/cloudAdminAuthRoutes");
 const cloudStaffAuthRoutes = require("./routes/cloudStaffAuthRoutes");
 const sensorRoutes = require("./routes/sensorRoutes");
 const activateSensorRoutes = require("./routes/activateSensorRoutes"); 
+const syncSensorIdsRoutes = require("./routes/syncSensorIdsRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5004;
@@ -21,6 +22,7 @@ app.use("/api/admin/auth", cloudAdminAuthRoutes);
 app.use("/api/staff/auth", cloudStaffAuthRoutes);
 app.use("/api/sensor", sensorRoutes);
 app.use("/api/sensors", activateSensorRoutes);
+app.use("/api", syncSensorIdsRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {

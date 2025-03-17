@@ -15,6 +15,7 @@ const staffAppAuthRoutes = require("./routes/authStaffAppRoutes");
 const desigoAuthRoutes = require("./routes/desigoAuthRoutes");
 const sensorRoutes = require("./routes/sensorRoutes");
 const activateSensorRoutes = require("./routes/activateSensorRoutes");
+const listSensorsRoutes = require("./routes/listSensorsRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -34,6 +35,8 @@ app.use("/api/staff/app/auth", staffAppAuthRoutes);
 app.use("/api/desigo/auth", desigoAuthRoutes);
 app.use("/api/sensor-bank", sensorRoutes);
 app.use("/api/sensors", activateSensorRoutes); 
+app.use("/api/sensors", listSensorsRoutes);
+
 
 
 
