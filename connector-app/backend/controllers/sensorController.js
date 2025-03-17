@@ -2,6 +2,7 @@ const axios = require("axios");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 require("dotenv").config();
+const { updateLocalSensorIds } = require("../utils/syncLocalSensorIds");
 
 // ✅ Ensure correct database path
 const dbPath = path.resolve(__dirname, "../db/localDB.sqlite");
@@ -58,18 +59,13 @@ const addSensor = async (req, res) => {
             return res.status(400).json({ message: "Invalid Sensor API. No response received." });
         }
 
-        // ✅ Check if the response is an array and extract the first element
-        if (Array.isArray(sensorData)) {
-            sensorData = sensorData[0]; // Take the first object from the array
-        }
-
         // ✅ Extract required fields from Desigo CC response
-        if (!sensorData || !sensorData.DataType || !sensorData.Value || !sensorData.ObjectId || !sensorData.PropertyName) {
+        if (!sensorData || !sensorData[0]?.DataType || !sensorData[0]?.ObjectId || !sensorData[0]?.PropertyName) {
             console.error("❌ Invalid sensor API response format:", sensorData);
             return res.status(400).json({ message: "Invalid sensor API response format" });
         }
 
-        const { DataType, ObjectId, PropertyName } = sensorData;
+        const { DataType, ObjectId, PropertyName } = sensorData[0];
 
         // ✅ Push Sensor to Cloud Backend
         const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/add`;
@@ -112,9 +108,13 @@ const addSensor = async (req, res) => {
                     const insertApiQuery = `
                         INSERT INTO LocalSensorAPIs (sensor_id, api_endpoint) VALUES (?, ?)
                     `;
-                    db.run(insertApiQuery, [this.lastID, sensorApi], (err) => {
+                    db.run(insertApiQuery, [this.lastID, sensorApi], async (err) => {
                         if (err) console.error("❌ Error inserting API into Local DB:", err.message);
-                        else console.log(`✅ API for Sensor ${sensorName} stored in Local DB.`);
+                        else {
+                            console.log(`✅ API for Sensor ${sensorName} stored in Local DB.`);
+                            // ✅ Trigger Local Sensor ID Sync after adding
+                            await updateLocalSensorIds();
+                        }
                     });
                 }
             });
@@ -157,7 +157,7 @@ const deleteSensor = async (req, res) => {
         // ✅ Delete Sensor from Local Databases (`LocalSensorBank` & `LocalSensorAPIs`)
         db.serialize(() => {
             const deleteSensorQuery = `DELETE FROM LocalSensorBank WHERE id = ?`;
-            db.run(deleteSensorQuery, [id], (err) => {
+            db.run(deleteSensorQuery, [id], async (err) => {
                 if (err) {
                     console.error("❌ Error deleting sensor from Local DB:", err.message);
                 } else {
@@ -165,9 +165,13 @@ const deleteSensor = async (req, res) => {
 
                     // ✅ Delete from `LocalSensorAPIs`
                     const deleteApiQuery = `DELETE FROM LocalSensorAPIs WHERE sensor_id = ?`;
-                    db.run(deleteApiQuery, [id], (err) => {
+                    db.run(deleteApiQuery, [id], async (err) => {
                         if (err) console.error("❌ Error deleting API from Local DB:", err.message);
-                        else console.log(`✅ API for Sensor ${id} deleted from Local DB.`);
+                        else {
+                            console.log(`✅ API for Sensor ${id} deleted from Local DB.`);
+                            // ✅ Trigger Local Sensor ID Sync after deletion
+                            await updateLocalSensorIds();
+                        }
                     });
                 }
             });

@@ -61,7 +61,32 @@ const activateSensor = async (req, res) => {
         );
 
         console.log(`✅ Sensor ${sensorId} activated for Company ${companyId}`);
-        res.status(200).json({ message: `Sensor ${sensorId} activated successfully` });
+
+        // ✅ Create Sensor Data Table for this sensor in Cloud DB
+        const sensorTableName = `SensorData_${companyId}_${sensorId}`;
+        console.log(`📌 Creating Sensor Data Table: ${sensorTableName}`);
+
+        const createTableQuery = `
+            CREATE TABLE IF NOT EXISTS ${sensorTableName} (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                sensor_id INT NOT NULL,
+                value VARCHAR(255),
+                quality VARCHAR(255),
+                quality_good BOOLEAN,
+                timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (sensor_id) REFERENCES Sensor_${companyId}(bank_id) ON DELETE CASCADE
+            )
+        `;
+
+        try {
+            await db.execute(createTableQuery);
+            console.log(`✅ Table ${sensorTableName} created successfully in Cloud DB.`);
+        } catch (error) {
+            console.error("❌ Error creating SensorData table in Cloud DB:", error.message);
+            return res.status(500).json({ message: "Failed to create sensor data table in Cloud DB" });
+        }
+
+        res.status(200).json({ message: `Sensor ${sensorId} activated and table created successfully` });
     } catch (error) {
         console.error("❌ Error activating sensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -149,7 +174,22 @@ const removeActiveSensor = async (req, res) => {
         );
 
         console.log(`✅ Sensor ${sensorId} removed from active sensors for Company ${companyId}`);
-        res.status(200).json({ message: `Sensor ${sensorId} removed successfully` });
+
+        // ✅ Drop the corresponding SensorData Table
+        const sensorTableName = `SensorData_${companyId}_${sensorId}`;
+        console.log(`🗑 Dropping Sensor Data Table: ${sensorTableName}`);
+
+        const dropTableQuery = `DROP TABLE IF EXISTS ${sensorTableName}`;
+
+        try {
+            await db.execute(dropTableQuery);
+            console.log(`✅ Table ${sensorTableName} dropped successfully from Cloud DB.`);
+        } catch (error) {
+            console.error(`❌ Error dropping table ${sensorTableName} in Cloud DB:`, error.message);
+            return res.status(500).json({ message: "Failed to drop sensor data table in Cloud DB" });
+        }
+
+        res.status(200).json({ message: `Sensor ${sensorId} removed and table dropped successfully` });
     } catch (error) {
         console.error("❌ Error removing sensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
