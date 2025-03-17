@@ -29,10 +29,10 @@ const getAdminDetailsFromToken = (req) => {
 /** ✅ Activate Sensor */
 const activateSensor = async (req, res) => {
     try {
-        const { sensorId } = req.body;
+        const { sensorApi } = req.body;
 
-        if (!sensorId) {
-            return res.status(400).json({ message: "Sensor ID is required" });
+        if (!sensorApi) {
+            return res.status(400).json({ message: "Sensor API is required" });
         }
 
         // ✅ Validate Token & Get Admin ID
@@ -42,31 +42,38 @@ const activateSensor = async (req, res) => {
         }
         const { companyId } = adminDetails;
 
-        console.log(`🔍 Activating Sensor ${sensorId} for Company ${companyId}`);
-
-        // ✅ Verify if Sensor Exists in Sensor Bank
-        const [sensorExists] = await db.execute(
-            `SELECT * FROM SensorBank_${companyId} WHERE id = ?`, 
-            [sensorId]
-        );
-
-        if (sensorExists.length === 0) {
-            return res.status(404).json({ message: "Sensor not found in Sensor Bank" });
-        }
+        console.log(`🔍 Activating Sensor ${sensorApi} for Company ${companyId}`);
 
         // ✅ Push to Active Sensors Table
         await db.execute(
-            `INSERT INTO Sensor_${companyId} (bank_id, is_active) VALUES (?, 1)`, 
-            [sensorId]
+            `INSERT INTO Sensor_${companyId} (sensor_api, is_active) VALUES (?, 1) ON DUPLICATE KEY UPDATE is_active = 1`,
+            [sensorApi]
         );
 
-        console.log(`✅ Sensor ${sensorId} activated for Company ${companyId}`);
-        res.status(200).json({ message: `Sensor ${sensorId} activated successfully` });
+        console.log(`✅ Sensor ${sensorApi} activated for Company ${companyId}`);
+
+        // ✅ Create Dynamic Table (Format: SensorData_CompanyId_SensorApi)
+        const sensorTableName = `SensorData_${companyId}_${sensorApi.replace(/\W/g, "_")}`;
+        console.log(`📌 Creating sensor data table: ${sensorTableName}`);
+
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS ${sensorTableName} (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                sensor_api VARCHAR(255) NOT NULL,
+                value TEXT NOT NULL,
+                quality TEXT NOT NULL,
+                quality_good BOOLEAN NOT NULL,
+                timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
+        res.status(200).json({ message: `Sensor ${sensorApi} activated successfully` });
     } catch (error) {
         console.error("❌ Error activating sensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 /** ✅ Deactivate Sensor (Update `is_active` field) */
 const deactivateSensor = async (req, res) => {
@@ -113,10 +120,9 @@ const deactivateSensor = async (req, res) => {
 /** ✅ Remove Sensor from Active Sensors */
 const removeActiveSensor = async (req, res) => {
     try {
-        const { sensorId } = req.body;
-
-        if (!sensorId) {
-            return res.status(400).json({ message: "Sensor ID is required" });
+        const { sensorApi } = req.body;
+        if (!sensorApi) {
+            return res.status(400).json({ message: "Sensor API is required" });
         }
 
         // ✅ Validate Token & Get Admin ID
@@ -126,26 +132,23 @@ const removeActiveSensor = async (req, res) => {
         }
         const { companyId } = adminDetails;
 
-        console.log(`🔍 Removing Sensor ${sensorId} from Active Sensors for Company ${companyId}`);
-
-        // ✅ Check if Sensor is Active
-        const [sensor] = await db.execute(
-            `SELECT * FROM Sensor_${companyId} WHERE bank_id = ?`, 
-            [sensorId]
-        );
-
-        if (sensor.length === 0) {
-            return res.status(404).json({ message: "Sensor is not active" });
-        }
+        console.log(`📤 Removing Sensor ${sensorApi} from Active Sensors for Company ${companyId}`);
 
         // ✅ Remove the sensor from Active Sensors Table
         await db.execute(
-            `DELETE FROM Sensor_${companyId} WHERE bank_id = ?`, 
-            [sensorId]
+            `DELETE FROM Sensor_${companyId} WHERE sensor_api = ?`,
+            [sensorApi]
         );
 
-        console.log(`✅ Sensor ${sensorId} removed from active sensors for Company ${companyId}`);
-        res.status(200).json({ message: `Sensor ${sensorId} removed successfully` });
+        console.log(`✅ Sensor ${sensorApi} removed from Active Sensors for Company ${companyId}`);
+
+        // ✅ Drop Dynamic Sensor Data Table
+        const sensorTableName = `SensorData_${companyId}_${sensorApi.replace(/\W/g, "_")}`;
+        console.log(`🗑 Dropping sensor data table: ${sensorTableName}`);
+
+        await db.execute(`DROP TABLE IF EXISTS ${sensorTableName}`);
+
+        res.status(200).json({ message: `Sensor ${sensorApi} removed successfully` });
     } catch (error) {
         console.error("❌ Error removing sensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
