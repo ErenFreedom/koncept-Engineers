@@ -96,20 +96,17 @@ const insertSensorData = async (req, res) => {
         `;
 
         const values = batch.map(({ sensor_id, value, quality, quality_good, timestamp }) => [
-            sensor_id,
-            value,
-            quality,
-            quality_good,
-            timestamp
+            sensor_id, value, quality, quality_good, timestamp
         ]);
 
-        console.log(`📝 Preparing to insert ${values.length} records into ${tableName}`);
-        console.log(`📋 Sample Data:`, values.slice(0, 5)); // Log first 5 records for debugging
+        // **LOGGING TO DEBUG**
+        console.log(`📝 SQL Query: ${insertQuery}`);
+        console.log(`📋 Data to Insert:`, JSON.stringify(values, null, 2));
 
         db.query(insertQuery, [values], (err) => {
             if (err) {
                 console.error(`❌ Error inserting batch data into ${tableName}:`, err.message);
-                return res.status(500).json({ message: `Failed to insert batch data into ${tableName}` });
+                return res.status(500).json({ message: `Failed to insert batch data into ${tableName}`, error: err.message });
             }
 
             console.log(`✅ Successfully inserted ${batch.length} records into ${tableName}`);
