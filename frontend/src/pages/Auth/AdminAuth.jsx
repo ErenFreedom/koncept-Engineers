@@ -8,7 +8,7 @@ const AdminAuth = () => {
     <div>
       <AuthHeader /> {/* Header */}
       <div className="auth-body">
-        <h1 className="auth-heading">Admin Login</h1>
+        <h1 className="auth-heading">Admin Logi</h1>
         <div className="form-container">
           <label className="form-label">
             Organisation Name
