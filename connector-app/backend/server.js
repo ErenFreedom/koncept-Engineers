@@ -12,6 +12,7 @@ const activateSensorRoutes = require("./routes/activateSensorRoutes");
 const syncSensorIdsRoutes = require("./routes/syncSensorIdsRoutes");
 const sensorDataRoutes = require("./routes/sensorDataRoutes");
 const fetchSensorDataRoutes = require("./routes/fetchSensorDataRoutes");
+const sendSensorDataRoutes = require("./routes/sendSensorDataRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 5004;
@@ -27,6 +28,7 @@ app.use("/api/sensors", activateSensorRoutes);
 app.use("/api", syncSensorIdsRoutes);
 app.use("/api/local", sensorDataRoutes);
 app.use("/api/local", fetchSensorDataRoutes);
+app.use("/api/connector-data", sendSensorDataRoutes);
 
 // Root endpoint
 app.get('/', (req, res) => {
