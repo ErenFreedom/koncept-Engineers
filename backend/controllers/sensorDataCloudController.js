@@ -38,18 +38,18 @@ const checkIfSensorTableExists = async (companyId, sensorId) => {
     });
 };
 
-/** ✅ Create Sensor Data Table if it Does Not Exist */
+/** ✅ Create Sensor Data Table if Not Exists */
 const createSensorDataTable = async (companyId, sensorId) => {
     return new Promise((resolve, reject) => {
         const tableName = `SensorData_${companyId}_${sensorId}`;
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS ${tableName} (
-                id INT PRIMARY KEY AUTO_INCREMENT,
+                id INT AUTO_INCREMENT PRIMARY KEY,
                 sensor_id INT NOT NULL,
                 value VARCHAR(255) NOT NULL,
                 quality VARCHAR(255) NOT NULL,
                 quality_good BOOLEAN NOT NULL,
-                timestamp DATETIME NOT NULL,
+                timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 sent_to_cloud BOOLEAN DEFAULT 0
             );
         `;
@@ -65,7 +65,7 @@ const createSensorDataTable = async (companyId, sensorId) => {
     });
 };
 
-/** ✅ Insert Sensor Data into Cloud */
+/** ✅ Insert Sensor Data into Cloud DB */
 const insertSensorData = async (req, res) => {
     try {
         // ✅ Extract companyId from token
@@ -105,7 +105,7 @@ const insertSensorData = async (req, res) => {
             value,
             quality,
             quality_good,
-            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // Convert to MySQL DATETIME format
+            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // Ensure MySQL DATETIME format
         ]);
 
         // **LOGGING TO DEBUG**
@@ -126,8 +126,6 @@ const insertSensorData = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-
-
 
 /** ✅ Export Functions */
 module.exports = { insertSensorData };
