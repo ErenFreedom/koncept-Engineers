@@ -21,9 +21,8 @@ const getCompanyIdFromToken = (req) => {
 };
 
 /** ✅ Check if Sensor Data Table Exists */
-const checkIfSensorTableExists = async (companyId, sensorId) => {
+const checkIfSensorTableExists = async (tableName) => {
     try {
-        const tableName = `SensorData_${companyId}_${sensorId}`;
         console.log(`🔍 Checking if table ${tableName} exists...`);
 
         const [results] = await db.execute(`SHOW TABLES LIKE ?`, [tableName]);
@@ -63,10 +62,11 @@ const insertSensorData = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID and batch data are required." });
         }
 
+        // ✅ Define `tableName` BEFORE using it!
         const tableName = `SensorData_${companyId}_${sensorId}`;
         console.log(`🔍 Verifying table existence: ${tableName}`);
 
-        const tableExists = await checkIfSensorTableExists(companyId, sensorId);
+        const tableExists = await checkIfSensorTableExists(tableName);
         console.log(`✅ Table ${tableName} Check Result:`, tableExists);
 
         if (!tableExists) {
