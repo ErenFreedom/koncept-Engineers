@@ -22,28 +22,24 @@ const getCompanyIdFromToken = (req) => {
 
 /** ✅ Check if Sensor Data Table Exists */
 const checkIfSensorTableExists = async (companyId, sensorId) => {
-    return new Promise((resolve, reject) => {
+    try {
         const tableName = `SensorData_${companyId}_${sensorId}`;
-        console.log(`🔍 Checking if table ${tableName} exists...`); 
+        console.log(`🔍 Checking if table ${tableName} exists...`);
 
-        db.query(`SHOW TABLES LIKE ?`, [tableName], (err, results) => {
-            if (err) {
-                console.error(`❌ ERROR: Checking table ${tableName} failed.`, err.message);
-                reject(err);
-                return;
-            }
+        const [results] = await db.execute(`SHOW TABLES LIKE ?`, [tableName]);
 
-            if (results.length > 0) {
-                console.log(`✅ Table ${tableName} FOUND.`);
-                resolve(true);
-            } else {
-                console.warn(`⚠ WARNING: Table ${tableName} does NOT exist.`);
-                resolve(false);
-            }
-        });
-    });
+        if (results.length > 0) {
+            console.log(`✅ Table ${tableName} FOUND.`);
+            return true;
+        } else {
+            console.warn(`⚠ WARNING: Table ${tableName} does NOT exist.`);
+            return false;
+        }
+    } catch (error) {
+        console.error(`❌ ERROR: Checking table ${tableName} failed.`, error.message);
+        return false;
+    }
 };
-
 
 /** ✅ Insert Sensor Data into Cloud DB */
 const insertSensorData = async (req, res) => {
@@ -102,23 +98,17 @@ const insertSensorData = async (req, res) => {
         console.log(`📝 SQL Query Prepared: ${insertQuery}`);
         console.log(`📋 Data to Insert:`, JSON.stringify(values, null, 2));
 
-        // ✅ Execute Query
-        db.query(insertQuery, [values], (err, result) => {
-            if (err) {
-                console.error(`❌ ERROR: Inserting batch data into ${tableName} failed.`, err.message);
-                return res.status(500).json({ message: `Failed to insert batch data into ${tableName}`, error: err.message });
-            }
+        // ✅ Execute Query (Switched to `await db.execute()` from `db.query(...)`)
+        await db.execute(insertQuery, [values]);
 
-            console.log(`✅ SUCCESS: Inserted ${batch.length} records into ${tableName}`);
-            res.status(200).json({ message: "Data inserted successfully", inserted: batch.length });
-        });
+        console.log(`✅ SUCCESS: Inserted ${batch.length} records into ${tableName}`);
+        return res.status(200).json({ message: "Data inserted successfully", inserted: batch.length });
 
     } catch (error) {
         console.error("❌ ERROR: Unexpected error in processing sensor data.", error.message);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-
 
 /** ✅ Export Functions */
 module.exports = { insertSensorData };
