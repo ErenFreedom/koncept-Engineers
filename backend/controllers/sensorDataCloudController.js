@@ -68,7 +68,6 @@ const createSensorDataTable = async (companyId, sensorId) => {
 /** ✅ Insert Sensor Data into Cloud DB */
 const insertSensorData = async (req, res) => {
     try {
-        // ✅ Extract companyId from token
         const companyId = getCompanyIdFromToken(req);
         if (!companyId) {
             return res.status(401).json({ message: "Unauthorized: Invalid token" });
@@ -76,7 +75,7 @@ const insertSensorData = async (req, res) => {
 
         const { sensorId, batch } = req.body;
 
-        // ✅ Log Full Incoming Data
+        // ✅ Log the Incoming Data
         console.log("🚀 Incoming Data to Backend:");
         console.log(JSON.stringify(req.body, null, 2));
 
@@ -87,19 +86,18 @@ const insertSensorData = async (req, res) => {
 
         console.log(`📤 Receiving batch data for Sensor ${sensorId}, Company ${companyId}`);
 
-        // ✅ Check if table exists, else create
+        const tableName = `SensorData_${companyId}_${sensorId}`;
+        console.log(`🔍 Checking if table ${tableName} exists...`);
+
         const tableExists = await checkIfSensorTableExists(companyId, sensorId);
         if (!tableExists) {
+            console.log(`❌ Table ${tableName} does not exist. Creating it now...`);
             await createSensorDataTable(companyId, sensorId);
+        } else {
+            console.log(`✅ Table ${tableName} exists.`);
         }
 
-        // ✅ Insert batch of data into SensorData table
-        const tableName = `SensorData_${companyId}_${sensorId}`;
-        const insertQuery = `
-            INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp)
-            VALUES ?
-        `;
-
+        // ✅ Convert timestamps properly for MySQL
         const values = batch.map(({ sensor_id, value, quality, quality_good, timestamp }) => [
             sensor_id,
             value,
@@ -108,10 +106,20 @@ const insertSensorData = async (req, res) => {
             new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // Ensure MySQL DATETIME format
         ]);
 
-        // **LOGGING TO DEBUG**
+        if (values.length === 0) {
+            console.warn("⚠ No valid data to insert.");
+            return res.status(400).json({ message: "No valid sensor data to insert." });
+        }
+
+        const insertQuery = `
+            INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp)
+            VALUES ?
+        `;
+
         console.log(`📝 SQL Query: ${insertQuery}`);
         console.log(`📋 Data to Insert:`, JSON.stringify(values, null, 2));
 
+        // ✅ Execute Query
         db.query(insertQuery, [values], (err, result) => {
             if (err) {
                 console.error(`❌ Error inserting batch data into ${tableName}:`, err.message);
@@ -126,6 +134,7 @@ const insertSensorData = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 /** ✅ Export Functions */
 module.exports = { insertSensorData };
