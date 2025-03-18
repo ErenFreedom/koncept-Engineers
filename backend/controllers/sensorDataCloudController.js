@@ -20,12 +20,12 @@ const getCompanyIdFromToken = (req) => {
     }
 };
 
-/** ✅ Check if Sensor Data Table Exists (FIXED) */
+/** ✅ Check if Sensor Data Table Exists */
 const checkIfSensorTableExists = async (tableName) => {
     try {
         console.log(`🔍 Checking if table ${tableName} exists...`);
 
-        // ✅ Use string interpolation instead of `?`
+        // ✅ Use template literal directly in SQL query
         const [results] = await db.execute(`SHOW TABLES LIKE '${tableName}'`);
 
         if (results.length > 0) {
@@ -63,19 +63,17 @@ const insertSensorData = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID and batch data are required." });
         }
 
-        // ✅ Define `tableName` BEFORE using it!
+        // ✅ Define `tableName`
         const tableName = `SensorData_${companyId}_${sensorId}`;
         console.log(`🔍 Verifying table existence: ${tableName}`);
 
+        // ✅ Check if the table exists
         const tableExists = await checkIfSensorTableExists(tableName);
-        console.log(`✅ Table ${tableName} Check Result:`, tableExists);
-
         if (!tableExists) {
             console.error(`❌ ERROR: Table ${tableName} does not exist. Cannot insert.`);
             return res.status(500).json({ message: `Table ${tableName} does not exist.` });
         }
-
-        console.log(`✅ Proceeding with inserting data into ${tableName}`);
+        console.log(`✅ Table ${tableName} exists. Proceeding with insertion...`);
 
         // ✅ Convert timestamps properly for MySQL
         const values = batch.map(({ sensor_id, value, quality, quality_good, timestamp }) => [
@@ -91,16 +89,15 @@ const insertSensorData = async (req, res) => {
             return res.status(400).json({ message: "No valid sensor data to insert." });
         }
 
-        const insertQuery = `
-            INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp)
-            VALUES ?
-        `;
+        // ✅ Construct SQL query dynamically
+        const placeholders = values.map(() => `(?, ?, ?, ?, ?)`).join(", ");
+        const insertQuery = `INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp) VALUES ${placeholders}`;
 
         console.log(`📝 SQL Query Prepared: ${insertQuery}`);
-        console.log(`📋 Data to Insert:`, JSON.stringify(values, null, 2));
+        console.log(`📋 Data to Insert:`, JSON.stringify(values.flat(), null, 2));
 
-        // ✅ Execute Query (Switched to `await db.execute()` from `db.query(...)`)
-        await db.execute(insertQuery, [values]);
+        // ✅ Execute Query
+        await db.execute(insertQuery, values.flat());
 
         console.log(`✅ SUCCESS: Inserted ${batch.length} records into ${tableName}`);
         return res.status(200).json({ message: "Data inserted successfully", inserted: batch.length });
