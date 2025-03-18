@@ -113,7 +113,7 @@ const Admin = () => {
               Pincode
               <input type="text" className="form-input" placeholder="Enter Pincode" />
             </label>
-            <label className="form-label">
+            <label className="form-label" style={{ display: step === 2 ? "block" : "none" }}>
               Upload Aadhar/PAN/Passport
               <input
                 type="file"
@@ -122,6 +122,7 @@ const Admin = () => {
                 onChange={(e) => handleFileUpload(e, setAadharPanPassport)}
               />
             </label>
+
             {aadharPanPassport.length > 0 && (
               <ul>
                 {aadharPanPassport.map((file, index) => (
