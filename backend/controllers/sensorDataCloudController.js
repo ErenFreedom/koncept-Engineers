@@ -96,14 +96,18 @@ const insertSensorData = async (req, res) => {
         `;
 
         const values = batch.map(({ sensor_id, value, quality, quality_good, timestamp }) => [
-            sensor_id, value, quality, quality_good, timestamp
+            sensor_id,
+            value,
+            quality,
+            quality_good,
+            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // Ensure MySQL DATETIME format
         ]);
 
         // **LOGGING TO DEBUG**
         console.log(`📝 SQL Query: ${insertQuery}`);
         console.log(`📋 Data to Insert:`, JSON.stringify(values, null, 2));
 
-        db.query(insertQuery, [values], (err) => {
+        db.query(insertQuery, [values], (err, result) => {
             if (err) {
                 console.error(`❌ Error inserting batch data into ${tableName}:`, err.message);
                 return res.status(500).json({ message: `Failed to insert batch data into ${tableName}`, error: err.message });
@@ -117,6 +121,7 @@ const insertSensorData = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 /** ✅ Export Functions */
 module.exports = { insertSensorData };
