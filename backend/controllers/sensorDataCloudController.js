@@ -20,12 +20,13 @@ const getCompanyIdFromToken = (req) => {
     }
 };
 
-/** ✅ Check if Sensor Data Table Exists */
+/** ✅ Check if Sensor Data Table Exists (FIXED) */
 const checkIfSensorTableExists = async (tableName) => {
     try {
         console.log(`🔍 Checking if table ${tableName} exists...`);
 
-        const [results] = await db.execute(`SHOW TABLES LIKE ?`, [tableName]);
+        // ✅ Use string interpolation instead of `?`
+        const [results] = await db.execute(`SHOW TABLES LIKE '${tableName}'`);
 
         if (results.length > 0) {
             console.log(`✅ Table ${tableName} FOUND.`);
