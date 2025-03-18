@@ -87,7 +87,7 @@ const sendDataToCloud = async (sensor_id) => {
                         const cloudResponse = await axios.post(`${process.env.CLOUD_API_URL}/api/sensor-data/receive-data`, {
                             companyId,
                             sensorId: sensor_id,
-                            data: rows
+                            batch: rows // ✅ Changed from "data" to "batch"
                         }, {
                             headers: { Authorization: `Bearer ${await getStoredToken()}` }
                         });
@@ -109,7 +109,6 @@ const sendDataToCloud = async (sensor_id) => {
                         } else {
                             console.error(`❌ Unexpected Error:`, error.message);
                         }
-                        
                     }
                 });
             };

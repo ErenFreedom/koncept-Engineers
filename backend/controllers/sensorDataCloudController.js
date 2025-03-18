@@ -5,7 +5,10 @@ const jwt = require("jsonwebtoken");
 const getCompanyIdFromToken = (req) => {
     try {
         const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer Token
-        if (!token) return null;
+        if (!token) {
+            console.error("❌ No token provided.");
+            return null;
+        }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET_APP); // Decode JWT
         console.log("🔍 Extracted Company ID from Token:", decoded.companyId);
@@ -73,10 +76,9 @@ const insertSensorData = async (req, res) => {
 
         const { sensorId, batch } = req.body;
         if (!sensorId || !batch || !Array.isArray(batch) || batch.length === 0) {
-            console.error("❌ Invalid request data:", req.body);
+            console.error("❌ Invalid request data:", JSON.stringify(req.body, null, 2));
             return res.status(400).json({ message: "Sensor ID and batch data are required." });
         }
-
 
         console.log(`📤 Receiving batch data for Sensor ${sensorId}, Company ${companyId}`);
 
@@ -93,13 +95,16 @@ const insertSensorData = async (req, res) => {
             VALUES ?
         `;
 
-        const values = batch.map(({ value, quality, quality_good, timestamp }) => [
-            sensorId,
+        const values = batch.map(({ sensor_id, value, quality, quality_good, timestamp }) => [
+            sensor_id,
             value,
             quality,
             quality_good,
-            timestamp,
+            timestamp
         ]);
+
+        console.log(`📝 Preparing to insert ${values.length} records into ${tableName}`);
+        console.log(`📋 Sample Data:`, values.slice(0, 5)); // Log first 5 records for debugging
 
         db.query(insertQuery, [values], (err) => {
             if (err) {
