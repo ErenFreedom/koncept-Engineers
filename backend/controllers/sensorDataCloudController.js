@@ -72,9 +72,11 @@ const insertSensorData = async (req, res) => {
         }
 
         const { sensorId, batch } = req.body;
-        if (!sensorId || !batch || !Array.isArray(batch)) {
+        if (!sensorId || !batch || !Array.isArray(batch) || batch.length === 0) {
+            console.error("❌ Invalid request data:", req.body);
             return res.status(400).json({ message: "Sensor ID and batch data are required." });
         }
+
 
         console.log(`📤 Receiving batch data for Sensor ${sensorId}, Company ${companyId}`);
 

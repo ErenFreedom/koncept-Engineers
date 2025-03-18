@@ -84,7 +84,7 @@ const sendDataToCloud = async (sensor_id) => {
                     console.log(`📤 Sending ${rows.length} records to cloud for Sensor ${sensor_id}`);
 
                     try {
-                        const cloudResponse = await axios.post(`${process.env.CLOUD_API_URL}/api/sensor-data/receive`, {
+                        const cloudResponse = await axios.post(`${process.env.CLOUD_API_URL}/api/sensor-data/receive-data`, {
                             companyId,
                             sensorId: sensor_id,
                             data: rows
@@ -102,7 +102,14 @@ const sendDataToCloud = async (sensor_id) => {
                         });
 
                     } catch (error) {
-                        console.error(`❌ Error sending data to Cloud: ${error.response?.data || error.message}`);
+                        if (error.response) {
+                            console.error(`❌ Error sending data to Cloud:`, error.response.data);
+                        } else if (error.request) {
+                            console.error(`❌ No response received from Cloud:`, error.request);
+                        } else {
+                            console.error(`❌ Unexpected Error:`, error.message);
+                        }
+                        
                     }
                 });
             };
