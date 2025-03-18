@@ -75,6 +75,11 @@ const insertSensorData = async (req, res) => {
         }
 
         const { sensorId, batch } = req.body;
+
+        // ✅ Log Full Incoming Data
+        console.log("🚀 Incoming Data to Backend:");
+        console.log(JSON.stringify(req.body, null, 2));
+
         if (!sensorId || !batch || !Array.isArray(batch) || batch.length === 0) {
             console.error("❌ Invalid request data:", JSON.stringify(req.body, null, 2));
             return res.status(400).json({ message: "Sensor ID and batch data are required." });
@@ -100,7 +105,7 @@ const insertSensorData = async (req, res) => {
             value,
             quality,
             quality_good,
-            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // Ensure MySQL DATETIME format
+            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // Convert to MySQL DATETIME format
         ]);
 
         // **LOGGING TO DEBUG**
@@ -121,6 +126,7 @@ const insertSensorData = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 
 /** ✅ Export Functions */
