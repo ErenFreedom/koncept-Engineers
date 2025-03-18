@@ -24,43 +24,20 @@ const getCompanyIdFromToken = (req) => {
 const checkIfSensorTableExists = async (companyId, sensorId) => {
     return new Promise((resolve, reject) => {
         const tableName = `SensorData_${companyId}_${sensorId}`;
-        db.query(
-            `SHOW TABLES LIKE ?`,
-            [tableName],
-            (err, results) => {
-                if (err) {
-                    console.error(`❌ Error checking if table exists:`, err.message);
-                    return reject(err);
-                }
-                resolve(results.length > 0);
-            }
-        );
-    });
-};
+        console.log(`🔍 Checking if table ${tableName} exists...`);
 
-/** ✅ Create Sensor Data Table if Not Exists */
-const createSensorDataTable = async (companyId, sensorId) => {
-    return new Promise((resolve, reject) => {
-        const tableName = `SensorData_${companyId}_${sensorId}`;
-        const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS ${tableName} (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                sensor_id INT NOT NULL,
-                value VARCHAR(255) NOT NULL,
-                quality VARCHAR(255) NOT NULL,
-                quality_good BOOLEAN NOT NULL,
-                timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                sent_to_cloud BOOLEAN DEFAULT 0
-            );
-        `;
-
-        db.query(createTableQuery, (err) => {
+        db.query(`SHOW TABLES LIKE ?`, [tableName], (err, results) => {
             if (err) {
-                console.error(`❌ Error creating table ${tableName}:`, err.message);
+                console.error(`❌ Error checking table ${tableName}:`, err.message);
                 return reject(err);
             }
-            console.log(`✅ Table ${tableName} created (or already exists).`);
-            resolve();
+            if (results.length > 0) {
+                console.log(`✅ Table ${tableName} exists.`);
+                resolve(true);
+            } else {
+                console.warn(`⚠ Table ${tableName} does NOT exist.`);
+                resolve(false);
+            }
         });
     });
 };
@@ -68,6 +45,7 @@ const createSensorDataTable = async (companyId, sensorId) => {
 /** ✅ Insert Sensor Data into Cloud DB */
 const insertSensorData = async (req, res) => {
     try {
+        // ✅ Extract company ID from token
         const companyId = getCompanyIdFromToken(req);
         if (!companyId) {
             return res.status(401).json({ message: "Unauthorized: Invalid token" });
@@ -75,7 +53,6 @@ const insertSensorData = async (req, res) => {
 
         const { sensorId, batch } = req.body;
 
-        // ✅ Log the Incoming Data
         console.log("🚀 Incoming Data to Backend:");
         console.log(JSON.stringify(req.body, null, 2));
 
@@ -87,14 +64,11 @@ const insertSensorData = async (req, res) => {
         console.log(`📤 Receiving batch data for Sensor ${sensorId}, Company ${companyId}`);
 
         const tableName = `SensorData_${companyId}_${sensorId}`;
-        console.log(`🔍 Checking if table ${tableName} exists...`);
-
         const tableExists = await checkIfSensorTableExists(companyId, sensorId);
+
         if (!tableExists) {
-            console.log(`❌ Table ${tableName} does not exist. Creating it now...`);
-            await createSensorDataTable(companyId, sensorId);
-        } else {
-            console.log(`✅ Table ${tableName} exists.`);
+            console.error(`❌ Table ${tableName} does not exist. Data insertion skipped.`);
+            return res.status(500).json({ message: `Table ${tableName} does not exist.` });
         }
 
         // ✅ Convert timestamps properly for MySQL
@@ -134,7 +108,6 @@ const insertSensorData = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-
 
 /** ✅ Export Functions */
 module.exports = { insertSensorData };
