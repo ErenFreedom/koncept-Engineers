@@ -34,6 +34,18 @@ const AdminAuth = () => {
               placeholder="Enter your Password"
             />
           </label>
+
+          {/* 🔥 Random Test Field Added Here 🔥 */}
+          <label className="form-label">
+            Random Test Field
+            <input
+              type="text"
+              className="form-input"
+              placeholder="This is a test field"
+            />
+          </label>
+          {/* 🔥 Random Test Field Ends Here 🔥 */}
+
         </div>
         <button className="auth-button">Login</button>
         <div className="forgot-password-container">
