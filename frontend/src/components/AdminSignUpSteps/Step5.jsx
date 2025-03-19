@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -6,16 +6,24 @@ import { useNavigate } from "react-router-dom";
 
 const Step5 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
   const navigate = useNavigate();
+  const [otpMethod, setOtpMethod] = useState(""); // State to store selected OTP method
 
   const sendOtp = async () => {
+    if (!otpMethod) {
+      toast.error("Please select a method to receive OTP (Email or Phone).");
+      return;
+    }
+
+    const identifier = otpMethod === "email" ? formData.email : formData.phoneNumber;
+
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
-        identifier: formData.email, // Send OTP to admin's email
+        identifier,
       });
 
-      toast.success("OTP sent to your registered email. Redirecting...");
+      toast.success(`OTP sent to your registered ${otpMethod}. Redirecting...`);
       setTimeout(() => {
-        navigate("/AdminOtp"); // Redirect to OTP page
+        navigate("/AdminOtp"); // Redirect to OTP verification page
       }, 2000);
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -25,6 +33,9 @@ const Step5 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
 
   return (
     <div className="form-container">
+      <h2 className="form-heading">Secure Your Account</h2>
+
+      {/* ✅ Password Fields */}
       <label className="form-label">
         Set your Password
         <input
@@ -49,8 +60,33 @@ const Step5 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
         Password should be longer than 6 characters.
       </p>
 
+      {/* ✅ OTP Verification Section */}
+      <h3 className="otp-heading">Verify Your Account</h3>
+      <p className="otp-instructions">Choose where to receive your OTP for verification.</p>
+
+      <div className="otp-checkbox-container">
+        <label className="otp-checkbox-label">
+          <input
+            type="checkbox"
+            className="otp-checkbox-input"
+            checked={otpMethod === "email"}
+            onChange={() => setOtpMethod("email")}
+          />
+          Send OTP to Email ({formData.email})
+        </label>
+        <label className="otp-checkbox-label">
+          <input
+            type="checkbox"
+            className="otp-checkbox-input"
+            checked={otpMethod === "phone"}
+            onChange={() => setOtpMethod("phone")}
+          />
+          Send OTP to Phone ({formData.phoneNumber})
+        </label>
+      </div>
+
       <button className="next-button" onClick={sendOtp}>
-        Step {step} out of {totalSteps} ✅
+        Send OTP & Verify ✅
       </button>
     </div>
   );

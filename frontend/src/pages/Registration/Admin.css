@@ -94,3 +94,45 @@ input[type="file"] {
     background: #f6f9fe;
     color: #174ea6;
 }
+
+/* OTP Section Styling */
+.otp-heading {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 25px;
+    color: #ffffff;
+}
+
+.otp-instructions {
+    font-size: 1rem;
+    color: #bbbbbb;
+    margin-bottom: 15px;
+}
+
+/* OTP Checkbox Container */
+.otp-checkbox-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+/* OTP Checkbox Label */
+.otp-checkbox-label {
+    display: flex;
+    align-items: center;
+    font-size: 1rem;
+    color: #ffffff;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+/* OTP Checkbox Input */
+.otp-checkbox-input {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
