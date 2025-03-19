@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { verifyAdminOtp } from "../../redux/actions/authActions";
+import { useNavigate } from "react-router-dom";
 import AuthHeader from "../../components/AuthPage/AuthHeader";
 import "./Otp.css";
 
@@ -7,7 +10,11 @@ const AdminAuthOtp = () => {
   const [timer, setTimer] = useState(120);
   const [isResendActive, setIsResendActive] = useState(false);
 
-  // ✅ OTP Countdown Timer
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const { loading, error } = useSelector((state) => state.auth);
+  const storedIdentifier = localStorage.getItem("adminIdentifier"); // Get stored email/phone
+
   useEffect(() => {
     if (timer > 0) {
       const countdown = setInterval(() => {
@@ -19,17 +26,24 @@ const AdminAuthOtp = () => {
     }
   }, [timer]);
 
-  // ✅ Handle OTP Input
   const handleInputChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
     if (value && index < otp.length - 1) {
       document.getElementById(`otp-input-${index + 1}`).focus();
     }
+  };
+
+  const handleVerifyOtp = () => {
+    const finalOtp = otp.join("");
+    if (finalOtp.length !== 6) {
+      return alert("Enter a valid 6-digit OTP");
+    }
+
+    dispatch(verifyAdminOtp(storedIdentifier, finalOtp, navigate));
   };
 
   return (
@@ -39,7 +53,6 @@ const AdminAuthOtp = () => {
         <h1 className="otp-heading">Admin OTP Verification</h1>
         <p className="otp-subheading">Enter the OTP sent to your email/phone.</p>
 
-        {/* OTP Input Boxes */}
         <div className="otp-input-container">
           {otp.map((value, index) => (
             <input
@@ -54,21 +67,23 @@ const AdminAuthOtp = () => {
           ))}
         </div>
 
-        <button className="otp-button">Verify OTP ✅</button>
+        <button className="otp-button" onClick={handleVerifyOtp} disabled={loading}>
+          {loading ? "Verifying..." : "Verify OTP ✅"}
+        </button>
 
-        {/* Resend OTP Section */}
+        {error && <p className="error-message">{error}</p>}
+
         <p className="resend-text">
           Didn't receive an OTP?{" "}
-          <span
-            className={`resend-link ${isResendActive ? "active" : ""}`}
-          >
+          <span className={`resend-link ${isResendActive ? "active" : ""}`}>
             Resend OTP 🔄
           </span>
         </p>
 
-        {/* Timer Text */}
         <p className="timer-text">
-          {timer > 0 ? `Resend available in ${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}` : "You can now resend OTP"}
+          {timer > 0
+            ? `Resend available in ${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, "0")}`
+            : "You can now resend OTP"}
         </p>
       </div>
     </div>
