@@ -8,16 +8,18 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Otp.css";
 
 const AdminOtp = () => {
-  const [otp, setOtp] = useState(Array(6).fill("")); // 6-digit OTP
-  const [timer, setTimer] = useState(120); // ⏳ 2-minute countdown
+  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [timer, setTimer] = useState(120);
   const navigate = useNavigate();
   const { formData } = useFormData();
 
-  // ✅ Prevent access if formData is missing
+  // ✅ Ensure formData is fully loaded before running validation
   useEffect(() => {
-    if (!formData || !formData.email || !formData.phone_number) {
-      toast.error("Invalid session! Please restart registration.");
-      navigate("/Admin");
+    if (formData && Object.keys(formData).length > 0) {
+      if (!formData.email || !formData.phone_number) {
+        toast.error("Invalid session! Please restart registration.");
+        navigate("/Admin");
+      }
     }
   }, [formData, navigate]);
 
@@ -37,8 +39,6 @@ const AdminOtp = () => {
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
-
-    // Auto-focus next input
     if (value && index < otp.length - 1) {
       document.getElementById(`otp-input-${index + 1}`).focus();
     }
@@ -53,7 +53,7 @@ const AdminOtp = () => {
       });
 
       toast.success("OTP Resent Successfully!");
-      setTimer(120); // ⏳ Reset 2-minute timer
+      setTimer(120);
     } catch (error) {
       toast.error("Failed to resend OTP. Try again.");
     }
@@ -85,7 +85,7 @@ const AdminOtp = () => {
         }
       });
 
-      // ✅ Send Registration Request (Verifies OTP & Registers User)
+      // ✅ Send Registration Request
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/register`,
         formDataToSend,
@@ -125,7 +125,6 @@ const AdminOtp = () => {
 
         <button className="otp-button" onClick={registerAdmin}>Verify OTP & Register ✅</button>
 
-        {/* ✅ Resend OTP Timer */}
         <p className="resend-otp">
           {timer > 0 ? (
             `Resend OTP in ${Math.floor(timer / 60)}:${timer % 60 < 10 ? "0" : ""}${timer % 60}`
