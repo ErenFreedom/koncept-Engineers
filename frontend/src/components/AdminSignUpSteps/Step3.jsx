@@ -66,6 +66,19 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
+      {/* ✅ Company Email (NEWLY ADDED) */}
+      <label className="form-label">
+        Company Email
+        <input
+          type="email"
+          className="form-input"
+          placeholder="Enter Company Email"
+          value={formData.company_email} 
+          onChange={(e) => setFormData((prev) => ({ ...prev, company_email: e.target.value }))}
+          required
+        />
+      </label>
+
       {/* ✅ Upload PAN */}
       <label className="form-label">
         Upload Company's PAN Card
