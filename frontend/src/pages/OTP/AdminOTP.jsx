@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import AuthHeader from "../../components/AuthPage/AuthHeader"; // Header
+import "react-toastify/dist/ReactToastify.css";
 import "./Otp.css"; // Import CSS
 
 const AdminOtp = ({ formData }) => {
   const [timer, setTimer] = useState(120); // 2 minutes countdown
   const [otp, setOtp] = useState(Array(6).fill("")); // 6-digit OTP
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (timer > 0) {
@@ -33,7 +37,7 @@ const AdminOtp = ({ formData }) => {
     try {
       const finalOtp = otp.join(""); // Convert OTP array to a single string
       if (finalOtp.length !== 6) {
-        return alert("Please enter a valid 6-digit OTP.");
+        return toast.error("Please enter a valid 6-digit OTP.");
       }
 
       const formDataToSend = new FormData();
@@ -46,15 +50,31 @@ const AdminOtp = ({ formData }) => {
       formDataToSend.append("pan", formData.pan);
       formDataToSend.append("gst", formData.gst);
 
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/register`, formDataToSend, {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/admin/register`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      alert("Registration Successful! Redirecting to login.");
-      window.location.href = "/admin/login"; // Redirect after success
+      toast.success("Registration Successful! Redirecting to login...");
+      setTimeout(() => {
+        navigate("/AuthAdmin"); // Redirect to login page after success
+      }, 2000);
     } catch (error) {
       console.error("Error verifying OTP:", error);
-      alert(error.response?.data?.message || "OTP verification failed.");
+      toast.error(error.response?.data?.message || "OTP verification failed.");
+    }
+  };
+
+  const resendOtp = async () => {
+    try {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/admin/send-otp`, {
+        identifier: formData.email, // Resend OTP to admin's email
+      });
+
+      toast.success("OTP resent successfully! Check your email.");
+      setTimer(120); // Reset timer
+    } catch (error) {
+      console.error("Error resending OTP:", error);
+      toast.error(error.response?.data?.message || "Failed to resend OTP.");
     }
   };
 
@@ -84,8 +104,8 @@ const AdminOtp = ({ formData }) => {
           {timer > 0 ? (
             `Resend OTP in ${Math.floor(timer / 60)}:${timer % 60 < 10 ? "0" : ""}${timer % 60}`
           ) : (
-            <button className="resend-button" onClick={() => alert("Resend OTP feature not implemented yet.")}>
-              Resend
+            <button className="resend-button" onClick={resendOtp}>
+              Resend OTP
             </button>
           )}
         </p>

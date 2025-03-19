@@ -1,17 +1,25 @@
 import React from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { useNavigate } from "react-router-dom";
 
 const Step5 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
+  const navigate = useNavigate();
+
   const sendOtp = async () => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/admin/send-otp`, {
         identifier: formData.email, // Send OTP to admin's email
       });
-      alert("OTP has been sent to your email.");
-      handleNext(); // Move to OTP verification step
+
+      toast.success("OTP sent to your registered email. Redirecting...");
+      setTimeout(() => {
+        navigate("/AdminOtp"); // Redirect to OTP page
+      }, 2000);
     } catch (error) {
       console.error("Error sending OTP:", error);
-      alert(error.response?.data?.message || "Failed to send OTP. Try again.");
+      toast.error(error.response?.data?.message || "Failed to send OTP. Try again.");
     }
   };
 

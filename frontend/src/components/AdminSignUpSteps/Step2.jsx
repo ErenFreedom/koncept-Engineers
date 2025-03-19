@@ -56,6 +56,19 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
           className="country-select"
         />
       </label>
+
+      {/* ✅ Added Email Field After Nationality */}
+      <label className="form-label">
+        Email
+        <input
+          type="email"
+          className="form-input"
+          placeholder="Enter your email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+        />
+      </label>
+
       <label className="form-label">
         Address 1
         <input
