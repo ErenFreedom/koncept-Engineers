@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -11,16 +11,30 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
   const { formData, setFormData } = useFormData(); // ✅ Use global context
   const [otpMethod, setOtpMethod] = useState(""); // ✅ Store selected OTP method
 
+  // ✅ Ensure required data exists in context before proceeding
+  useEffect(() => {
+    if (!formData.email || !formData.phone_number) {
+      toast.error("Session expired! Please restart registration.");
+      navigate("/"); // Redirect to start if data is missing
+    }
+  }, [formData.email, formData.phone_number, navigate]);
+
+  // ✅ Send OTP request
   const sendOtp = async () => {
     if (!otpMethod) {
       toast.error("Please select a method to receive OTP (Email or Phone).");
       return;
     }
 
+    if (!formData.email || !formData.phone_number) {
+      toast.error("Missing required fields! Please restart the registration.");
+      return;
+    }
+
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
         email: formData.email,
-        phone_number: formData.phone_number, // ✅ Backend expects phone_number, not phoneNumber
+        phone_number: formData.phone_number, // ✅ Ensure phone_number is correct
         otp_method: otpMethod, // ✅ Ensure OTP method is sent correctly
       });
 
@@ -46,7 +60,7 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter your password"
           value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
         />
       </label>
       <label className="form-label">
@@ -56,7 +70,7 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Retype your password"
           value={formData.retypePassword}
-          onChange={(e) => setFormData({ ...formData, retypePassword: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, retypePassword: e.target.value }))}
         />
       </label>
       <p className="password-note">Password should be longer than 6 characters.</p>

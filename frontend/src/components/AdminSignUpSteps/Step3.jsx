@@ -1,14 +1,29 @@
-import React from "react";
+import React, { useEffect } from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { useFormData } from "../../context/FormDataContext"; // ✅ Import useFormData for global state
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
 
 const Step3 = ({ handleNext, step, totalSteps }) => {
   const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
 
   const handleFileUpload = (e, key) => {
-    setFormData({ ...formData, [key]: Array.from(e.target.files) });
+    setFormData((prev) => ({
+      ...prev,
+      [key]: Array.from(e.target.files),
+    }));
   };
+
+  // ✅ Ensure formData persists between steps
+  useEffect(() => {
+    setFormData((prevData) => ({
+      ...prevData,
+      phone_number: prevData.phone_number || "",
+      landline: prevData.landline || "",
+      company_name: prevData.company_name || "", // ✅ Fixed to match backend
+      companyPan: prevData.companyPan || null,
+      companyGst: prevData.companyGst || null,
+    }));
+  }, [setFormData]);
 
   return (
     <div className="form-container">
@@ -24,7 +39,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
             if (!value.startsWith("+")) {
               value = `+${value}`;
             }
-            setFormData({ ...formData, phone_number: value }); // ✅ Use `phone_number` instead of `phoneNumber`
+            setFormData((prev) => ({ ...prev, phone_number: value })); // ✅ Use `phone_number` instead of `phoneNumber`
           }}
           inputStyle={{
             width: "100%",
@@ -34,7 +49,6 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
             backgroundColor: "#ffffff",
           }}
         />
-
       </label>
 
       {/* ✅ Landline Field */}
@@ -45,7 +59,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Landline Number"
           value={formData.landline}
-          onChange={(e) => setFormData({ ...formData, landline: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, landline: e.target.value }))}
         />
       </label>
 
@@ -56,8 +70,9 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Company Name"
-          value={formData.companyName}
-          onChange={(e) => setFormData({ ...formData, companyName: e.target.value })}
+          value={formData.company_name} // ✅ Use `company_name` instead of `companyName`
+          onChange={(e) => setFormData((prev) => ({ ...prev, company_name: e.target.value }))}
+          required
         />
       </label>
 

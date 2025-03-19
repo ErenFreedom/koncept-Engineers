@@ -1,8 +1,18 @@
-import React from "react";
-import { useFormData } from "../../context/FormDataContext"; // ✅ Import useFormData for global state
+import React, { useEffect } from "react";
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import global context
 
 const Step4 = ({ handleNext, step, totalSteps }) => {
-  const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
+  const { formData, setFormData } = useFormData(); // ✅ Use global state
+
+  // ✅ Ensure formData persists when navigating back & forth
+  useEffect(() => {
+    setFormData((prevData) => ({
+      ...prevData,
+      company_address1: prevData.company_address1 || "",
+      company_address2: prevData.company_address2 || "",
+      company_pincode: prevData.company_pincode || "",
+    }));
+  }, [setFormData]);
 
   return (
     <div className="form-container">
@@ -15,8 +25,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Company Address Line 1"
-          value={formData.company_address1} // ✅ Fixed naming
-          onChange={(e) => setFormData({ ...formData, company_address1: e.target.value })} // ✅ Fixed naming
+          value={formData.company_address1} // ✅ Matches backend field
+          onChange={(e) => setFormData((prev) => ({ ...prev, company_address1: e.target.value }))}
         />
       </label>
 
@@ -27,8 +37,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Address Line 2"
-          value={formData.company_address2} // ✅ Fixed naming
-          onChange={(e) => setFormData({ ...formData, company_address2: e.target.value })} // ✅ Fixed naming
+          value={formData.company_address2} // ✅ Matches backend field
+          onChange={(e) => setFormData((prev) => ({ ...prev, company_address2: e.target.value }))}
         />
       </label>
 
@@ -39,8 +49,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Pincode"
-          value={formData.company_pincode} // ✅ Fixed naming
-          onChange={(e) => setFormData({ ...formData, company_pincode: e.target.value })} // ✅ Fixed naming
+          value={formData.company_pincode} // ✅ Matches backend field
+          onChange={(e) => setFormData((prev) => ({ ...prev, company_pincode: e.target.value }))}
         />
       </label>
 

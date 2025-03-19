@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect } from "react";
 import Select from "react-select";
 import CountryList from "react-select-country-list";
-import { useFormData } from "../../context/FormDataContext"; // ✅ Import useFormData for global state
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
 
 const Step2 = ({ handleNext, step, totalSteps }) => {
   const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
@@ -42,8 +42,24 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
   };
 
   const handleFileUpload = (e) => {
-    setFormData({ ...formData, aadhar_pan_passport_s3: Array.from(e.target.files) });
+    setFormData((prev) => ({
+      ...prev,
+      aadhar_pan_passport_s3: Array.from(e.target.files),
+    }));
   };
+
+  // ✅ Ensure formData persists between steps
+  useEffect(() => {
+    setFormData((prevData) => ({
+      ...prevData,
+      nationality: prevData.nationality || "",
+      email: prevData.email || "",
+      address1: prevData.address1 || "",
+      address2: prevData.address2 || "",
+      pincode: prevData.pincode || "",
+      aadhar_pan_passport_s3: prevData.aadhar_pan_passport_s3 || null,
+    }));
+  }, [setFormData]);
 
   return (
     <div className="form-container">
@@ -54,14 +70,16 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         Nationality
         <Select
           options={countryOptions}
-          value={countryOptions.find(option => option.label === formData.nationality) || null} // ✅ Find the matching object
-          onChange={(selected) => setFormData({ ...formData, nationality: selected ? selected.label : "" })} // ✅ Store only the label
+          value={countryOptions.find((option) => option.label === formData.nationality) || null} // ✅ Fix for selection issue
+          onChange={(selected) => setFormData((prev) => ({
+            ...prev,
+            nationality: selected ? selected.label : "",
+          }))}
           placeholder="Select your nationality"
           isClearable
           styles={customStyles}
           className="country-select"
         />
-
       </label>
 
       {/* ✅ Email Field */}
@@ -72,7 +90,8 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter your email"
           value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+          required
         />
       </label>
 
@@ -84,7 +103,8 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Address 1"
           value={formData.address1}
-          onChange={(e) => setFormData({ ...formData, address1: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, address1: e.target.value }))}
+          required
         />
       </label>
       <label className="form-label">
@@ -94,7 +114,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Address 2"
           value={formData.address2}
-          onChange={(e) => setFormData({ ...formData, address2: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, address2: e.target.value }))}
         />
       </label>
       <label className="form-label">
@@ -104,7 +124,8 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Pincode"
           value={formData.pincode}
-          onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+          onChange={(e) => setFormData((prev) => ({ ...prev, pincode: e.target.value }))}
+          required
         />
       </label>
 
