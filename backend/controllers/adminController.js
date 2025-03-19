@@ -7,16 +7,15 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 // **✅ Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { identifier } = req.body; // Can be phone number or email
+        const { identifier } = req.body; // Can be email or phone number
 
         if (!identifier) {
             return res.status(400).json({ message: "Identifier (email or phone) is required" });
         }
 
-        // Generate 6-digit OTP
+        // ✅ Generate 6-digit OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // Send OTP via Email or Phone
         let otpSent = { success: false };
         if (identifier.includes("@")) {
             otpSent = await sendOtpToEmail(identifier, otp);
@@ -28,16 +27,16 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ **Store OTP in MySQL with NOW() (UTC)**
+        // ✅ Store OTP in MySQL
         const otpQuery = `
             INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
             VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 2 MINUTE))
             ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 MINUTE);
         `;
+
         await db.execute(otpQuery, [identifier, otp, otp]);
 
         console.log(`✅ OTP stored successfully for ${identifier}`);
-
         res.status(200).json({ message: "OTP sent successfully" });
 
     } catch (error) {
@@ -61,34 +60,33 @@ const registerAdmin = async (req, res) => {
             return res.status(400).json({ message: "Email, phone number, and OTP are required" });
         }
 
-        // ✅ Validate OTP from either email or phone
+        // ✅ Verify OTP using either phone number or email
+        const identifier = email || phone_number;
+        console.log("🔍 Checking OTP for:", identifier, "with OTP:", otp);
+
         const otpQuery = `
-    SELECT * FROM RegisterOtp 
-    WHERE identifier = ? 
-    AND otp = ? 
-    AND expires_at > UTC_TIMESTAMP();
-`;
-
-        console.log("Checking OTP with identifier:", email || phone_number, "and OTP:", otp);
-
-        const [otpResults] = await db.execute(otpQuery, [email || phone_number, otp]);
-
-        console.log("Stored OTP results from DB:", otpResults);
+            SELECT * FROM RegisterOtp 
+            WHERE identifier = ? 
+            AND otp = ? 
+            AND expires_at > UTC_TIMESTAMP();
+        `;
+        const [otpResults] = await db.execute(otpQuery, [identifier, otp]);
 
         if (otpResults.length === 0) {
+            console.error("❌ Invalid or expired OTP for", identifier);
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
-
 
         // ✅ OTP is valid, proceed with registration
         connection = await db.getConnection();
         await connection.beginTransaction();
 
-        // ✅ Upload Documents to S3
+        // ✅ Upload required documents to S3
         const uploadedFiles = {};
         const fileFields = ["aadhar", "pan", "gst"];
         for (const field of fileFields) {
             if (!req.files[field] || req.files[field].length === 0) {
+                console.error(`❌ Missing required document: ${field}`);
                 return res.status(400).json({ message: `${field} file is required` });
             }
             const file = req.files[field][0];
@@ -96,7 +94,7 @@ const registerAdmin = async (req, res) => {
             uploadedFiles[field] = key;
         }
 
-        // ✅ Hash password before storing
+        // ✅ Hash password securely
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // ✅ **Call Stored Procedure**
@@ -110,10 +108,10 @@ const registerAdmin = async (req, res) => {
         ];
         const [procedureResult] = await connection.execute(procedureCall, procedureParams);
 
-        // ✅ Extract `companyId`
+        // ✅ Extract Company ID
         const companyId = procedureResult[0][0].companyId;
 
-        // ✅ Check if all tables exist
+        // ✅ Check if all required tables were created
         const tables = [`SensorBank_${companyId}`, `Sensor_${companyId}`, `SensorData_${companyId}`, `ApiToken_${companyId}`];
         for (let table of tables) {
             const checkTableQuery = `SHOW TABLES LIKE '${table}'`;
@@ -126,11 +124,11 @@ const registerAdmin = async (req, res) => {
         }
 
         // ✅ Delete OTP after successful registration
-        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ? OR identifier = ?`, [email, phone_number]);
+        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [identifier]);
 
         await connection.commit();
+        console.log(`✅ Admin & Company registered successfully. Company ID: ${companyId}`);
 
-        console.log(`✅ Admin and Company registered successfully. Company ID: ${companyId}`);
         res.status(201).json({ message: "Admin and Company registered successfully", company_id: companyId });
 
     } catch (error) {
