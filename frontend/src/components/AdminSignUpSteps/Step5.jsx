@@ -9,7 +9,7 @@ const Step5 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
 
   const sendOtp = async () => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/admin/send-otp`, {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}api/admin/send-otp`, {
         identifier: formData.email, // Send OTP to admin's email
       });
 
