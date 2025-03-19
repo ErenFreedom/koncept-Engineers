@@ -24,7 +24,7 @@ const AdminOtp = () => {
 
   // ✅ Prevent invalid access if formData is missing
   useEffect(() => {
-    if (!formData || !formData.email || !formData.phoneNumber) {
+    if (!formData || !formData.email || !formData.phone_number) {
       toast.error("Invalid session! Please restart registration.");
       navigate("/Admin");
     }
@@ -32,7 +32,7 @@ const AdminOtp = () => {
 
   // ✅ Automatically move to the next input box after entering a digit
   const handleInputChange = (index, value) => {
-    if (isNaN(value)) return;
+    if (!/^\d?$/.test(value)) return; // Only allow numbers
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -58,7 +58,7 @@ const AdminOtp = () => {
       }
 
       // ✅ Ensure required fields
-      if (!formData.email || !formData.phoneNumber) {
+      if (!formData.email || !formData.phone_number) {
         return toast.error("Missing required fields! Please restart the registration.");
       }
 
@@ -66,24 +66,17 @@ const AdminOtp = () => {
 
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
-          // ✅ Convert `phoneNumber` → `phone_number`
-          if (key === "phoneNumber") {
-            formDataToSend.append("phone_number", formData[key]);
-          } else {
-            formDataToSend.append(key, formData[key]);
-          }
+          formDataToSend.append(key === "phoneNumber" ? "phone_number" : key, formData[key]);
         }
       });
 
       // ✅ Append OTP
       formDataToSend.append("otp", finalOtp);
 
-      // ✅ Append Aadhar, PAN, GST
+      // ✅ Append Aadhar, PAN, GST as files
       ["aadhar", "pan", "gst"].forEach((fileKey) => {
         if (formData[fileKey]) {
           formDataToSend.append(fileKey, formData[fileKey]);
-        } else {
-          formDataToSend.append(fileKey, ""); // Ensure backend gets an empty field instead of `undefined`
         }
       });
 
@@ -107,7 +100,8 @@ const AdminOtp = () => {
   const resendOtp = async () => {
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
-        identifier: formData.email, // Resend OTP to admin's email
+        email: formData.email,
+        phone_number: formData.phone_number, // ✅ Fixed field name
       });
 
       toast.success("OTP resent successfully! Check your email.");
