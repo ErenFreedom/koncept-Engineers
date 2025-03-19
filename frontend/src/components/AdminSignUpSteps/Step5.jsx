@@ -16,14 +16,14 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
       toast.error("Please select a method to receive OTP (Email or Phone).");
       return;
     }
-
-    const identifier = otpMethod === "email" ? formData.email : formData.phoneNumber;
-
+  
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
-        identifier,
+        email: formData.email,
+        phone_number: formData.phoneNumber,
+        otp_method: otpMethod,  // ✅ Specify where to send the OTP
       });
-
+  
       toast.success(`OTP sent to your registered ${otpMethod}. Redirecting...`);
       setTimeout(() => {
         navigate("/AdminOtp"); // Redirect to OTP verification page
@@ -33,6 +33,7 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
       toast.error(error.response?.data?.message || "Failed to send OTP. Try again.");
     }
   };
+  
 
   return (
     <div className="form-container">
