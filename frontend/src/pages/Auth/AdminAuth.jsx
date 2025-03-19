@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import { sendAdminOtp, verifyAdminOtp } from "../../redux/actions/authActions";
 import AuthHeader from "../../components/AuthPage/AuthHeader";
 import HomeFooter from "../../components/HomePage/HomeFooter";
@@ -19,17 +20,32 @@ const AdminAuth = () => {
   // ✅ Send OTP
   const handleSendOtp = (e) => {
     e.preventDefault();
-    dispatch(sendAdminOtp(identifier));
+
+    if (!identifier || !password) {
+      toast.error("Please enter both Email/Phone and Password.");
+      return;
+    }
+
+    dispatch(sendAdminOtp(identifier, password));
     localStorage.setItem("identifier", identifier);
-    setOtpSent(true); // ✅ OTP Sent, show OTP input
+    setOtpSent(true);
   };
+
 
   // ✅ Verify OTP & Authenticate
   const handleVerifyOtp = (e) => {
     e.preventDefault();
     dispatch(verifyAdminOtp(identifier, otp));
-    navigate(`/Dashboard/${localStorage.getItem("adminId")}`); // ✅ Redirect after verification
+
+    // ✅ Get `adminId` after OTP verification
+    setTimeout(() => {
+      const storedAdminId = localStorage.getItem("adminId");
+      if (storedAdminId) {
+        navigate(`/Dashboard/${storedAdminId}`);
+      }
+    }, 1000);
   };
+
 
   return (
     <div>
