@@ -1,86 +1,38 @@
-import React, { useEffect } from "react";
+import React from "react";
 import Select from "react-select";
 import CountryList from "react-select-country-list";
 import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
 
 const Step2 = ({ handleNext, step, totalSteps }) => {
-  const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
-
+  const { formData, setFormData } = useFormData(); // ✅ Use global state
   const countryOptions = CountryList().getData();
 
   const customStyles = {
     control: (base, state) => ({
       ...base,
       backgroundColor: "#ffffff",
-      color: "#000000",
       borderColor: state.isFocused ? "#ffd700" : "#cccccc",
       fontSize: "1rem",
       boxShadow: state.isFocused ? "0 0 5px #ffd700" : "none",
-      "&:hover": {
-        borderColor: "#ffd700",
-      },
-    }),
-    option: (base, { isFocused, isSelected }) => ({
-      ...base,
-      backgroundColor: isSelected ? "#ffd700" : isFocused ? "#f6f6f6" : "#ffffff",
-      color: "#000000",
-      fontSize: "1rem",
-      padding: "10px",
-    }),
-    singleValue: (base) => ({
-      ...base,
-      color: "#000000",
-    }),
-    menu: (base) => ({
-      ...base,
-      backgroundColor: "#ffffff",
-    }),
-    placeholder: (base) => ({
-      ...base,
-      color: "#888888",
+      "&:hover": { borderColor: "#ffd700" },
     }),
   };
 
   const handleFileUpload = (e) => {
-    // ✅ Store only file names, not actual files
-    const fileNames = Array.from(e.target.files).map((file) => file.name);
-    setFormData((prev) => ({
-      ...prev,
-      aadhar_pan_passport_s3: fileNames, // ✅ Save only file metadata
-    }));
+    setFormData({ ...formData, aadhar_pan_passport_s3: Array.from(e.target.files).map((file) => file.name) });
   };
-
-  // ✅ Ensure formData persists between steps
-  useEffect(() => {
-    setFormData((prevData) => ({
-      ...prevData,
-      nationality: prevData.nationality || "",
-      email: prevData.email || "",
-      address1: prevData.address1 || "",
-      address2: prevData.address2 || "",
-      pincode: prevData.pincode || "",
-      aadhar_pan_passport_s3: prevData.aadhar_pan_passport_s3 || [],
-    }));
-
-    console.log("🔍 Step 2 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
-  }, [setFormData]);
 
   return (
     <div className="form-container">
       <h2 className="form-heading">Personal Information</h2>
 
-      {/* ✅ Nationality Dropdown */}
+      {/* ✅ Nationality */}
       <label className="form-label">
         Nationality
         <Select
           options={countryOptions}
-          value={countryOptions.find((option) => option.label === formData.nationality) || null} // ✅ Persisted Value
-          onChange={(selected) =>
-            setFormData((prev) => ({
-              ...prev,
-              nationality: selected ? selected.label : "",
-            }))
-          }
+          value={countryOptions.find((option) => option.label === formData.nationality) || null}
+          onChange={(selected) => setFormData({ ...formData, nationality: selected ? selected.label : "" })}
           placeholder="Select your nationality"
           isClearable
           styles={customStyles}
@@ -88,7 +40,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Email Field */}
+      {/* ✅ Email */}
       <label className="form-label">
         Email
         <input
@@ -96,12 +48,12 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter your email"
           value={formData.email}
-          onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           required
         />
       </label>
 
-      {/* ✅ Address Fields */}
+      {/* ✅ Address */}
       <label className="form-label">
         Address 1
         <input
@@ -109,7 +61,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Address 1"
           value={formData.address1}
-          onChange={(e) => setFormData((prev) => ({ ...prev, address1: e.target.value }))}
+          onChange={(e) => setFormData({ ...formData, address1: e.target.value })}
           required
         />
       </label>
@@ -120,7 +72,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Address 2"
           value={formData.address2}
-          onChange={(e) => setFormData((prev) => ({ ...prev, address2: e.target.value }))}
+          onChange={(e) => setFormData({ ...formData, address2: e.target.value })}
         />
       </label>
       <label className="form-label">
@@ -130,7 +82,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter Pincode"
           value={formData.pincode}
-          onChange={(e) => setFormData((prev) => ({ ...prev, pincode: e.target.value }))}
+          onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
           required
         />
       </label>
@@ -140,7 +92,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         Upload Aadhar/PAN/Passport
         <input type="file" className="form-input" multiple onChange={handleFileUpload} />
       </label>
-      {formData.aadhar_pan_passport_s3.length > 0 && (
+      {formData.aadhar_pan_passport_s3 && formData.aadhar_pan_passport_s3.length > 0 && (
         <ul>
           {formData.aadhar_pan_passport_s3.map((file, index) => (
             <li key={index}>{file}</li>

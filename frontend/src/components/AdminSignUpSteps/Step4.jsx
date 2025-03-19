@@ -1,20 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useFormData } from "../../context/FormDataContext"; // ✅ Import global context
 
 const Step4 = ({ handleNext, step, totalSteps }) => {
   const { formData, setFormData } = useFormData(); // ✅ Use global state
-
-  // ✅ Ensure formData persists when navigating back & forth
-  useEffect(() => {
-    setFormData((prevData) => ({
-      ...prevData,
-      company_address1: prevData.company_address1 || "",
-      company_address2: prevData.company_address2 || "",
-      company_pincode: prevData.company_pincode || "",
-    }));
-
-    console.log("🔍 Step 4 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
-  }, [setFormData]);
 
   return (
     <div className="form-container">
@@ -27,7 +15,7 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Company Address Line 1"
-          value={formData.company_address1} // ✅ Matches backend field
+          value={formData.company_address1} 
           onChange={(e) => setFormData((prev) => ({ ...prev, company_address1: e.target.value }))}
         />
       </label>
@@ -39,7 +27,7 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Address Line 2"
-          value={formData.company_address2} // ✅ Matches backend field
+          value={formData.company_address2} 
           onChange={(e) => setFormData((prev) => ({ ...prev, company_address2: e.target.value }))}
         />
       </label>
@@ -51,7 +39,7 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Pincode"
-          value={formData.company_pincode} // ✅ Matches backend field
+          value={formData.company_pincode} 
           onChange={(e) => setFormData((prev) => ({ ...prev, company_pincode: e.target.value }))}
         />
       </label>

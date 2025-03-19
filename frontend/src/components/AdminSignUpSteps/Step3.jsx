@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
@@ -14,20 +14,6 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
       [key]: fileNames, // ✅ Save only file metadata
     }));
   };
-
-  // ✅ Ensure formData persists between steps
-  useEffect(() => {
-    setFormData((prevData) => ({
-      ...prevData,
-      phone_number: prevData.phone_number || "",
-      landline: prevData.landline || "",
-      company_name: prevData.company_name || "",
-      companyPan: prevData.companyPan || [],
-      companyGst: prevData.companyGst || [],
-    }));
-
-    console.log("🔍 Step 3 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
-  }, [setFormData]);
 
   return (
     <div className="form-container">
@@ -85,7 +71,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         Upload Company's PAN Card
         <input type="file" className="form-input" multiple onChange={(e) => handleFileUpload(e, "companyPan")} />
       </label>
-      {formData.companyPan.length > 0 && (
+      {formData.companyPan?.length > 0 && (
         <ul>
           {formData.companyPan.map((file, index) => (
             <li key={index}>{file}</li>
@@ -98,7 +84,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         Upload Company's GST
         <input type="file" className="form-input" multiple onChange={(e) => handleFileUpload(e, "companyGst")} />
       </label>
-      {formData.companyGst.length > 0 && (
+      {formData.companyGst?.length > 0 && (
         <ul>
           {formData.companyGst.map((file, index) => (
             <li key={index}>{file}</li>
