@@ -1,46 +1,56 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 const { uploadFile } = require("../utils/s3Uploader");
-const sendOtpSms = require("../utils/sendOtpSms"); // Twilio for SMS OTP
-const { sendOtpToEmail } = require("../utils/sendOtpEmail");
+const { sendOtpToEmail } = require("../utils/sendOtpEmail"); // ✅ Nodemailer for Email
 
 // **✅ Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { identifier } = req.body; // Can be email or phone number
+        const { email, phone_number } = req.body; // ✅ Admin Email & Phone Required
 
-        if (!identifier) {
-            return res.status(400).json({ message: "Identifier (email or phone) is required" });
+        if (!email || !phone_number) {
+            return res.status(400).json({ message: "Email and phone number are required" });
         }
 
-        // ✅ Generate 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-        let otpSent = { success: false };
-        if (identifier.includes("@")) {
-            otpSent = await sendOtpToEmail(identifier, otp);
-        } else {
-            otpSent = await sendOtpSms(identifier, otp);
+        // ✅ Check if Admin Already Exists
+        const [[adminRow]] = await db.execute(`SELECT id FROM Admin WHERE email = ?`, [email]);
+        if (adminRow) {
+            return res.status(400).json({ message: "Admin already exists. Try logging in." });
         }
 
+        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // ✅ Generate OTP
+
+        // ✅ Send OTP to Admin Email
+        const emailMessage = `
+            Dear Admin,
+
+            Your OTP for account registration is **${otp}**.  
+            This OTP is valid for **10 minutes**.
+
+            Regards,  
+            Koncept Engineers Security Team
+        `;
+
+        const otpSent = await sendOtpToEmail(email, emailMessage);
         if (!otpSent.success) {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in MySQL
+        // ✅ Store OTP in UTC format (10-minute validity)
         const otpQuery = `
             INSERT INTO RegisterOtp (identifier, otp, created_at, expires_at)
-            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 2 MINUTE))
-            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 2 MINUTE);
+            VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
+            ON DUPLICATE KEY UPDATE 
+            otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);
         `;
+        await db.execute(otpQuery, [email, otp, otp]);
 
-        await db.execute(otpQuery, [identifier, otp, otp]);
+        console.log(`✅ OTP sent successfully to ${email} for Admin Registration`);
 
-        console.log(`✅ OTP stored successfully for ${identifier}`);
-        res.status(200).json({ message: "OTP sent successfully" });
+        res.status(200).json({ message: "OTP sent to Admin's email successfully" });
 
     } catch (error) {
-        console.error("❌ Error sending OTP:", error);
+        console.error("❌ Error sending OTP to Admin:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
@@ -52,28 +62,23 @@ const registerAdmin = async (req, res) => {
         const {
             first_name, middle_name, last_name, date_of_birth, nationality,
             address1, address2, pincode, phone_number, landline, password,
-            email, alt_email, company_name, company_email, company_alt_email,
-            company_address1, company_address2, company_pincode, otp
+            email, company_name, company_email, company_address1,
+            company_address2, company_pincode, otp
         } = req.body;
 
-        if (!phone_number || !email || !otp) {
-            return res.status(400).json({ message: "Email, phone number, and OTP are required" });
+        if (!email || !otp) {
+            return res.status(400).json({ message: "Email and OTP are required for verification" });
         }
 
-        // ✅ Verify OTP using either phone number or email
-        const identifier = email || phone_number;
-        console.log("🔍 Checking OTP for:", identifier, "with OTP:", otp);
-
+        // ✅ Validate OTP for Admin
         const otpQuery = `
             SELECT * FROM RegisterOtp 
-            WHERE identifier = ? 
-            AND otp = ? 
+            WHERE identifier = ? AND otp = ? 
             AND expires_at > UTC_TIMESTAMP();
         `;
-        const [otpResults] = await db.execute(otpQuery, [identifier, otp]);
+        const [otpResults] = await db.execute(otpQuery, [email, otp]);
 
         if (otpResults.length === 0) {
-            console.error("❌ Invalid or expired OTP for", identifier);
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
@@ -81,12 +86,15 @@ const registerAdmin = async (req, res) => {
         connection = await db.getConnection();
         await connection.beginTransaction();
 
-        // ✅ Upload required documents to S3
+        // ✅ Ensure Admin Does Not Exist Again
+        const [[existingAdmin]] = await connection.execute(`SELECT id FROM Admin WHERE email = ?`, [email]);
+        if (existingAdmin) throw new Error("Admin already registered.");
+
+        // ✅ Upload Aadhar, PAN, GST Documents to S3
         const uploadedFiles = {};
         const fileFields = ["aadhar", "pan", "gst"];
         for (const field of fileFields) {
-            if (!req.files[field] || req.files[field].length === 0) {
-                console.error(`❌ Missing required document: ${field}`);
+            if (!req.files || !req.files[field]) {
                 return res.status(400).json({ message: `${field} file is required` });
             }
             const file = req.files[field][0];
@@ -102,7 +110,7 @@ const registerAdmin = async (req, res) => {
         const procedureParams = [
             first_name, middle_name, last_name, date_of_birth, nationality,
             address1, address2, pincode, phone_number, email, landline, hashedPassword,
-            uploadedFiles.aadhar, company_name, company_email, company_alt_email,
+            uploadedFiles.aadhar, company_name, company_email, null, // `null` for alternative email
             company_address1, company_address2, company_pincode,
             uploadedFiles.pan, uploadedFiles.gst
         ];
@@ -124,12 +132,14 @@ const registerAdmin = async (req, res) => {
         }
 
         // ✅ Delete OTP after successful registration
-        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [identifier]);
+        await db.execute(`DELETE FROM RegisterOtp WHERE identifier = ?`, [email]);
 
         await connection.commit();
-        console.log(`✅ Admin & Company registered successfully. Company ID: ${companyId}`);
 
-        res.status(201).json({ message: "Admin and Company registered successfully", company_id: companyId });
+        res.status(201).json({
+            message: "Admin registered successfully",
+            company_id: companyId
+        });
 
     } catch (error) {
         if (connection) await connection.rollback();
