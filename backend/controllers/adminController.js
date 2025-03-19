@@ -7,7 +7,7 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 // **✅ Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { email, phone_number, otp_method } = req.body; // ✅ Admin Email & Phone Required
+        const { email, phone_number, otp_method } = req.body; // ✅ Email & Phone Required
 
         if (!email || !phone_number) {
             return res.status(400).json({ message: "Email and phone number are required" });
@@ -18,7 +18,10 @@ const sendRegistrationOtp = async (req, res) => {
         }
 
         // ✅ Check if Admin Already Exists
-        const [[adminRow]] = await db.execute(`SELECT id FROM Admin WHERE email = ? OR phone_number = ?`, [email, phone_number]);
+        const [[adminRow]] = await db.execute(
+            `SELECT id FROM Admin WHERE email = ? OR phone_number = ?`, 
+            [email, phone_number]
+        );
         if (adminRow) {
             return res.status(400).json({ message: "Admin already exists. Try logging in." });
         }
@@ -41,7 +44,8 @@ const sendRegistrationOtp = async (req, res) => {
         const otpQuery = `
             INSERT INTO RegisterOtp (email, phone_number, otp, created_at, expires_at)
             VALUES (?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
-            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);
+            ON DUPLICATE KEY UPDATE 
+            otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);
         `;
         await db.execute(otpQuery, [email, phone_number, otp, otp]);
 
@@ -94,7 +98,7 @@ const registerAdmin = async (req, res) => {
         // ✅ Insert Admin into Database
         const insertAdminQuery = `
             INSERT INTO Admin (first_name, middle_name, last_name, date_of_birth, nationality, 
-                              address1, address2, pincode, phone_number, landline, email, password)
+                              address1, address2, pincode, phone_number, landline, email, password_hash)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
         await connection.execute(insertAdminQuery, [
