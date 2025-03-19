@@ -12,9 +12,15 @@ const Step3 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
       <label className="form-label">
         Phone Number
         <PhoneInput
-          country={"us"}
+          country={"in"} // Default country set to India
           value={formData.phoneNumber}
-          onChange={(value) => setFormData({ ...formData, phoneNumber: value })}
+          onChange={(value) => {
+            // Ensure number starts with `+`
+            if (!value.startsWith("+")) {
+              value = `+${value}`;
+            }
+            setFormData({ ...formData, phoneNumber: value });
+          }}
           inputStyle={{
             width: "100%",
             fontSize: "1rem",
