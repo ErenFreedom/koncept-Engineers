@@ -4,11 +4,14 @@ import { toast } from "react-toastify";
 import Select from "react-select";
 import CountryList from "react-select-country-list";
 import PhoneInput from "react-phone-input-2";
+import { useNavigate } from "react-router-dom"; // ✅ Import useNavigate
 import "react-phone-input-2/lib/style.css";
 import "react-toastify/dist/ReactToastify.css";
 import "./Admin.css";
 
 const Admin = () => {
+  const navigate = useNavigate(); // ✅ Define navigate function
+
   const countryOptions = CountryList().getData();
   const [formData, setFormData] = useState(() => {
     const savedData = localStorage.getItem("adminFormData");
@@ -90,8 +93,7 @@ const Admin = () => {
     } catch (error) {
         toast.error(error.response?.data?.message || "Failed to register");
     }
-};
-
+  };
 
   return (
     <div className="admin-signup-container">
