@@ -9,31 +9,30 @@ import "react-toastify/dist/ReactToastify.css";
 const Step5 = ({ handleNext, step, totalSteps }) => {
   const navigate = useNavigate();
   const { formData, setFormData } = useFormData(); // ✅ Use global context
-  const [otpMethod, setOtpMethod] = useState(""); // State to store selected OTP method
+  const [otpMethod, setOtpMethod] = useState(""); // ✅ Store selected OTP method
 
   const sendOtp = async () => {
     if (!otpMethod) {
       toast.error("Please select a method to receive OTP (Email or Phone).");
       return;
     }
-  
+
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
         email: formData.email,
-        phone_number: formData.phoneNumber,
-        otp_method: otpMethod,  // ✅ Specify where to send the OTP
+        phone_number: formData.phone_number, // ✅ Backend expects phone_number, not phoneNumber
+        otp_method: otpMethod, // ✅ Ensure OTP method is sent correctly
       });
-  
+
       toast.success(`OTP sent to your registered ${otpMethod}. Redirecting...`);
       setTimeout(() => {
-        navigate("/AdminOtp"); // Redirect to OTP verification page
+        navigate("/AdminOtp"); // ✅ Redirect to OTP verification page
       }, 2000);
     } catch (error) {
       console.error("Error sending OTP:", error);
       toast.error(error.response?.data?.message || "Failed to send OTP. Try again.");
     }
   };
-  
 
   return (
     <div className="form-container">
@@ -60,9 +59,7 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
           onChange={(e) => setFormData({ ...formData, retypePassword: e.target.value })}
         />
       </label>
-      <p className="password-note">
-        Password should be longer than 6 characters.
-      </p>
+      <p className="password-note">Password should be longer than 6 characters.</p>
 
       {/* ✅ OTP Verification Section */}
       <h3 className="otp-heading">Verify Your Account</h3>
@@ -71,7 +68,7 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
       <div className="otp-checkbox-container">
         <label className="otp-checkbox-label">
           <input
-            type="checkbox"
+            type="radio"
             className="otp-checkbox-input"
             checked={otpMethod === "email"}
             onChange={() => setOtpMethod("email")}
@@ -80,12 +77,12 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
         </label>
         <label className="otp-checkbox-label">
           <input
-            type="checkbox"
+            type="radio"
             className="otp-checkbox-input"
             checked={otpMethod === "phone"}
             onChange={() => setOtpMethod("phone")}
           />
-          Send OTP to Phone ({formData.phoneNumber})
+          Send OTP to Phone ({formData.phone_number}) {/* ✅ Match backend key */}
         </label>
       </div>
 

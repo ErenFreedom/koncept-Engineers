@@ -42,7 +42,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
   };
 
   const handleFileUpload = (e) => {
-    setFormData({ ...formData, aadharPanPassport: Array.from(e.target.files) });
+    setFormData({ ...formData, aadhar_pan_passport_s3: Array.from(e.target.files) });
   };
 
   return (
@@ -112,9 +112,9 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         Upload Aadhar/PAN/Passport
         <input type="file" className="form-input" multiple onChange={handleFileUpload} />
       </label>
-      {formData.aadharPanPassport && formData.aadharPanPassport.length > 0 && (
+      {formData.aadhar_pan_passport_s3 && formData.aadhar_pan_passport_s3.length > 0 && (
         <ul>
-          {formData.aadharPanPassport.map((file, index) => (
+          {formData.aadhar_pan_passport_s3.map((file, index) => (
             <li key={index}>{file.name}</li>
           ))}
         </ul>

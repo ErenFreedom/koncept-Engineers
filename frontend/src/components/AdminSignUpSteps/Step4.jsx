@@ -15,8 +15,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Company Address Line 1"
-          value={formData.companyAddress1}
-          onChange={(e) => setFormData({ ...formData, companyAddress1: e.target.value })}
+          value={formData.company_address1} // ✅ Fixed naming
+          onChange={(e) => setFormData({ ...formData, company_address1: e.target.value })} // ✅ Fixed naming
         />
       </label>
 
@@ -27,8 +27,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Address Line 2"
-          value={formData.companyAddress2}
-          onChange={(e) => setFormData({ ...formData, companyAddress2: e.target.value })}
+          value={formData.company_address2} // ✅ Fixed naming
+          onChange={(e) => setFormData({ ...formData, company_address2: e.target.value })} // ✅ Fixed naming
         />
       </label>
 
@@ -39,8 +39,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Pincode"
-          value={formData.companyPincode}
-          onChange={(e) => setFormData({ ...formData, companyPincode: e.target.value })}
+          value={formData.company_pincode} // ✅ Fixed naming
+          onChange={(e) => setFormData({ ...formData, company_pincode: e.target.value })} // ✅ Fixed naming
         />
       </label>
 
