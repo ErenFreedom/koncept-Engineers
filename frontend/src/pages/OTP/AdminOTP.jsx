@@ -24,7 +24,7 @@ const AdminOtp = () => {
 
   // ✅ Prevent invalid access if formData is missing
   useEffect(() => {
-    if (!formData || !formData.email) {
+    if (!formData || !formData.email || !formData.phoneNumber) {
       toast.error("Invalid session! Please restart registration.");
       navigate("/Admin");
     }
@@ -57,21 +57,42 @@ const AdminOtp = () => {
         return toast.error("Please enter a valid 6-digit OTP.");
       }
 
+      // ✅ Ensure required fields
+      if (!formData.email || !formData.phoneNumber) {
+        return toast.error("Missing required fields! Please restart the registration.");
+      }
+
       const formDataToSend = new FormData();
+
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
-          formDataToSend.append(key, formData[key]);
+          // ✅ Convert `phoneNumber` → `phone_number`
+          if (key === "phoneNumber") {
+            formDataToSend.append("phone_number", formData[key]);
+          } else {
+            formDataToSend.append(key, formData[key]);
+          }
         }
       });
 
+      // ✅ Append OTP
       formDataToSend.append("otp", finalOtp);
-      formDataToSend.append("aadhar", formData.aadhar || "");
-      formDataToSend.append("pan", formData.pan || "");
-      formDataToSend.append("gst", formData.gst || "");
 
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/register`, formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
+      // ✅ Append Aadhar, PAN, GST
+      ["aadhar", "pan", "gst"].forEach((fileKey) => {
+        if (formData[fileKey]) {
+          formDataToSend.append(fileKey, formData[fileKey]);
+        } else {
+          formDataToSend.append(fileKey, ""); // Ensure backend gets an empty field instead of `undefined`
+        }
       });
+
+      // ✅ Send API request
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/register`,
+        formDataToSend,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
       toast.success("Registration Successful! Redirecting to login...");
       setTimeout(() => {
