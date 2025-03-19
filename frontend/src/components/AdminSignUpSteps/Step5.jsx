@@ -18,6 +18,16 @@ const Step5 = ({ step, totalSteps }) => {
       return;
     }
 
+    if (!formData.email && otpMethod === "email") {
+      toast.error("Email is missing. Please enter a valid email.");
+      return;
+    }
+
+    if (!formData.phone_number && otpMethod === "phone") {
+      toast.error("Phone number is missing. Please enter a valid phone number.");
+      return;
+    }
+
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
         email: formData.email,
@@ -27,13 +37,14 @@ const Step5 = ({ step, totalSteps }) => {
 
       toast.success(`OTP sent to your ${otpMethod}. Redirecting to OTP page...`);
       setTimeout(() => {
-        navigate("/AdminOtp"); // ✅ Redirect to OTP page
+        navigate("/AdminOtp");
       }, 2000);
     } catch (error) {
       console.error("❌ Error sending OTP:", error);
       toast.error(error.response?.data?.message || "Failed to send OTP.");
     }
   };
+
 
   return (
     <div className="form-container">
@@ -67,14 +78,25 @@ const Step5 = ({ step, totalSteps }) => {
 
       <div className="otp-checkbox-container">
         <label className="otp-checkbox-label">
-          <input type="radio" checked={otpMethod === "email"} onChange={() => setOtpMethod("email")} />
-          Send OTP to Email ({formData.email})
+          <input
+            type="radio"
+            name="otpMethod"
+            checked={otpMethod === "email"}
+            onChange={() => setOtpMethod("email")}
+          />
+          Send OTP to Email ({formData.email || "Not Provided"})
         </label>
         <label className="otp-checkbox-label">
-          <input type="radio" checked={otpMethod === "phone"} onChange={() => setOtpMethod("phone")} />
-          Send OTP to Phone ({formData.phone_number})
+          <input
+            type="radio"
+            name="otpMethod"
+            checked={otpMethod === "phone"}
+            onChange={() => setOtpMethod("phone")}
+          />
+          Send OTP to Phone ({formData.phone_number || "Not Provided"})
         </label>
       </div>
+
 
       <button className="next-button" onClick={sendOtp}>Send OTP ✅</button>
     </div>
