@@ -42,9 +42,11 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
   };
 
   const handleFileUpload = (e) => {
+    // ✅ Store only file names, not actual files
+    const fileNames = Array.from(e.target.files).map((file) => file.name);
     setFormData((prev) => ({
       ...prev,
-      aadhar_pan_passport_s3: Array.from(e.target.files),
+      aadhar_pan_passport_s3: fileNames, // ✅ Save only file metadata
     }));
   };
 
@@ -57,8 +59,10 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
       address1: prevData.address1 || "",
       address2: prevData.address2 || "",
       pincode: prevData.pincode || "",
-      aadhar_pan_passport_s3: prevData.aadhar_pan_passport_s3 || null,
+      aadhar_pan_passport_s3: prevData.aadhar_pan_passport_s3 || [],
     }));
+
+    console.log("🔍 Step 2 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
   }, [setFormData]);
 
   return (
@@ -70,11 +74,13 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         Nationality
         <Select
           options={countryOptions}
-          value={countryOptions.find((option) => option.label === formData.nationality) || null} // ✅ Fix for selection issue
-          onChange={(selected) => setFormData((prev) => ({
-            ...prev,
-            nationality: selected ? selected.label : "",
-          }))}
+          value={countryOptions.find((option) => option.label === formData.nationality) || null} // ✅ Persisted Value
+          onChange={(selected) =>
+            setFormData((prev) => ({
+              ...prev,
+              nationality: selected ? selected.label : "",
+            }))
+          }
           placeholder="Select your nationality"
           isClearable
           styles={customStyles}
@@ -134,10 +140,10 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         Upload Aadhar/PAN/Passport
         <input type="file" className="form-input" multiple onChange={handleFileUpload} />
       </label>
-      {formData.aadhar_pan_passport_s3 && formData.aadhar_pan_passport_s3.length > 0 && (
+      {formData.aadhar_pan_passport_s3.length > 0 && (
         <ul>
           {formData.aadhar_pan_passport_s3.map((file, index) => (
-            <li key={index}>{file.name}</li>
+            <li key={index}>{file}</li>
           ))}
         </ul>
       )}

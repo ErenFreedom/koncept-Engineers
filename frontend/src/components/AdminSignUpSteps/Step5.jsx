@@ -13,11 +13,18 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
 
   // ✅ Ensure required data exists in context before proceeding
   useEffect(() => {
+    const savedFormData = localStorage.getItem("formData");
+    if (savedFormData) {
+      setFormData(JSON.parse(savedFormData));
+    }
+
     if (!formData.email || !formData.phone_number) {
       toast.error("Session expired! Please restart registration.");
       navigate("/"); // Redirect to start if data is missing
     }
-  }, [formData.email, formData.phone_number, navigate]);
+
+    console.log("🔍 Step 5 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
+  }, [setFormData, formData.email, formData.phone_number, navigate]);
 
   // ✅ Send OTP request
   const sendOtp = async () => {
@@ -43,7 +50,7 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
         navigate("/AdminOtp"); // ✅ Redirect to OTP verification page
       }, 2000);
     } catch (error) {
-      console.error("Error sending OTP:", error);
+      console.error("❌ Error sending OTP:", error);
       toast.error(error.response?.data?.message || "Failed to send OTP. Try again.");
     }
   };
@@ -60,7 +67,11 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Enter your password"
           value={formData.password}
-          onChange={(e) => setFormData((prev) => ({ ...prev, password: e.target.value }))}
+          onChange={(e) => {
+            const updatedData = { ...formData, password: e.target.value };
+            setFormData(updatedData);
+            localStorage.setItem("formData", JSON.stringify(updatedData)); // ✅ Persist password in LocalStorage
+          }}
         />
       </label>
       <label className="form-label">
@@ -70,7 +81,11 @@ const Step5 = ({ handleNext, step, totalSteps }) => {
           className="form-input"
           placeholder="Retype your password"
           value={formData.retypePassword}
-          onChange={(e) => setFormData((prev) => ({ ...prev, retypePassword: e.target.value }))}
+          onChange={(e) => {
+            const updatedData = { ...formData, retypePassword: e.target.value };
+            setFormData(updatedData);
+            localStorage.setItem("formData", JSON.stringify(updatedData)); // ✅ Persist retyped password
+          }}
         />
       </label>
       <p className="password-note">Password should be longer than 6 characters.</p>

@@ -6,7 +6,6 @@ const Step1 = ({ handleNext, step, totalSteps }) => {
 
   // ✅ Ensure formData persists between steps
   useEffect(() => {
-    // Check if formData already exists, if not, set it to a valid object
     setFormData((prevData) => ({
       ...prevData,
       first_name: prevData.first_name || "",
@@ -14,6 +13,8 @@ const Step1 = ({ handleNext, step, totalSteps }) => {
       last_name: prevData.last_name || "",
       date_of_birth: prevData.date_of_birth || "",
     }));
+
+    console.log("🔍 Step 1 FormData:", formData); // ✅ Debugging: Ensure data persists
   }, [setFormData]);
 
   return (

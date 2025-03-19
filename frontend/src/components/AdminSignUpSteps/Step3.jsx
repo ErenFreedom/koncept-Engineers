@@ -7,9 +7,11 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
   const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
 
   const handleFileUpload = (e, key) => {
+    // ✅ Store only file names, not actual files
+    const fileNames = Array.from(e.target.files).map((file) => file.name);
     setFormData((prev) => ({
       ...prev,
-      [key]: Array.from(e.target.files),
+      [key]: fileNames, // ✅ Save only file metadata
     }));
   };
 
@@ -19,10 +21,12 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
       ...prevData,
       phone_number: prevData.phone_number || "",
       landline: prevData.landline || "",
-      company_name: prevData.company_name || "", // ✅ Fixed to match backend
-      companyPan: prevData.companyPan || null,
-      companyGst: prevData.companyGst || null,
+      company_name: prevData.company_name || "",
+      companyPan: prevData.companyPan || [],
+      companyGst: prevData.companyGst || [],
     }));
+
+    console.log("🔍 Step 3 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
   }, [setFormData]);
 
   return (
@@ -39,7 +43,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
             if (!value.startsWith("+")) {
               value = `+${value}`;
             }
-            setFormData((prev) => ({ ...prev, phone_number: value })); // ✅ Use `phone_number` instead of `phoneNumber`
+            setFormData((prev) => ({ ...prev, phone_number: value }));
           }}
           inputStyle={{
             width: "100%",
@@ -70,7 +74,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Company Name"
-          value={formData.company_name} // ✅ Use `company_name` instead of `companyName`
+          value={formData.company_name} 
           onChange={(e) => setFormData((prev) => ({ ...prev, company_name: e.target.value }))}
           required
         />
@@ -81,10 +85,10 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         Upload Company's PAN Card
         <input type="file" className="form-input" multiple onChange={(e) => handleFileUpload(e, "companyPan")} />
       </label>
-      {formData.companyPan?.length > 0 && (
+      {formData.companyPan.length > 0 && (
         <ul>
           {formData.companyPan.map((file, index) => (
-            <li key={index}>{file.name}</li>
+            <li key={index}>{file}</li>
           ))}
         </ul>
       )}
@@ -94,10 +98,10 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         Upload Company's GST
         <input type="file" className="form-input" multiple onChange={(e) => handleFileUpload(e, "companyGst")} />
       </label>
-      {formData.companyGst?.length > 0 && (
+      {formData.companyGst.length > 0 && (
         <ul>
           {formData.companyGst.map((file, index) => (
-            <li key={index}>{file.name}</li>
+            <li key={index}>{file}</li>
           ))}
         </ul>
       )}

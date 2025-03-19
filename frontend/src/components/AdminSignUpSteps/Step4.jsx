@@ -12,6 +12,8 @@ const Step4 = ({ handleNext, step, totalSteps }) => {
       company_address2: prevData.company_address2 || "",
       company_pincode: prevData.company_pincode || "",
     }));
+
+    console.log("🔍 Step 4 FormData (Loaded from LocalStorage):", formData); // ✅ Debugging
   }, [setFormData]);
 
   return (
