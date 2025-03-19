@@ -61,8 +61,9 @@ const registerAdmin = async (req, res) => {
     try {
         const {
             first_name, middle_name, last_name, date_of_birth, nationality,
-            address1, address2, pincode, phone_number, landline, password,
-            email, company_name, company_email, company_address1, company_address2, company_pincode, otp
+            address1, address2, pincode, phone_number, landline, password, email,
+            company_name, company_email, company_alt_email, company_address1, company_address2,
+            company_pincode, otp
         } = req.body;
 
         // ✅ Extract file uploads from req.files
@@ -97,16 +98,17 @@ const registerAdmin = async (req, res) => {
         // ✅ Hash password securely
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ Call the stored procedure to register Admin & Company
+        // ✅ Call the stored procedure with all 21 arguments
         const procedureCall = `
-            CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+            CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
 
         await connection.execute(procedureCall, [
             first_name, middle_name || null, last_name, date_of_birth, nationality || null,
-            address1 || null, address2 || null, pincode || null, phone_number, landline || null, 
+            address1 || null, address2 || null, pincode || null, phone_number, email, landline || null, 
             hashedPassword, aadhar || null, // ✅ Aadhar, PAN, GST URLs for storage
-            company_name, company_email, company_address1, company_address2, company_pincode, pan || null, gst || null  
+            company_name, company_email, company_alt_email || null, company_address1, company_address2, 
+            company_pincode, pan || null, gst || null  // ✅ Ensure all required parameters are passed
         ]);
 
         // ✅ Delete OTP after successful registration
@@ -127,5 +129,7 @@ const registerAdmin = async (req, res) => {
     }
 };
 
-
 module.exports = { sendRegistrationOtp, registerAdmin };
+
+
+
