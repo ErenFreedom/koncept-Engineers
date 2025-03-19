@@ -54,13 +54,14 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         Nationality
         <Select
           options={countryOptions}
-          value={formData.nationality}
-          onChange={(selected) => setFormData({ ...formData, nationality: selected?.label || "" })}
+          value={countryOptions.find(option => option.label === formData.nationality) || null} // ✅ Find the matching object
+          onChange={(selected) => setFormData({ ...formData, nationality: selected ? selected.label : "" })} // ✅ Store only the label
           placeholder="Select your nationality"
           isClearable
           styles={customStyles}
           className="country-select"
         />
+
       </label>
 
       {/* ✅ Email Field */}

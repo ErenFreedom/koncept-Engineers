@@ -19,13 +19,12 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         Phone Number
         <PhoneInput
           country={"in"} // Default country set to India
-          value={formData.phoneNumber}
+          value={formData.phone_number} // ✅ Use `phone_number` (same as backend expects)
           onChange={(value) => {
-            // Ensure number starts with `+`
             if (!value.startsWith("+")) {
               value = `+${value}`;
             }
-            setFormData({ ...formData, phoneNumber: value });
+            setFormData({ ...formData, phone_number: value }); // ✅ Use `phone_number` instead of `phoneNumber`
           }}
           inputStyle={{
             width: "100%",
@@ -35,6 +34,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
             backgroundColor: "#ffffff",
           }}
         />
+
       </label>
 
       {/* ✅ Landline Field */}
