@@ -15,29 +15,31 @@ const Admin = () => {
   const countryOptions = CountryList().getData();
   const [formData, setFormData] = useState(() => {
     const savedData = localStorage.getItem("adminFormData");
-    return savedData ? JSON.parse(savedData) : {
-      first_name: "",
-      middle_name: "",
-      last_name: "",
-      date_of_birth: "",
-      nationality: "",
-      address1: "",
-      address2: "",
-      pincode: "",
-      phone_number: "",
-      landline: "",
-      company_name: "",
-      company_address1: "",
-      company_address2: "",
-      company_pincode: "",
-      email: "",
-      password: "",
-      retypePassword: "",
-      otp: "",
-      aadhar: null,
-      pan: null,
-      gst: null,
-    };
+    return savedData
+      ? JSON.parse(savedData)
+      : {
+          first_name: "",
+          middle_name: "",
+          last_name: "",
+          date_of_birth: "",
+          nationality: "",
+          address1: "",
+          address2: "",
+          pincode: "",
+          phone_number: "",
+          landline: "",
+          company_name: "",
+          company_address1: "",
+          company_address2: "",
+          company_pincode: "",
+          email: "",
+          password: "",
+          retypePassword: "",
+          otp_method: "",
+          aadhar: null,
+          pan: null,
+          gst: null,
+        };
   });
 
   // ✅ Persist data in LocalStorage
@@ -61,37 +63,27 @@ const Admin = () => {
     }));
   };
 
-  // ✅ Submit Form Data
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (formData.password !== formData.retypePassword) {
-        toast.error("Passwords do not match!");
-        return;
+  // ✅ Send OTP and Redirect to OTP Verification Page
+  const handleSendOtp = async () => {
+    if (!formData.otp_method) {
+      toast.error("Please select a method to receive OTP (Email or Phone).");
+      return;
     }
 
     try {
-        const formDataObject = new FormData();
-        for (const key in formData) {
-            if (formData[key]) {
-                formDataObject.append(key, formData[key]);
-            }
-        }
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
+        email: formData.email,
+        phone_number: formData.phone_number,
+        otp_method: formData.otp_method,
+      });
 
-        await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/register`, formDataObject, {
-            headers: { "Content-Type": "multipart/form-data" },
-        });
-
-        toast.success("Admin registered successfully! Redirecting to OTP verification...");
-        localStorage.removeItem("adminFormData"); // Clear saved form
-
-        // ✅ Redirect to AdminOtp page after successful form submission
-        setTimeout(() => {
-            navigate("/AdminOtp"); 
-        }, 2000); // Wait for 2 seconds before redirecting
-
+      toast.success(`OTP sent to your registered ${formData.otp_method}. Redirecting...`);
+      setTimeout(() => {
+        navigate("/AdminOtp"); // ✅ Redirect to OTP verification page
+      }, 2000);
     } catch (error) {
-        toast.error(error.response?.data?.message || "Failed to register");
+      console.error("❌ Error sending OTP:", error);
+      toast.error(error.response?.data?.message || "Failed to send OTP. Try again.");
     }
   };
 
@@ -127,8 +119,8 @@ const Admin = () => {
         {/* ✅ Nationality Dropdown */}
         <label className="form-label">
           Nationality
-          <Select options={countryOptions} value={countryOptions.find((option) => option.label === formData.nationality) || null} 
-            onChange={(selected) => setFormData({ ...formData, nationality: selected ? selected.label : "" })} 
+          <Select options={countryOptions} value={countryOptions.find((option) => option.label === formData.nationality) || null}
+            onChange={(selected) => setFormData({ ...formData, nationality: selected ? selected.label : "" })}
             placeholder="Select nationality" isClearable className="country-select" />
         </label>
 
@@ -141,7 +133,7 @@ const Admin = () => {
         {/* ✅ Phone Number */}
         <label className="form-label">
           Phone Number
-          <PhoneInput country={"in"} value={formData.phone_number} onChange={(value) => setFormData({ ...formData, phone_number: `+${value}` })} 
+          <PhoneInput country={"in"} value={formData.phone_number} onChange={(value) => setFormData({ ...formData, phone_number: `+${value}` })}
             inputStyle={{ width: "100%", fontSize: "1rem", borderRadius: "8px" }} />
         </label>
 
@@ -183,14 +175,25 @@ const Admin = () => {
           <input type="password" name="retypePassword" className="form-input" value={formData.retypePassword} onChange={handleChange} required />
         </label>
 
-        {/* ✅ OTP Field */}
-        <label className="form-label">
-          OTP (Enter the OTP sent to your email/phone)
-          <input type="text" name="otp" className="form-input" value={formData.otp} onChange={handleChange} required />
-        </label>
+        {/* ✅ OTP Verification Section */}
+        <h3 className="otp-heading">Verify Your Account</h3>
+        <p className="otp-instructions">Choose where to receive your OTP for verification.</p>
 
-        {/* ✅ Submit Button */}
-        <button className="next-button" onClick={handleSubmit}>Submit & Register</button>
+        <div className="otp-checkbox-container">
+          <label className="otp-checkbox-label">
+            <input type="radio" className="otp-checkbox-input" checked={formData.otp_method === "email"} onChange={() => setFormData({ ...formData, otp_method: "email" })} />
+            Send OTP to Email ({formData.email})
+          </label>
+          <label className="otp-checkbox-label">
+            <input type="radio" className="otp-checkbox-input" checked={formData.otp_method === "phone"} onChange={() => setFormData({ ...formData, otp_method: "phone" })} />
+            Send OTP to Phone ({formData.phone_number})
+          </label>
+        </div>
+
+        {/* ✅ Button to Send OTP and Redirect */}
+        <button className="next-button" onClick={handleSendOtp}>
+          Send OTP & Verify ✅
+        </button>
       </div>
     </div>
   );
