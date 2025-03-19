@@ -63,15 +63,22 @@ const registerAdmin = async (req, res) => {
 
         // ✅ Validate OTP from either email or phone
         const otpQuery = `
-            SELECT * FROM RegisterOtp 
-            WHERE (identifier = ? OR identifier = ?) AND otp = ? 
-            AND expires_at > UTC_TIMESTAMP();
-        `;
-        const [otpResults] = await db.execute(otpQuery, [email, phone_number, otp]);
+    SELECT * FROM RegisterOtp 
+    WHERE identifier = ? 
+    AND otp = ? 
+    AND expires_at > UTC_TIMESTAMP();
+`;
+
+        console.log("Checking OTP with identifier:", email || phone_number, "and OTP:", otp);
+
+        const [otpResults] = await db.execute(otpQuery, [email || phone_number, otp]);
+
+        console.log("Stored OTP results from DB:", otpResults);
 
         if (otpResults.length === 0) {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
+
 
         // ✅ OTP is valid, proceed with registration
         connection = await db.getConnection();
