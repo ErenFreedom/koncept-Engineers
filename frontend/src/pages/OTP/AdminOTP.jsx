@@ -8,7 +8,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Otp.css";
 
 const AdminOtp = () => {
-  const [otp, setOtp] = useState(Array(6).fill(""));
+  const [otp, setOtp] = useState(Array(6).fill("")); // 6-digit OTP
+  const [timer, setTimer] = useState(120); // ⏳ 2-minute countdown
   const navigate = useNavigate();
   const { formData } = useFormData();
 
@@ -20,38 +21,53 @@ const AdminOtp = () => {
     }
   }, [formData, navigate]);
 
+  // ✅ OTP Countdown Timer
+  useEffect(() => {
+    if (timer > 0) {
+      const countdown = setInterval(() => {
+        setTimer((prev) => prev - 1);
+      }, 1000);
+      return () => clearInterval(countdown);
+    }
+  }, [timer]);
+
   // ✅ Handle OTP Input
   const handleInputChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+
+    // Auto-focus next input
     if (value && index < otp.length - 1) {
       document.getElementById(`otp-input-${index + 1}`).focus();
     }
   };
 
-  const verifyOtpAndRegister = async () => {
+  // ✅ Handle OTP Resend
+  const resendOtp = async () => {
+    try {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
+        email: formData.email,
+        phone_number: formData.phone_number,
+      });
+
+      toast.success("OTP Resent Successfully!");
+      setTimer(120); // ⏳ Reset 2-minute timer
+    } catch (error) {
+      toast.error("Failed to resend OTP. Try again.");
+    }
+  };
+
+  // ✅ Register Admin After OTP Verification
+  const registerAdmin = async () => {
     try {
       const finalOtp = otp.join("");
       if (finalOtp.length !== 6) {
         return toast.error("Enter a valid 6-digit OTP.");
       }
 
-      // ✅ Step 1: Verify OTP
-      const otpResponse = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/verify-otp`, {
-        email: formData.email,
-        phone_number: formData.phone_number,
-        otp: finalOtp,
-      });
-
-      if (otpResponse.status !== 200) {
-        return toast.error("Invalid OTP. Try again.");
-      }
-
-      toast.success("✅ OTP Verified! Registering...");
-
-      // ✅ Step 2: Send Full Data (cURL-like Request)
+      // ✅ Create form data object
       const formDataToSend = new FormData();
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
@@ -59,13 +75,17 @@ const AdminOtp = () => {
         }
       });
 
+      // ✅ Append OTP to request
+      formDataToSend.append("otp", finalOtp);
+
+      // ✅ Append Files (Aadhar, PAN, GST)
       ["aadhar", "pan", "gst"].forEach((fileKey) => {
         if (formData[fileKey]) {
           formDataToSend.append(fileKey, formData[fileKey]);
         }
       });
 
-      // ✅ Send Registration Request
+      // ✅ Send Registration Request (Verifies OTP & Registers User)
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/register`,
         formDataToSend,
@@ -77,7 +97,7 @@ const AdminOtp = () => {
         navigate("/AuthAdmin");
       }, 2000);
     } catch (error) {
-      console.error("❌ Error verifying OTP:", error);
+      console.error("❌ Error verifying OTP & Registering:", error);
       toast.error(error.response?.data?.message || "OTP verification failed.");
     }
   };
@@ -88,6 +108,7 @@ const AdminOtp = () => {
       <div className="otp-body">
         <h1 className="otp-heading">Admin OTP Verification</h1>
         <p className="otp-instructions">Enter the OTP sent to your email/phone.</p>
+
         <div className="otp-input-container">
           {otp.map((value, index) => (
             <input
@@ -101,7 +122,19 @@ const AdminOtp = () => {
             />
           ))}
         </div>
-        <button className="otp-button" onClick={verifyOtpAndRegister}>Verify OTP & Register ✅</button>
+
+        <button className="otp-button" onClick={registerAdmin}>Verify OTP & Register ✅</button>
+
+        {/* ✅ Resend OTP Timer */}
+        <p className="resend-otp">
+          {timer > 0 ? (
+            `Resend OTP in ${Math.floor(timer / 60)}:${timer % 60 < 10 ? "0" : ""}${timer % 60}`
+          ) : (
+            <button className="resend-button" onClick={resendOtp}>
+              Resend OTP 🔄
+            </button>
+          )}
+        </p>
       </div>
     </div>
   );
