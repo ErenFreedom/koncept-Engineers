@@ -1,18 +1,16 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
-const { uploadFile } = require("../utils/s3Uploader");
-const sendOtpSms = require("../utils/sendOtpSms"); // Twilio for SMS OTP
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
+const sendOtpSms = require("../utils/sendOtpSms");
 
 // **✅ Send OTP for Admin Registration**
 const sendRegistrationOtp = async (req, res) => {
     try {
-        const { email, phone_number, otp_method } = req.body; // ✅ Email & Phone Required
+        const { email, phone_number, otp_method } = req.body;
 
         if (!email || !phone_number) {
             return res.status(400).json({ message: "Email and phone number are required" });
         }
-
         if (!otp_method) {
             return res.status(400).json({ message: "OTP method (email/phone) is required" });
         }
@@ -26,9 +24,9 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(400).json({ message: "Admin already exists. Try logging in." });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // ✅ Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // ✅ Send OTP to Email or Phone based on Selection
+        // ✅ Send OTP to Email or Phone
         let otpSent = { success: false };
         if (otp_method === "email") {
             otpSent = await sendOtpToEmail(email, `Your OTP for registration: ${otp}`);
@@ -40,17 +38,15 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in MySQL (Valid for 10 Minutes)
+        // ✅ Store OTP in MySQL
         const otpQuery = `
             INSERT INTO RegisterOtp (email, phone_number, otp, created_at, expires_at)
             VALUES (?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
-            ON DUPLICATE KEY UPDATE 
-            otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);
+            ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);
         `;
         await db.execute(otpQuery, [email, phone_number, otp, otp]);
 
         console.log(`✅ OTP sent successfully to ${otp_method === "email" ? email : phone_number}`);
-
         res.status(200).json({ message: `OTP sent to your registered ${otp_method}` });
 
     } catch (error) {
@@ -69,12 +65,13 @@ const registerAdmin = async (req, res) => {
             email, company_name, company_email, company_address1, company_address2, company_pincode, otp
         } = req.body;
 
+        console.log("🔍 Incoming Data:", req.body); // ✅ Log incoming data for debugging
+
         if (!email || !phone_number || !otp) {
             return res.status(400).json({ message: "Email, phone number, and OTP are required" });
         }
 
-        // ✅ Verify OTP from either email or phone
-        console.log("🔍 Checking OTP for:", email, phone_number, "with OTP:", otp);
+        // ✅ Verify OTP
         const otpQuery = `
             SELECT * FROM RegisterOtp 
             WHERE (email = ? OR phone_number = ?) 
@@ -95,16 +92,20 @@ const registerAdmin = async (req, res) => {
         // ✅ Hash password securely
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // ✅ Convert undefined values to NULL for MySQL
+        const sanitizedData = [
+            first_name || null, middle_name || null, last_name || null, date_of_birth || null, nationality || null,
+            address1 || null, address2 || null, pincode || null, phone_number || null, landline || null, 
+            email || null, hashedPassword
+        ];
+
         // ✅ Insert Admin into Database
         const insertAdminQuery = `
             INSERT INTO Admin (first_name, middle_name, last_name, date_of_birth, nationality, 
                               address1, address2, pincode, phone_number, landline, email, password_hash)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
-        await connection.execute(insertAdminQuery, [
-            first_name, middle_name, last_name, date_of_birth, nationality,
-            address1, address2, pincode, phone_number, landline, email, hashedPassword
-        ]);
+        await connection.execute(insertAdminQuery, sanitizedData);
 
         // ✅ Insert Company Details
         const insertCompanyQuery = `
@@ -112,7 +113,8 @@ const registerAdmin = async (req, res) => {
             VALUES (?, ?, ?, ?, ?);
         `;
         await connection.execute(insertCompanyQuery, [
-            company_name, company_email, company_address1, company_address2, company_pincode
+            company_name || null, company_email || null, company_address1 || null, 
+            company_address2 || null, company_pincode || null
         ]);
 
         // ✅ Delete OTP after successful registration
