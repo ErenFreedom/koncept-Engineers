@@ -1,6 +1,9 @@
 import React from "react";
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import useFormData
 
-const Step1 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
+const Step1 = ({ handleNext, step, totalSteps }) => {
+  const { formData, setFormData } = useFormData(); // ✅ Use global state
+
   return (
     <div className="form-container">
       <label className="form-label">
@@ -9,8 +12,8 @@ const Step1 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter First Name"
-          value={formData.firstName}
-          onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+          value={formData.first_name}
+          onChange={(e) => setFormData({ ...formData, first_name: e.target.value })}
         />
       </label>
       <label className="form-label">
@@ -19,8 +22,8 @@ const Step1 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Middle Name"
-          value={formData.middleName}
-          onChange={(e) => setFormData({ ...formData, middleName: e.target.value })}
+          value={formData.middle_name}
+          onChange={(e) => setFormData({ ...formData, middle_name: e.target.value })}
         />
       </label>
       <label className="form-label">
@@ -29,8 +32,8 @@ const Step1 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
           type="text"
           className="form-input"
           placeholder="Enter Last Name"
-          value={formData.lastName}
-          onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+          value={formData.last_name}
+          onChange={(e) => setFormData({ ...formData, last_name: e.target.value })}
         />
       </label>
       <label className="form-label">
@@ -38,8 +41,8 @@ const Step1 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
         <input
           type="date"
           className="form-input"
-          value={formData.dob}
-          onChange={(e) => setFormData({ ...formData, dob: e.target.value })}
+          value={formData.date_of_birth}
+          onChange={(e) => setFormData({ ...formData, date_of_birth: e.target.value })}
         />
       </label>
 

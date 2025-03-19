@@ -12,24 +12,27 @@ import AuthStaff from "./pages/Auth/StaffAuth";
 import AdminOtp from "./pages/OTP/AdminOTP";
 import StaffOtp from "./pages/OTP/StaffOTP";
 import Dashboard from "./pages/Dashboard/Dashboard";
+import { FormDataProvider } from "./context/FormDataContext"; // ✅ Import FormData Context Provider
 
 const App = () => {
   return (
-    <Router>
-      <ToastContainer position="top-right" autoClose={3000} />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/SignUp" element={<BreakPoint />} />
-        <Route path="/Admin" element={<Admin />} />
-        <Route path="/Staff" element={<Staff />} />
-        <Route path="/Auth" element={<AuthBreakPoint />} />
-        <Route path="/AuthAdmin" element={<AuthAdmin />} />
-        <Route path="/AuthStaff" element={<AuthStaff />} />
-        <Route path="/AdminOtp" element={<AdminOtp />} />
-        <Route path="/StaffOtp" element={<StaffOtp />} />
-        <Route path="/Dashboard/:id" element={<Dashboard />} />
-      </Routes>
-    </Router>
+    <FormDataProvider> {/* ✅ Wrap the entire app inside FormDataProvider */}
+      <Router>
+        <ToastContainer position="top-right" autoClose={3000} />
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/SignUp" element={<BreakPoint />} />
+          <Route path="/Admin" element={<Admin />} />
+          <Route path="/Staff" element={<Staff />} />
+          <Route path="/Auth" element={<AuthBreakPoint />} />
+          <Route path="/AuthAdmin" element={<AuthAdmin />} />
+          <Route path="/AuthStaff" element={<AuthStaff />} />
+          <Route path="/AdminOtp" element={<AdminOtp />} />
+          <Route path="/StaffOtp" element={<StaffOtp />} />
+          <Route path="/Dashboard/:id" element={<Dashboard />} />
+        </Routes>
+      </Router>
+    </FormDataProvider>
   );
 };
 

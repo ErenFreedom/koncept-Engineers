@@ -1,11 +1,14 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
 
-const Step5 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
+import "react-toastify/dist/ReactToastify.css";
+
+const Step5 = ({ handleNext, step, totalSteps }) => {
   const navigate = useNavigate();
+  const { formData, setFormData } = useFormData(); // ✅ Use global context
   const [otpMethod, setOtpMethod] = useState(""); // State to store selected OTP method
 
   const sendOtp = async () => {

@@ -2,14 +2,16 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
 import AuthHeader from "../../components/AuthPage/AuthHeader"; // Header
 import "react-toastify/dist/ReactToastify.css";
 import "./Otp.css"; // Import CSS
 
-const AdminOtp = ({ formData }) => {
+const AdminOtp = () => {
   const [timer, setTimer] = useState(120); // 2 minutes countdown
   const [otp, setOtp] = useState(Array(6).fill("")); // 6-digit OTP
   const navigate = useNavigate();
+  const { formData } = useFormData(); // ✅ Get global form data
 
   useEffect(() => {
     if (timer > 0) {
@@ -20,13 +22,28 @@ const AdminOtp = ({ formData }) => {
     }
   }, [timer]);
 
+  // ✅ Prevent invalid access if formData is missing
+  useEffect(() => {
+    if (!formData || !formData.email) {
+      toast.error("Invalid session! Please restart registration.");
+      navigate("/Admin");
+    }
+  }, [formData, navigate]);
+
+  // ✅ Automatically move to the next input box after entering a digit
   const handleInputChange = (index, value) => {
     if (isNaN(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
+
+    // Move to next box if a digit is entered
+    if (value && index < otp.length - 1) {
+      document.getElementById(`otp-input-${index + 1}`).focus();
+    }
   };
 
+  // ✅ Move back on backspace
   const handleKeyPress = (e, index) => {
     if (e.key === "Backspace" && !otp[index] && index > 0) {
       document.getElementById(`otp-input-${index - 1}`).focus();
@@ -42,15 +59,17 @@ const AdminOtp = ({ formData }) => {
 
       const formDataToSend = new FormData();
       Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
+        if (formData[key]) {
+          formDataToSend.append(key, formData[key]);
+        }
       });
 
       formDataToSend.append("otp", finalOtp);
-      formDataToSend.append("aadhar", formData.aadhar);
-      formDataToSend.append("pan", formData.pan);
-      formDataToSend.append("gst", formData.gst);
+      formDataToSend.append("aadhar", formData.aadhar || "");
+      formDataToSend.append("pan", formData.pan || "");
+      formDataToSend.append("gst", formData.gst || "");
 
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/admin/register`, formDataToSend, {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/register`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
       });
 
@@ -66,7 +85,7 @@ const AdminOtp = ({ formData }) => {
 
   const resendOtp = async () => {
     try {
-      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/admin/send-otp`, {
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
         identifier: formData.email, // Resend OTP to admin's email
       });
 

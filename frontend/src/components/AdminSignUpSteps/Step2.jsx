@@ -1,8 +1,11 @@
 import React from "react";
 import Select from "react-select";
 import CountryList from "react-select-country-list";
+import { useFormData } from "../../context/FormDataContext"; // ✅ Import useFormData for global state
 
-const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
+const Step2 = ({ handleNext, step, totalSteps }) => {
+  const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
+
   const countryOptions = CountryList().getData();
 
   const customStyles = {
@@ -20,21 +23,21 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
     option: (base, { isFocused, isSelected }) => ({
       ...base,
       backgroundColor: isSelected ? "#ffd700" : isFocused ? "#f6f6f6" : "#ffffff",
-      color: "#000000", // Ensures black text
+      color: "#000000",
       fontSize: "1rem",
       padding: "10px",
     }),
     singleValue: (base) => ({
       ...base,
-      color: "#000000", // Black text for selected value
+      color: "#000000",
     }),
     menu: (base) => ({
       ...base,
-      backgroundColor: "#ffffff", // White background
+      backgroundColor: "#ffffff",
     }),
     placeholder: (base) => ({
       ...base,
-      color: "#888888", // Grey placeholder text
+      color: "#888888",
     }),
   };
 
@@ -44,12 +47,15 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
 
   return (
     <div className="form-container">
+      <h2 className="form-heading">Personal Information</h2>
+
+      {/* ✅ Nationality Dropdown */}
       <label className="form-label">
         Nationality
         <Select
           options={countryOptions}
           value={formData.nationality}
-          onChange={(selected) => setFormData({ ...formData, nationality: selected })}
+          onChange={(selected) => setFormData({ ...formData, nationality: selected?.label || "" })}
           placeholder="Select your nationality"
           isClearable
           styles={customStyles}
@@ -57,7 +63,7 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Added Email Field After Nationality */}
+      {/* ✅ Email Field */}
       <label className="form-label">
         Email
         <input
@@ -69,6 +75,7 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
         />
       </label>
 
+      {/* ✅ Address Fields */}
       <label className="form-label">
         Address 1
         <input
@@ -99,11 +106,13 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
           onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
         />
       </label>
+
+      {/* ✅ File Upload */}
       <label className="form-label">
         Upload Aadhar/PAN/Passport
         <input type="file" className="form-input" multiple onChange={handleFileUpload} />
       </label>
-      {formData.aadharPanPassport.length > 0 && (
+      {formData.aadharPanPassport && formData.aadharPanPassport.length > 0 && (
         <ul>
           {formData.aadharPanPassport.map((file, index) => (
             <li key={index}>{file.name}</li>
@@ -111,6 +120,7 @@ const Step2 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
         </ul>
       )}
 
+      {/* ✅ Next Button */}
       <button className="next-button" onClick={handleNext}>
         Step {step} out of {totalSteps}
       </button>
