@@ -65,13 +65,18 @@ const registerAdmin = async (req, res) => {
             email, company_name, company_email, company_address1, company_address2, company_pincode, otp
         } = req.body;
 
-        console.log("🔍 Incoming Data:", req.body); // ✅ Log incoming data for debugging
+        // ✅ Extract file uploads from req.files
+        const aadhar = req.files?.aadhar ? req.files.aadhar[0].location : null;
+        const pan = req.files?.pan ? req.files.pan[0].location : null;
+        const gst = req.files?.gst ? req.files.gst[0].location : null;
+
+        console.log("🔍 Incoming Data:", req.body); // ✅ Debugging log
 
         if (!email || !phone_number || !otp) {
             return res.status(400).json({ message: "Email, phone number, and OTP are required" });
         }
 
-        // ✅ Verify OTP
+        // ✅ Verify OTP before proceeding
         const otpQuery = `
             SELECT * FROM RegisterOtp 
             WHERE (email = ? OR phone_number = ?) 
@@ -92,34 +97,22 @@ const registerAdmin = async (req, res) => {
         // ✅ Hash password securely
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ Convert undefined values to NULL for MySQL
-        const sanitizedData = [
-            first_name || null, middle_name || null, last_name || null, date_of_birth || null, nationality || null,
-            address1 || null, address2 || null, pincode || null, phone_number || null, landline || null, 
-            email || null, hashedPassword
-        ];
-
-        // ✅ Insert Admin into Database
-        const insertAdminQuery = `
-            INSERT INTO Admin (first_name, middle_name, last_name, date_of_birth, nationality, 
-                              address1, address2, pincode, phone_number, landline, email, password_hash)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        // ✅ Call the stored procedure to register Admin & Company
+        const procedureCall = `
+            CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
-        await connection.execute(insertAdminQuery, sanitizedData);
 
-        // ✅ Insert Company Details
-        const insertCompanyQuery = `
-            INSERT INTO Company (name, email, address1, address2, pincode)
-            VALUES (?, ?, ?, ?, ?);
-        `;
-        await connection.execute(insertCompanyQuery, [
-            company_name || null, company_email || null, company_address1 || null, 
-            company_address2 || null, company_pincode || null
+        await connection.execute(procedureCall, [
+            first_name, middle_name || null, last_name, date_of_birth, nationality || null,
+            address1 || null, address2 || null, pincode || null, phone_number, landline || null, 
+            hashedPassword, aadhar || null, // ✅ Aadhar, PAN, GST URLs for storage
+            company_name, company_email, company_address1, company_address2, company_pincode, pan || null, gst || null  
         ]);
 
         // ✅ Delete OTP after successful registration
         await db.execute(`DELETE FROM RegisterOtp WHERE email = ? OR phone_number = ?`, [email, phone_number]);
 
+        // ✅ Commit Transaction
         await connection.commit();
         console.log(`✅ Admin & Company registered successfully.`);
 
@@ -133,5 +126,6 @@ const registerAdmin = async (req, res) => {
         if (connection) await connection.release();
     }
 };
+
 
 module.exports = { sendRegistrationOtp, registerAdmin };
