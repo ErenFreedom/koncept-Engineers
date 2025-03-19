@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
-import AuthHeader from "../../components/AuthPage/AuthHeader"; // Importing the Auth Header
-import HomeFooter from "../../components/HomePage/HomeFooter"; // Importing the Footer
-import "./Otp.css"; // Importing OTP-specific CSS
+import axios from "axios";
+import AuthHeader from "../../components/AuthPage/AuthHeader"; // Header
+import "./Otp.css"; // Import CSS
 
-const AdminOtp = () => {
-  const [timer, setTimer] = useState(120); // Timer state (2 minutes = 120 seconds)
-  const [otp, setOtp] = useState(Array(6).fill("")); // OTP state for 6 digits
+const AdminOtp = ({ formData }) => {
+  const [timer, setTimer] = useState(120); // 2 minutes countdown
+  const [otp, setOtp] = useState(Array(6).fill("")); // 6-digit OTP
 
   useEffect(() => {
-    // Countdown logic
     if (timer > 0) {
       const countdown = setInterval(() => {
         setTimer((prev) => prev - 1);
@@ -18,7 +17,7 @@ const AdminOtp = () => {
   }, [timer]);
 
   const handleInputChange = (index, value) => {
-    if (isNaN(value)) return; // Ensure only numbers are entered
+    if (isNaN(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -30,9 +29,33 @@ const AdminOtp = () => {
     }
   };
 
-  const handleResend = () => {
-    setTimer(120); // Reset the timer to 2 minutes
-    alert("OTP Resent!");
+  const verifyOtpAndRegister = async () => {
+    try {
+      const finalOtp = otp.join(""); // Convert OTP array to a single string
+      if (finalOtp.length !== 6) {
+        return alert("Please enter a valid 6-digit OTP.");
+      }
+
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach((key) => {
+        formDataToSend.append(key, formData[key]);
+      });
+
+      formDataToSend.append("otp", finalOtp);
+      formDataToSend.append("aadhar", formData.aadhar);
+      formDataToSend.append("pan", formData.pan);
+      formDataToSend.append("gst", formData.gst);
+
+      await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/register`, formDataToSend, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert("Registration Successful! Redirecting to login.");
+      window.location.href = "/admin/login"; // Redirect after success
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      alert(error.response?.data?.message || "OTP verification failed.");
+    }
   };
 
   return (
@@ -56,18 +79,17 @@ const AdminOtp = () => {
             />
           ))}
         </div>
-        <button className="otp-button">Verify OTP</button>
+        <button className="otp-button" onClick={verifyOtpAndRegister}>Verify OTP</button>
         <p className="resend-otp">
           {timer > 0 ? (
             `Resend OTP in ${Math.floor(timer / 60)}:${timer % 60 < 10 ? "0" : ""}${timer % 60}`
           ) : (
-            <button className="resend-button" onClick={handleResend}>
+            <button className="resend-button" onClick={() => alert("Resend OTP feature not implemented yet.")}>
               Resend
             </button>
           )}
         </p>
       </div>
-      <HomeFooter /> {/* Footer */}
     </div>
   );
 };
