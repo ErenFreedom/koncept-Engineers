@@ -1,61 +1,64 @@
-import React from "react";
-import AuthHeader from "../../components/AuthPage/AuthHeader"; // Importing the Auth Header
-import HomeFooter from "../../components/HomePage/HomeFooter"; // Importing the footer
-import "./Auth.css"; // Importing Auth-specific CSS
+import React, { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { loginAdmin } from "../../redux/actions/authActions";
+import AuthHeader from "../../components/AuthPage/AuthHeader";
+import HomeFooter from "../../components/HomePage/HomeFooter";
+import "./Auth.css";
 
 const AdminAuth = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
+
+  const handleLogin = (e) => {
+    e.preventDefault();
+    dispatch(loginAdmin(email, password));
+  };
+
   return (
     <div>
-      <AuthHeader /> {/* Header */}
+      <AuthHeader />
       <div className="auth-body">
-        <h1 className="auth-heading">Admin Logi</h1>
+        <h1 className="auth-heading">Admin Login</h1>
         <div className="form-container">
-          <label className="form-label">
-            Organisation Name
-            <input
-              type="text"
-              className="form-input"
-              placeholder="Enter Organisation Name"
-            />
-          </label>
           <label className="form-label">
             Email
             <input
               type="email"
               className="form-input"
               placeholder="Enter your Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
             />
           </label>
+
           <label className="form-label">
             Password
             <input
               type="password"
               className="form-input"
               placeholder="Enter your Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-
-          {/* 🔥 Random Test Field Added Here 🔥 */}
-          <label className="form-label">
-            Random Test Field
-            <input
-              type="text"
-              className="form-input"
-              placeholder="This is a test field"
-            />
-          </label>
-          {/* 🔥 Random Test Field Ends Here 🔥 */}
-
         </div>
-        <button className="auth-button">Login</button>
+
+        <button className="auth-button" onClick={handleLogin} disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </button>
+
+        {error && <p className="error-message">{error}</p>}
+
         <div className="forgot-password-container">
-          {/* Button styled as a link */}
           <button className="forgot-password-link" onClick={() => alert("Forgot Password functionality coming soon!")}>
             Forgot Password?
           </button>
         </div>
       </div>
-      <HomeFooter /> {/* Footer */}
+      <HomeFooter />
     </div>
   );
 };
