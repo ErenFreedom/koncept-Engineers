@@ -18,6 +18,7 @@ app.use(cors({
 
 // Middleware to parse JSON requests
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Import routes
 const adminRoutes = require("./routes/adminRoutes");

@@ -20,40 +20,36 @@ const COOKIE_OPTIONS = {
 /** ✅ Send OTP for Admin Login */
 const sendAdminLoginOtp = async (req, res) => {
     try {
-        console.log("📩 Incoming Request Headers:", req.headers);  // ✅ Log headers
-        console.log("📩 Incoming Request Body (Raw):", req.rawBody); // ✅ Log raw request
-        console.log("📩 Incoming Request Body (Parsed):", req.body); // ✅ Log parsed request
+        console.log("📩 Incoming Request Headers:", req.headers);
+        console.log("📩 Incoming Request Body (Parsed):", req.body);
 
         const { identifier, password } = req.body;
 
         if (!identifier || !password) {
-            console.error("⚠️ Missing Identifier or Password in Request", req.body);
             return res.status(400).json({ message: "Identifier (email or phone) and password are required" });
         }
 
         console.log("🔍 Checking Admin in Database for:", identifier);
         const [adminResults] = await db.execute(
-            `SELECT id, password FROM Admin WHERE email = ? OR phone_number = ?`,
+            `SELECT id, password_hash FROM Admin WHERE email = ? OR phone_number = ?`,
             [identifier, identifier]
         );
 
         console.log("🗂 Admin Query Result:", adminResults);
 
         if (adminResults.length === 0) {
-            console.error("❌ Admin Not Found:", identifier);
             return res.status(404).json({ message: "Admin not found" });
         }
 
         const admin = adminResults[0];
 
-        console.log("🔑 Stored Password in DB:", admin.password);
+        console.log("🔑 Stored Password in DB:", admin.password_hash);
         console.log("🔑 Password Provided:", password);
 
-        const passwordMatch = await bcrypt.compare(password, admin.password);
+        const passwordMatch = await bcrypt.compare(password, admin.password_hash);
         console.log("🔐 Password Match Result:", passwordMatch);
 
         if (!passwordMatch) {
-            console.error("❌ Incorrect Password for:", identifier);
             return res.status(401).json({ message: "Incorrect password" });
         }
 
@@ -70,7 +66,6 @@ const sendAdminLoginOtp = async (req, res) => {
         }
 
         if (!otpSent.success) {
-            console.error("❌ OTP Sending Failed:", otpSent.error);
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
@@ -90,6 +85,7 @@ const sendAdminLoginOtp = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 
 
