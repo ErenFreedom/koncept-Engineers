@@ -20,44 +20,60 @@ const COOKIE_OPTIONS = {
 /** ✅ Send OTP for Admin Login */
 const sendAdminLoginOtp = async (req, res) => {
     try {
+        console.log("📩 Received Send OTP Request:", req.body); // 🛠 Debugging log
+
         const { identifier, password } = req.body;
 
         if (!identifier || !password) {
+            console.error("⚠️ Missing Identifier or Password in Request");
             return res.status(400).json({ message: "Identifier (email or phone) and password are required" });
         }
 
         // ✅ Check if admin exists
-        const [[admin]] = await db.execute(
+        console.log("🔍 Checking Admin in Database for:", identifier);
+        const [adminResults] = await db.execute(
             `SELECT id, password FROM Admin WHERE email = ? OR phone_number = ?`,
             [identifier, identifier]
         );
 
-        if (!admin) {
+        console.log("🗂 Admin Query Result:", adminResults);
+
+        if (adminResults.length === 0) {
+            console.error("❌ Admin Not Found:", identifier);
             return res.status(404).json({ message: "Admin not found" });
         }
 
+        const admin = adminResults[0];
+
         // ✅ Compare password
+        console.log("🔑 Verifying Password for Admin ID:", admin.id);
         const passwordMatch = await bcrypt.compare(password, admin.password);
         if (!passwordMatch) {
+            console.error("❌ Incorrect Password for:", identifier);
             return res.status(401).json({ message: "Incorrect password" });
         }
 
         // ✅ Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log("🛠 Generated OTP:", otp);
 
         // ✅ Send OTP via Email or SMS
         let otpSent = { success: false };
         if (identifier.includes("@")) {
+            console.log("📧 Sending OTP via Email:", identifier);
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
+            console.log("📱 Sending OTP via SMS:", identifier);
             otpSent = await sendOtpSms(identifier, otp);
         }
 
         if (!otpSent.success) {
+            console.error("❌ OTP Sending Failed:", otpSent.error);
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
         // ✅ Store OTP in the `LoginOtp` table
+        console.log("📝 Storing OTP in Database");
         await db.execute(
             `INSERT INTO LoginOtp (identifier, otp, created_at, expires_at)
              VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
@@ -65,13 +81,15 @@ const sendAdminLoginOtp = async (req, res) => {
             [identifier, otp, otp]
         );
 
+        console.log("✅ OTP Successfully Sent and Stored for:", identifier);
         res.status(200).json({ message: "OTP sent successfully" });
 
     } catch (error) {
-        console.error("❌ Error sending OTP:", error);
+        console.error("❌ Error in sendAdminLoginOtp:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 
 /** ✅ Verify OTP & Authenticate Admin */

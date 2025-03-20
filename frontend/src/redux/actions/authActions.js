@@ -12,7 +12,6 @@ export const ADMIN_LOGOUT = "ADMIN_LOGOUT";
 
 // ✅ Send OTP for Login
 export const sendAdminOtp = (identifier, password) => async (dispatch) => {
-  console.log("Received Request Body:", req.body);
   try {
     dispatch({ type: ADMIN_LOGIN_REQUEST });
 
