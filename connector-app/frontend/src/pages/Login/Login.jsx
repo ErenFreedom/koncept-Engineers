@@ -6,12 +6,11 @@ import Login2 from "../../assets/Login2.jpg";
 import Login3 from "../../assets/Login3.png";
 import { useNavigate } from "react-router-dom";
 import { FaCheckCircle } from "react-icons/fa";
+import axios from "axios"; // ✅ Import Axios for API calls
 import Footer from "../../components/Footer/Footer";
 
 const Login = () => {
     const navigate = useNavigate();
-
-    // Slideshow content
     const images = [Login1, Login2, Login3];
     const texts = [
         "AI-Powered Secure Authentication",
@@ -20,6 +19,8 @@ const Login = () => {
     ];
     
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [buttonText, setButtonText] = useState("Login");
@@ -27,68 +28,96 @@ const Login = () => {
     useEffect(() => {
         const interval = setInterval(() => {
             setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-        }, 3000); // Change every 3 seconds
+        }, 3000);
         return () => clearInterval(interval);
     }, []);
 
-    const handleLogin = () => {
+    /** ✅ Handle Login (Send OTP) */
+    const handleLogin = async () => {
+        if (!email || !password) {
+            alert("Please enter both email and password.");
+            return;
+        }
+
         setLoading(true);
         setButtonText("Processing...");
 
-        setTimeout(() => {
+        try {
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/send-otp`, {
+                identifier: email,
+                password
+            });
+
+            console.log("✅ OTP Sent Successfully:", response.data);
             setLoading(false);
             setSuccess(true);
-            setButtonText("Proceed to Verify Server");
-        }, 5000);
+            setButtonText("Proceed to Verify OTP");
+
+            // ✅ Store email temporarily
+            localStorage.setItem("identifier", email);
+        } catch (error) {
+            console.error("❌ Error Sending OTP:", error.response?.data || error.message);
+            setLoading(false);
+            setButtonText("Login");
+            alert(error.response?.data?.message || "Failed to send OTP. Try again.");
+        }
     };
 
     return (
         <div className="login-container">
-            {/* Header Section */}
             <header className="header">
                 <div className="logo-container">
                     <img src={logo} alt="Logo" className="logo" />
                 </div>
-
                 <div className="button-container">
                     <button className="button-81" onClick={() => navigate("/")}>Home Page</button>
                     <button className="button-81">Sign Up</button>
                 </div>
             </header>
 
-            {/* Main Content - Split into Left (Form) and Right (Slideshow) */}
             <div className="content">
-                {/* Left Side - Login Form */}
                 <div className="login-form">
                     <h2>Login</h2>
                     <div className="input-group">
-                        <input type="email" placeholder="Enter Email" className="input-field" />
-                        <input type="password" placeholder="Enter Password" className="input-field" />
+                        <input 
+                            type="email" 
+                            placeholder="Enter Email" 
+                            className="input-field" 
+                            value={email} 
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                        <input 
+                            type="password" 
+                            placeholder="Enter Password" 
+                            className="input-field" 
+                            value={password} 
+                            onChange={(e) => setPassword(e.target.value)}
+                        />
                     </div>
-                    <button className="button-81" onClick={success ? () => navigate("/desigo-auth") : handleLogin}>
+                    <button 
+                        className="button-81" 
+                        onClick={success ? () => navigate("/desigo-auth") : handleLogin}
+                    >
                         {buttonText}
                     </button>
 
-                    {/* Loading & Success Status */}
                     <div className="loading-success-container">
                         {loading && <div className="loading-spinner"></div>}
                         {success && (
                             <div className="success-container">
                                 <FaCheckCircle className="success-icon" />
-                                <span className="success-text">Login Successful</span>
+                                <span className="success-text">OTP Sent! Proceed to Verification</span>
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Right Side - Image & Text Slideshow */}
                 <div className="image-slideshow">
                     <img src={images[currentIndex]} alt="Slideshow" className="slideshow-image" />
                     <p className="slideshow-text">{texts[currentIndex]}</p>
                 </div>
             </div>
 
-            {/* Footer Section */}
             <Footer />
         </div>
     );

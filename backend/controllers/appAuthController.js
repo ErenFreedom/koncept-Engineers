@@ -20,19 +20,52 @@ const COOKIE_OPTIONS = {
 /** ✅ Send OTP for Admin App Login */
 const sendAdminAppLoginOtp = async (req, res) => {
     try {
-        const { identifier } = req.body; // Email or phone number
+        console.log("📩 Incoming Request Body:", req.body);
 
-        if (!identifier) {
-            return res.status(400).json({ message: "Identifier (email or phone) is required" });
+        const { identifier, password } = req.body; // Require both email/phone and password
+
+        if (!identifier || !password) {
+            return res.status(400).json({ message: "Email/Phone and Password are required" });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
+        console.log("🔍 Fetching Admin from Database:", identifier);
+
+        // ✅ Check if Admin Exists
+        const [adminResults] = await db.execute(
+            `SELECT id, password_hash FROM Admin WHERE email = ? OR phone_number = ?`,
+            [identifier, identifier]
+        );
+
+        console.log("🗂 Admin Query Result:", adminResults);
+
+        if (adminResults.length === 0) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        const admin = adminResults[0];
+
+        console.log("🔑 Stored Password Hash:", admin.password_hash);
+        console.log("🔑 Entered Password:", password);
+
+        // ✅ Verify Password using bcrypt
+        const passwordMatch = await bcrypt.compare(password, admin.password_hash);
+        console.log("🔐 Password Match:", passwordMatch);
+
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Incorrect password" });
+        }
+
+        // ✅ Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        console.log("🛠 Generated OTP:", otp);
 
         // ✅ Send OTP via Email or SMS
         let otpSent = { success: false };
         if (identifier.includes("@")) {
+            console.log("📧 Sending OTP via Email:", identifier);
             otpSent = await sendOtpToEmail(identifier, otp);
         } else {
+            console.log("📱 Sending OTP via SMS:", identifier);
             otpSent = await sendOtpSms(identifier, otp);
         }
 
@@ -40,7 +73,7 @@ const sendAdminAppLoginOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in a `AppLoginOtp` table
+        console.log("📝 Storing OTP in Database");
         await db.execute(
             `INSERT INTO AppLoginOtp (identifier, otp, created_at, expires_at)
              VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
@@ -48,6 +81,7 @@ const sendAdminAppLoginOtp = async (req, res) => {
             [identifier, otp, otp]
         );
 
+        console.log("✅ OTP Successfully Sent and Stored for:", identifier);
         res.status(200).json({ message: "OTP sent successfully" });
 
     } catch (error) {

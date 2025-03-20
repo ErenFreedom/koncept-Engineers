@@ -28,8 +28,26 @@ db.serialize(() => {
     });
 });
 
-// ✅ Create table if not exists
-const createTableSQL = `
+// ✅ **Create Authentication Table for Desigo Token**
+const createAuthTableSQL = `
+    CREATE TABLE IF NOT EXISTS DesigoAuthTokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        token TEXT NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+`;
+
+db.run(createAuthTableSQL, (err) => {
+    if (err) {
+        console.error("❌ Error creating DesigoAuthTokens table:", err.message);
+    } else {
+        console.log("✅ DesigoAuthTokens table created.");
+    }
+});
+
+// ✅ **Create Sensor Data Table**
+const createSensorTableSQL = `
     CREATE TABLE IF NOT EXISTS sensor_data (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         sensor_id INTEGER,
@@ -47,9 +65,9 @@ const createTableSQL = `
     );
 `;
 
-db.run(createTableSQL, (err) => {
+db.run(createSensorTableSQL, (err) => {
     if (err) {
-        console.error("❌ Error creating table:", err.message);
+        console.error("❌ Error creating sensor_data table:", err.message);
     } else {
         console.log("✅ Table sensor_data created or already exists.");
     }
@@ -106,6 +124,20 @@ db.serialize(() => {
 
     stmt.finalize(() => {
         console.log("✅ 600 rows of sensor data inserted.");
-        db.close();
     });
+
+    // ✅ Insert Dummy Expired Token for Testing (You can remove this later)
+    db.run(
+        `INSERT INTO DesigoAuthTokens (token, expires_at) VALUES (?, DATETIME('now', '-1 hours'))`,
+        ["expired_test_token"],
+        (err) => {
+            if (err) {
+                console.error("❌ Error inserting test token:", err.message);
+            } else {
+                console.log("✅ Dummy expired token inserted for testing.");
+            }
+        }
+    );
+
+    db.close();
 });

@@ -1,13 +1,45 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 const sqlite3 = require("sqlite3").verbose();
 
 const app = express();
-const PORT = 8085; // Port for Dummy Desigo CC Server
+const PORT = 8085; // Dummy Desigo CC Server Port
+const SECRET_KEY = "desigo_secret"; // Change this to a strong secret key
+
 app.use(cors()); // Enable CORS
 app.use(express.json()); // Enable JSON parsing
 
-// ✅ Connect to SQLite database
+// ✅ **Login Route (Returns JWT Token)**
+app.post("/api/auth/login", (req, res) => {
+    const { username, password } = req.body;
+
+    if (username === "admin" && password === "passwd") {
+        const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: "6h" });
+
+        console.log("✅ Token issued:", token);
+        res.json({ token });
+    } else {
+        res.status(401).json({ error: "Invalid username or password" });
+    }
+});
+
+// ✅ **Middleware to Validate Token**
+const authenticateToken = (req, res, next) => {
+    const authHeader = req.headers["authorization"];
+    const token = authHeader && authHeader.split(" ")[1];
+
+    if (!token) return res.status(401).json({ error: "Unauthorized: No Token Provided" });
+
+    jwt.verify(token, SECRET_KEY, (err, user) => {
+        if (err) return res.status(403).json({ error: "Forbidden: Invalid Token" });
+
+        req.user = user;
+        next();
+    });
+};
+
+// ✅ **Connect to SQLite database**
 const db = new sqlite3.Database("./desigo_sensors.db", sqlite3.OPEN_READWRITE, (err) => {
     if (err) {
         console.error("❌ Error opening database:", err.message);
@@ -16,8 +48,8 @@ const db = new sqlite3.Database("./desigo_sensors.db", sqlite3.OPEN_READWRITE, (
     }
 });
 
-// ✅ Fetch **latest** sensor data for a given sensor ID (Simulating Real API Response)
-app.get("/api/sensor/:id", (req, res) => {
+// ✅ **Protected Route: Fetch Latest Sensor Data**
+app.get("/api/sensor/:id", authenticateToken, (req, res) => {
     const sensorId = req.params.id;
     const query = `
         SELECT * FROM sensor_data 
@@ -54,12 +86,12 @@ app.get("/api/sensor/:id", (req, res) => {
             }
         ];
 
-        res.json(responseData); // ✅ Send response as an array (same as real Desigo API)
+        res.json(responseData);
     });
 });
 
-// ✅ Fetch **latest 10 sensor readings** (General route)
-app.get("/api/sensors", (req, res) => {
+// ✅ **Protected Route: Fetch Last 10 Sensor Readings**
+app.get("/api/sensors", authenticateToken, (req, res) => {
     const query = `
         SELECT * FROM (
             SELECT *, ROW_NUMBER() OVER (PARTITION BY sensor_id ORDER BY timestamp DESC) AS rn
