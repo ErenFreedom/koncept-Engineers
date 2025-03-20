@@ -15,15 +15,23 @@ export const sendAdminOtp = (identifier, password) => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_LOGIN_REQUEST });
 
-    await axios.post(
+    const requestData = { identifier, password };
+    console.log("📩 Sending Request to Backend:", requestData); // ✅ Debug Log
+
+    const response = await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`,
-      { identifier, password }, // ✅ Include password
-      { headers: { "Content-Type": "application/json" } }
+      requestData,
+      {
+        headers: { "Content-Type": "application/json" }
+      }
     );
+
+    console.log("✅ OTP Sent Response:", response.data); // ✅ Debug Log
 
     dispatch({ type: ADMIN_LOGIN_OTP_SENT });
     toast.success(`OTP sent to ${identifier}`);
   } catch (error) {
+    console.error("❌ Error Sending OTP:", error.response?.data);
     dispatch({
       type: ADMIN_LOGIN_FAIL,
       payload: error.response?.data?.message || "OTP sending failed",
@@ -31,6 +39,7 @@ export const sendAdminOtp = (identifier, password) => async (dispatch) => {
     toast.error(error.response?.data?.message || "OTP sending failed");
   }
 };
+
 
 
 // ✅ Verify OTP and Authenticate Admin
