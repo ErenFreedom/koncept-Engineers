@@ -19,48 +19,48 @@ const AdminAuth = () => {
 
   // ✅ Send OTP
   // ✅ Send OTP (Fixed)
-const handleSendOtp = async (e) => {
-  e.preventDefault();
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
 
-  if (!identifier || !password) {
+    if (!identifier || !password) {
       toast.error("Please enter both Email/Phone and Password.");
       return;
-  }
+    }
 
-  try {
+    try {
       await dispatch(sendAdminOtp(identifier, password)); // ✅ Wait for API response
       localStorage.setItem("identifier", identifier);
       setOtpSent(true); // ✅ Now allow OTP input
-  } catch (error) {
+    } catch (error) {
       console.error("❌ OTP sending failed:", error);
       toast.error("Failed to send OTP.");
-  }
-};
+    }
+  };
 
 
 
   // ✅ Verify OTP & Authenticate
   // ✅ Verify OTP & Redirect (Fixed)
-const handleVerifyOtp = async (e) => {
-  e.preventDefault();
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
 
-  try {
+    try {
       await dispatch(verifyAdminOtp(identifier, otp)); // ✅ Wait for API response
 
       // ✅ Get `adminId` from local storage after successful verification
       setTimeout(() => {
-          const storedAdminId = localStorage.getItem("adminId");
-          if (storedAdminId) {
-              navigate(`/Dashboard/${storedAdminId}`);
-          } else {
-              toast.error("Login failed. Please try again.");
-          }
+        const storedAdminId = localStorage.getItem("adminId");
+        if (storedAdminId) {
+          navigate(`/Dashboard/${storedAdminId}`);
+        } else {
+          toast.error("Login failed. Please try again.");
+        }
       }, 1000);
-  } catch (error) {
+    } catch (error) {
       console.error("❌ OTP verification failed:", error);
       toast.error("Invalid OTP. Please try again.");
-  }
-};
+    }
+  };
 
 
 
