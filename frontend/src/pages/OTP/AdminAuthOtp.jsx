@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { verifyAdminOtp } from "../../redux/actions/authActions";
 import { useNavigate } from "react-router-dom";
 import AuthHeader from "../../components/AuthPage/AuthHeader";
+import { jwtDecode } from "jwt-decode"; // Import jwtDecode for token decoding
 import "./Otp.css";
 
 const AdminAuthOtp = () => {
@@ -13,7 +14,7 @@ const AdminAuthOtp = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { loading, error } = useSelector((state) => state.auth);
-  const storedIdentifier = localStorage.getItem("adminIdentifier"); // Get stored email/phone
+  const storedIdentifier = localStorage.getItem("identifier"); // Ensure the correct key is used
 
   useEffect(() => {
     if (timer > 0) {
@@ -37,13 +38,36 @@ const AdminAuthOtp = () => {
     }
   };
 
-  const handleVerifyOtp = () => {
+  const handleVerifyOtp = async () => {
     const finalOtp = otp.join("");
     if (finalOtp.length !== 6) {
       return alert("Enter a valid 6-digit OTP");
     }
 
-    dispatch(verifyAdminOtp(storedIdentifier, finalOtp, navigate));
+    try {
+      const response = await dispatch(verifyAdminOtp(storedIdentifier, finalOtp));
+
+      if (response && response.payload && response.payload.accessToken) {
+        // ✅ Store token in localStorage
+        localStorage.setItem("adminToken", response.payload.accessToken);
+
+        // ✅ Decode JWT to extract `adminId`
+        const decodedToken = jwtDecode(response.payload.accessToken);
+        const adminId = decodedToken.adminId;
+        console.log("✅ Extracted adminId:", adminId); // Debugging log
+
+        // ✅ Store `adminId` for use
+        localStorage.setItem("adminId", adminId);
+
+        // ✅ Navigate to the dashboard using the extracted `adminId`
+        navigate(`/Dashboard/${adminId}`);
+      } else {
+        alert("Login failed. Please try again.");
+      }
+    } catch (error) {
+      console.error("❌ OTP verification failed:", error);
+      alert("Invalid OTP. Please try again.");
+    }
   };
 
   return (
