@@ -25,9 +25,14 @@ const Dashboard = () => {
       // ✅ Decode JWT Token
       const decoded = jwtDecode(token);
 
+      console.log("🔍 Decoded Token Data:", decoded);
+      console.log("🔍 URL Admin ID:", id);
+
       // ✅ Ensure adminId matches the URL parameter
-      if (decoded.adminId !== id) {
+      if (decoded.adminId.toString() !== id.toString()) {
+        console.error("❌ Unauthorized access! Token ID does not match URL ID.");
         toast.error("Unauthorized access!");
+        localStorage.removeItem("adminToken"); // Force logout
         navigate("/AuthAdmin");
         return;
       }
@@ -46,6 +51,7 @@ const Dashboard = () => {
     } catch (error) {
       console.error("❌ Error decoding token:", error);
       toast.error("Invalid session. Please log in again.");
+      localStorage.removeItem("adminToken"); // Force logout
       navigate("/AuthAdmin");
     }
   }, [id, navigate]);
