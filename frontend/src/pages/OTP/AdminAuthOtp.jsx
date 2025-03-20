@@ -1,20 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { verifyAdminOtp } from "../../redux/actions/authActions";
+import axios from "axios";
+import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import AuthHeader from "../../components/AuthPage/AuthHeader";
-import { jwtDecode } from "jwt-decode"; // Import jwtDecode for token decoding
+import { jwtDecode } from "jwt-decode";
 import "./Otp.css";
 
 const AdminAuthOtp = () => {
   const [otp, setOtp] = useState(Array(6).fill(""));
   const [timer, setTimer] = useState(120);
   const [isResendActive, setIsResendActive] = useState(false);
-
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { loading, error } = useSelector((state) => state.auth);
-  const storedIdentifier = localStorage.getItem("identifier"); // Ensure the correct key is used
+  const storedIdentifier = localStorage.getItem("identifier"); // Get stored identifier
 
   useEffect(() => {
     if (timer > 0) {
@@ -41,32 +38,31 @@ const AdminAuthOtp = () => {
   const handleVerifyOtp = async () => {
     const finalOtp = otp.join("");
     if (finalOtp.length !== 6) {
-      return alert("Enter a valid 6-digit OTP");
+      return toast.error("Enter a valid 6-digit OTP.");
     }
 
     try {
-      const response = await dispatch(verifyAdminOtp(storedIdentifier, finalOtp));
+      console.log("🔍 Verifying OTP for:", storedIdentifier);
 
-      if (response && response.payload && response.payload.accessToken) {
-        // ✅ Store token in localStorage
-        localStorage.setItem("adminToken", response.payload.accessToken);
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/verify-otp`,
+        { identifier: storedIdentifier, otp: finalOtp, rememberMe: true },
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-        // ✅ Decode JWT to extract `adminId`
-        const decodedToken = jwtDecode(response.payload.accessToken);
-        const adminId = decodedToken.adminId;
-        console.log("✅ Extracted adminId:", adminId); // Debugging log
+      console.log("✅ OTP Verified Successfully:", response.data);
+      toast.success("Login Successful!");
 
-        // ✅ Store `adminId` for use
-        localStorage.setItem("adminId", adminId);
+      // ✅ Store token & decode adminId
+      localStorage.setItem("adminToken", response.data.accessToken);
+      const decodedToken = jwtDecode(response.data.accessToken);
+      localStorage.setItem("adminId", decodedToken.adminId);
 
-        // ✅ Navigate to the dashboard using the extracted `adminId`
-        navigate(`/Dashboard/${adminId}`);
-      } else {
-        alert("Login failed. Please try again.");
-      }
+      // ✅ Navigate to the dashboard using the extracted `adminId`
+      navigate(`/Dashboard/${decodedToken.adminId}`);
     } catch (error) {
-      console.error("❌ OTP verification failed:", error);
-      alert("Invalid OTP. Please try again.");
+      console.error("❌ OTP verification failed:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "OTP verification failed");
     }
   };
 
@@ -91,11 +87,9 @@ const AdminAuthOtp = () => {
           ))}
         </div>
 
-        <button className="otp-button" onClick={handleVerifyOtp} disabled={loading}>
-          {loading ? "Verifying..." : "Verify OTP ✅"}
+        <button className="otp-button" onClick={handleVerifyOtp}>
+          Verify OTP ✅
         </button>
-
-        {error && <p className="error-message">{error}</p>}
 
         <p className="resend-text">
           Didn't receive an OTP?{" "}

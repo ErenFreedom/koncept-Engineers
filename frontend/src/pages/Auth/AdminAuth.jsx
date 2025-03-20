@@ -1,68 +1,47 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import axios from "axios";
 import { toast } from "react-toastify";
-import { sendAdminOtp, verifyAdminOtp } from "../../redux/actions/authActions";
 import AuthHeader from "../../components/AuthPage/AuthHeader";
 import HomeFooter from "../../components/HomePage/HomeFooter";
 import { useNavigate } from "react-router-dom";
 import "./Auth.css";
 
 const AdminAuth = () => {
-  const [identifier, setIdentifier] = useState(""); // Can be email or phone
+  const [identifier, setIdentifier] = useState(""); // Email or phone
   const [password, setPassword] = useState(""); // Password field
-  const [otp, setOtp] = useState(""); // OTP field
   const [otpSent, setOtpSent] = useState(false); // Track OTP status
-
-  const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
   const navigate = useNavigate();
 
   // ✅ Send OTP
-  // ✅ Send OTP (Fixed)
   const handleSendOtp = async (e) => {
     e.preventDefault();
 
-    if (!identifier || !password) {
+    if (!identifier.trim() || !password.trim()) {
       toast.error("Please enter both Email/Phone and Password.");
+      console.error("⚠️ Missing Identifier or Password");
       return;
     }
 
     try {
-      await dispatch(sendAdminOtp(identifier, password)); // ✅ Wait for API response
-      localStorage.setItem("identifier", identifier);
-      setOtpSent(true); // ✅ Now allow OTP input
+      console.log("📩 Sending Request to Backend:", { identifier, password });
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/send-otp`,
+        { identifier: identifier.trim(), password: password.trim() },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("✅ OTP Sent Response:", response.data);
+      toast.success(`OTP sent to ${identifier}`);
+
+      localStorage.setItem("identifier", identifier.trim());
+      setOtpSent(true);
+      navigate("/AuthAdminOtp"); // Navigate to OTP page
     } catch (error) {
-      console.error("❌ OTP sending failed:", error);
-      toast.error("Failed to send OTP.");
+      console.error("❌ OTP sending failed:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "OTP sending failed");
     }
   };
-
-
-
-  // ✅ Verify OTP & Authenticate
-  // ✅ Verify OTP & Redirect (Fixed)
-  const handleVerifyOtp = async (e) => {
-    e.preventDefault();
-
-    try {
-      await dispatch(verifyAdminOtp(identifier, otp)); // ✅ Wait for API response
-
-      // ✅ Get `adminId` from local storage after successful verification
-      setTimeout(() => {
-        const storedAdminId = localStorage.getItem("adminId");
-        if (storedAdminId) {
-          navigate(`/Dashboard/${storedAdminId}`);
-        } else {
-          toast.error("Login failed. Please try again.");
-        }
-      }, 1000);
-    } catch (error) {
-      console.error("❌ OTP verification failed:", error);
-      toast.error("Invalid OTP. Please try again.");
-    }
-  };
-
-
 
   return (
     <div>
@@ -94,31 +73,14 @@ const AdminAuth = () => {
                 />
               </label>
 
-              <button className="auth-button" onClick={handleSendOtp} disabled={loading}>
-                {loading ? "Sending OTP..." : "Verify"}
+              <button className="auth-button" onClick={handleSendOtp}>
+                Send OTP
               </button>
             </>
           ) : (
-            <>
-              <label className="form-label">
-                Enter OTP
-                <input
-                  type="text"
-                  className="form-input"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                />
-              </label>
-
-              <button className="auth-button" onClick={handleVerifyOtp} disabled={loading}>
-                {loading ? "Verifying OTP..." : "Verify OTP"}
-              </button>
-            </>
+            <p>OTP has been sent! Please check your email/phone.</p>
           )}
         </div>
-
-        {error && <p className="error-message">{error}</p>}
 
         <div className="forgot-password-container">
           <button className="forgot-password-link" onClick={() => alert("Forgot Password functionality coming soon!")}>
