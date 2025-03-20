@@ -2,9 +2,8 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
-import DashboardHeader from "../../components/DashboardHeader/DashboardHeader"; 
+import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 import HomeFooter from "../../components/HomePage/HomeFooter";
-import axios from "axios";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -22,28 +21,33 @@ const Dashboard = () => {
       return;
     }
 
-    // ✅ Decode JWT Token
-    const decoded = jwtDecode(token);
-    
-    if (decoded.adminId !== id) {
-      toast.error("Unauthorized access!");
-      navigate("/AuthAdmin"); // Redirect if ID doesn't match
-      return;
-    }
+    try {
+      // ✅ Decode JWT Token
+      const decoded = jwtDecode(token);
 
-    // ✅ Fetch Admin Details from API
-    const fetchAdminDetails = async () => {
-      try {
-        const { data } = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/admin/${id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setAdmin(data);
-      } catch (error) {
-        toast.error("Failed to load admin details.");
+      // ✅ Ensure adminId matches the URL parameter
+      if (decoded.adminId !== id) {
+        toast.error("Unauthorized access!");
+        navigate("/AuthAdmin");
+        return;
       }
-    };
 
-    fetchAdminDetails();
+      // ✅ Set Admin Details from JWT (TEMP FIX)
+      setAdmin({
+        id: decoded.adminId,
+        firstName: decoded.firstName,
+        lastName: decoded.lastName,
+        email: decoded.email,
+        phoneNumber: decoded.phoneNumber,
+        companyId: decoded.companyId,
+        nationality: decoded.nationality
+      });
+
+    } catch (error) {
+      console.error("❌ Error decoding token:", error);
+      toast.error("Invalid session. Please log in again.");
+      navigate("/AuthAdmin");
+    }
   }, [id, navigate]);
 
   if (!admin) return <p>Loading Dashboard...</p>;
