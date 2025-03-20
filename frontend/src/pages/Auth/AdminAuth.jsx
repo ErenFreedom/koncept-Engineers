@@ -36,7 +36,7 @@ const AdminAuth = () => {
 
       localStorage.setItem("identifier", identifier.trim());
       setOtpSent(true);
-      navigate("/AuthAdminOtp"); // Navigate to OTP page
+      navigate("/AdminAuthOtp"); // Navigate to OTP page
     } catch (error) {
       console.error("❌ OTP sending failed:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "OTP sending failed");
