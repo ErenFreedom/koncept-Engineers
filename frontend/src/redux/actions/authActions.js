@@ -11,24 +11,27 @@ export const ADMIN_LOGIN_FAIL = "ADMIN_LOGIN_FAIL";
 export const ADMIN_LOGOUT = "ADMIN_LOGOUT";
 
 // ✅ Send OTP for Login
-export const sendAdminOtp = (identifier) => async (dispatch) => {
+export const sendAdminOtp = (identifier, password) => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_LOGIN_REQUEST });
 
-    // ✅ Send only the identifier
     await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`,
-      { identifier }, // ❌ Removed password
+      { identifier, password }, // ✅ Include password
       { headers: { "Content-Type": "application/json" } }
     );
 
     dispatch({ type: ADMIN_LOGIN_OTP_SENT });
     toast.success(`OTP sent to ${identifier}`);
   } catch (error) {
-    dispatch({ type: ADMIN_LOGIN_FAIL, payload: error.response?.data?.message || "OTP sending failed" });
+    dispatch({
+      type: ADMIN_LOGIN_FAIL,
+      payload: error.response?.data?.message || "OTP sending failed",
+    });
     toast.error(error.response?.data?.message || "OTP sending failed");
   }
 };
+
 
 // ✅ Verify OTP and Authenticate Admin
 export const verifyAdminOtp = (identifier, otp) => async (dispatch) => {

@@ -20,13 +20,30 @@ const COOKIE_OPTIONS = {
 /** ✅ Send OTP for Admin Login */
 const sendAdminLoginOtp = async (req, res) => {
     try {
-        const { identifier } = req.body;
+        const { identifier, password } = req.body;
 
-        if (!identifier) {
-            return res.status(400).json({ message: "Identifier (email or phone) is required" });
+        if (!identifier || !password) {
+            return res.status(400).json({ message: "Identifier (email or phone) and password are required" });
         }
 
-        const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate OTP
+        // ✅ Check if admin exists
+        const [[admin]] = await db.execute(
+            `SELECT id, password FROM Admin WHERE email = ? OR phone_number = ?`,
+            [identifier, identifier]
+        );
+
+        if (!admin) {
+            return res.status(404).json({ message: "Admin not found" });
+        }
+
+        // ✅ Compare password
+        const passwordMatch = await bcrypt.compare(password, admin.password);
+        if (!passwordMatch) {
+            return res.status(401).json({ message: "Incorrect password" });
+        }
+
+        // ✅ Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
         // ✅ Send OTP via Email or SMS
         let otpSent = { success: false };
@@ -40,7 +57,7 @@ const sendAdminLoginOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in a `LoginOtp` table
+        // ✅ Store OTP in the `LoginOtp` table
         await db.execute(
             `INSERT INTO LoginOtp (identifier, otp, created_at, expires_at)
              VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
@@ -55,6 +72,7 @@ const sendAdminLoginOtp = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 /** ✅ Verify OTP & Authenticate Admin */
 const verifyAdminLoginOtp = async (req, res) => {
