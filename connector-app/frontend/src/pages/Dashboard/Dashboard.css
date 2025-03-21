@@ -17,9 +17,10 @@
     padding: 20px 40px;
     width: 100%;
     height: 80px;
+    position: relative;
 }
 
-/* Logo Styling - Extreme Left */
+/* Logo Styling - Left */
 .dashboard-logo-container {
     flex-grow: 1;
 }
@@ -29,34 +30,13 @@
     height: auto;
 }
 
-/* Center Header - Navigation */
-.dashboard-center-menu {
-    flex-grow: 3; /* Reduce the width to pull it closer to the left */
-    display: flex;
-    gap: 30px; /* Reduce spacing between buttons */
-    justify-content: center;
-    align-items: center;
-    margin-left: -200px; /* Move the buttons towards the logo */
-}
-
-/* Navigation Buttons */
-.dashboard-nav-button {
-    background-color: transparent;
-    border: 2px solid white;
-    color: white;
-    font-size: 1.2rem;
+/* Welcome Message - Center */
+.dashboard-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2rem;
     font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Active State - Apple Gold */
-.dashboard-nav-button.active {
-    background-color: #FFD700; /* Apple Gold */
-    color: black;
-    border-color: #FFD700;
 }
 
 /* Right Side - Profile Icon & Home */
@@ -76,7 +56,7 @@
 }
 
 .dashboard-profile-icon:hover {
-    color: #FFD700;
+    color: #FFD700; /* Apple Gold */
 }
 
 /* Home Button */
@@ -98,28 +78,41 @@
     color: #fff;
 }
 
-/* Main Content Section */
-.dashboard-content {
-    flex-grow: 1;
+/* Navigation Buttons Section */
+.dashboard-nav {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
+    align-items: center;
+    gap: 1050px; /* Creates space between buttons */
+    margin-top: 80px;
+}
+
+/* Button Styling */
+.dashboard-nav-button {
+    background-color: transparent;
+    border: 2px solid white;
+    color: white;
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding: 12px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Active Button State */
+.dashboard-nav-button.active {
+    background-color: #FFD700; /* Apple Gold */
+    color: black;
+    border-color: #FFD700;
+}
+
+/* Page Content */
+.dashboard-page-content {
+    margin-top: 40px;
+    font-size: 1.5rem;
+    font-weight: bold;
     text-align: center;
-    padding: 40px;
-}
-
-/* Title Styling */
-.dashboard-title {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-/* Subtext */
-.dashboard-subtext {
-    font-size: 1.2rem;
-    max-width: 600px;
-    margin-bottom: 20px;
 }
 
 /* Prevent Scrolling */

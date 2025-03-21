@@ -6,7 +6,7 @@ import Login2 from "../../assets/Login2.jpg";
 import Login3 from "../../assets/Login3.png";
 import { useNavigate } from "react-router-dom";
 import { FaCheckCircle } from "react-icons/fa";
-import axios from "axios"; // ✅ Import Axios for API calls
+import axios from "axios";
 import Footer from "../../components/Footer/Footer";
 
 const Login = () => {
@@ -55,6 +55,17 @@ const Login = () => {
 
             // ✅ Store email temporarily
             localStorage.setItem("identifier", email);
+
+            // ✅ Store the received token in localStorage
+            if (response.data.token) {
+                localStorage.setItem("adminToken", response.data.token);
+                console.log("🔐 Admin Token Stored:", response.data.token);
+            }
+
+            // ✅ Redirect to OTP Verification Page
+            setTimeout(() => {
+                navigate("/otp-verification");
+            }, 1500);
         } catch (error) {
             console.error("❌ Error Sending OTP:", error.response?.data || error.message);
             setLoading(false);
@@ -96,7 +107,8 @@ const Login = () => {
                     </div>
                     <button 
                         className="button-81" 
-                        onClick={success ? () => navigate("/desigo-auth") : handleLogin}
+                        onClick={handleLogin}
+                        disabled={loading}
                     >
                         {buttonText}
                     </button>

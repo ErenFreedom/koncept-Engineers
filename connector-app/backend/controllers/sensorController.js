@@ -38,20 +38,32 @@ const addSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor API, name, and rate limit are required" });
         }
 
-        // ✅ Fetch stored JWT from local DB
-        let token;
+        // ✅ Fetch stored cloud JWT (AuthTokens table)
+        let cloudToken;
         try {
-            token = await getStoredToken();
-            console.log(`🔍 Using Token: ${token}`);
+            cloudToken = await getStoredToken();
+            console.log(`🔐 Using Cloud Token: ${cloudToken}`);
         } catch (error) {
-            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
+            return res.status(401).json({ message: "Unauthorized: Cloud token missing or invalid" });
         }
 
-        // ✅ Verify if the sensor API is accessible
+        // ✅ Fetch Desigo token from request header
+        const desigoAuthHeader = req.headers["desigo-authorization"];
+        const desigoToken = desigoAuthHeader && desigoAuthHeader.split(" ")[1];
+
+        if (!desigoToken) {
+            return res.status(401).json({ message: "Unauthorized: Desigo token missing" });
+        }
+
+        // ✅ Verify if the sensor API is accessible with Desigo Token
         let sensorData;
         try {
             console.log(`🔍 Fetching Sensor Data from: ${sensorApi}`);
-            const response = await axios.get(sensorApi);
+            const response = await axios.get(sensorApi, {
+                headers: {
+                    Authorization: `Bearer ${desigoToken}`
+                }
+            });
             sensorData = response.data;
             console.log(`✅ Sensor Data Received:`, sensorData);
         } catch (error) {
@@ -83,13 +95,16 @@ const addSensor = async (req, res) => {
                     dataType: DataType,
                     isActive: false, // Initially inactive
                 },
-                { headers: { Authorization: `Bearer ${token}` } }
+                { headers: { Authorization: `Bearer ${cloudToken}` } }
             );
 
             console.log("✅ Sensor added successfully to Cloud:", cloudResponse.data);
         } catch (error) {
             console.error("❌ Failed to add sensor to cloud:", error.response?.data || error.message);
-            return res.status(500).json({ message: "Failed to add sensor to cloud", error: error.response?.data || error.message });
+            return res.status(500).json({
+                message: "Failed to add sensor to cloud",
+                error: error.response?.data || error.message
+            });
         }
 
         // ✅ Insert Sensor into Local Databases (`LocalSensorBank` & `LocalSensorAPIs`)
@@ -126,7 +141,6 @@ const addSensor = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
-
 
 /** ✅ Delete a Sensor (Connector Requests Cloud to Delete + Remove from Local DB) */
 const deleteSensor = async (req, res) => {

@@ -196,5 +196,27 @@ const removeActiveSensor = async (req, res) => {
     }
 };
 
+const getAllActiveSensors = async (req, res) => {
+    try {
+        // 🔹 Decode JWT to get `companyId`
+        const adminDetails = getAdminDetailsFromToken(req);
+        if (!adminDetails) {
+            return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
+        }
+
+        const { companyId } = adminDetails;
+        const activeSensorTable = `Sensor_${companyId}`;
+
+        // ✅ Fetch all active sensors
+        const [activeSensors] = await db.execute(`SELECT * FROM ${activeSensorTable} WHERE is_active = 1`);
+
+        res.status(200).json({ sensors: activeSensors });
+
+    } catch (error) {
+        console.error("❌ Error fetching active sensors:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
 /** ✅ Export All Functions */
-module.exports = { activateSensor, deactivateSensor, removeActiveSensor };
+module.exports = { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensors };

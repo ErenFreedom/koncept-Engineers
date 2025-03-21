@@ -257,6 +257,45 @@ const removeActiveSensor = async (req, res) => {
 
 
 
+const getAllActiveSensors = async (req, res) => {
+    try {
+        // ✅ Fetch stored JWT from local DB
+        let token;
+        try {
+            token = await getStoredToken();
+            console.log(`🔍 Using Token: ${token}`);
+        } catch (error) {
+            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
+        }
+
+        // ✅ Get companyId from JWT
+        let companyId;
+        try {
+            companyId = await getCompanyIdFromToken();
+        } catch (error) {
+            return res.status(401).json({ message: "Unauthorized: Failed to fetch company ID" });
+        }
+
+        // ✅ Send request to Cloud Backend
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/active`;
+        console.log(`📤 Fetching Active Sensors from Cloud: ${cloudApiUrl}`);
+
+        const cloudResponse = await axios.get(cloudApiUrl, { 
+            headers: { Authorization: `Bearer ${token}` } 
+        });
+
+        console.log("✅ Active Sensors fetched successfully:", cloudResponse.data);
+
+        res.status(200).json(cloudResponse.data);
+    } catch (error) {
+        console.error("❌ Failed to fetch active sensors from Cloud:", error.response?.data || error.message);
+        res.status(500).json({ message: "Failed to fetch active sensors from Cloud", error: error.response?.data || error.message });
+    }
+};
+
+
+
+
 
 /** ✅ Export Functions */
-module.exports = { activateSensor, deactivateSensor, removeActiveSensor };
+module.exports = { activateSensor, deactivateSensor, removeActiveSensor,getAllActiveSensors  };
