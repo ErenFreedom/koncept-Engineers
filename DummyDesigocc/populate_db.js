@@ -81,7 +81,18 @@ const sensors = [
     { id: 4, name: "Pressure Sensor", objectId: "System1:PressureSensor1", propertyName: "Value" },
     { id: 5, name: "Air Quality Sensor", objectId: "System1:AirQualitySensor1", propertyName: "Value" },
     { id: 6, name: "Water Flow Sensor", objectId: "System1:WaterFlowSensor1", propertyName: "Value" },
+    { id: 7, name: "Return Air Temp Sensor", objectId: "System1:ReturnAirTempSensor", propertyName: "Value" },
+    { id: 8, name: "Supply Air Temp Sensor", objectId: "System1:SupplyAirTempSensor", propertyName: "Value" },
+    { id: 9, name: "Exhaust Fan Speed Sensor", objectId: "System1:ExhaustFanSpeedSensor", propertyName: "Value" },
+    { id: 10, name: "Chilled Water Flow Sensor", objectId: "System1:ChilledWaterFlowSensor", propertyName: "Value" },
+    { id: 11, name: "Heating Coil Temp Sensor", objectId: "System1:HeatingCoilTempSensor", propertyName: "Value" },
+    { id: 12, name: "VAV Damper Position", objectId: "System1:VAVDamperPositionSensor", propertyName: "Value" },
+    { id: 13, name: "Duct Static Pressure", objectId: "System1:DuctStaticPressureSensor", propertyName: "Value" },
+    { id: 14, name: "Outside Air Temp Sensor", objectId: "System1:OutsideAirTempSensor", propertyName: "Value" },
+    { id: 15, name: "Energy Consumption Meter", objectId: "System1:EnergyMeter", propertyName: "Value" },
+    { id: 16, name: "Humidifier Status Sensor", objectId: "System1:HumidifierStatusSensor", propertyName: "Value" }
 ];
+
 
 // ✅ Generate Correct Sensor Value Format
 const generateSensorValue = (sensor) => {

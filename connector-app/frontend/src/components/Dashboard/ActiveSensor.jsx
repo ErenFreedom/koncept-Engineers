@@ -63,17 +63,60 @@ const ActiveSensor = () => {
   const removeSensor = async (id) => {
     try {
       const token = localStorage.getItem("adminToken");
-      await axios.post("http://localhost:5004/api/sensors/remove", { sensorId: id }, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.post(
+        "http://localhost:5004/api/sensors/remove",
+        { sensorId: id },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       toast.success(`Sensor ${id} removed!`);
-      setSensors(sensors.filter(sensor => sensor.id !== id));
+      setSensors((prev) => prev.filter((s) => s.id !== id));
     } catch (error) {
-      console.error("❌ Error removing sensor:", error.response?.data || error.message);
-      toast.error("Failed to remove sensor.");
+      const errorMsg = error.response?.data?.message || "Failed to remove sensor.";
+
+      if (errorMsg.includes("must be deactivated")) {
+        toast.error("❌ Sensor must be deactivated before removal.");
+      } else if (error.response?.status === 404) {
+        toast.error("Sensor not found in active sensors.");
+      } else {
+        toast.error(errorMsg);
+      }
+
+      console.error("❌ Error removing sensor:", errorMsg);
     }
   };
+
+
+  const handleSendData = async (sensor) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      // Step 1: Deactivate the sensor
+      await axios.post("http://localhost:5004/api/sensors/deactivate", { sensorId: sensor.bank_id }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(`Sensor ${sensor.id} deactivated.`);
+
+      // Step 2: Remove the sensor
+      await axios.post("http://localhost:5004/api/sensors/remove", { sensorId: sensor.bank_id }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      toast.success(`Sensor ${sensor.id} removed.`);
+
+      // Step 3: Update UI
+      setSensors(prev => prev.filter(s => s.id !== sensor.id));
+
+      // Optional: proceed to actual "send data" logic here
+      toast.info("✅ Sensor cleanup complete. Now sending data...");
+
+    } catch (error) {
+      console.error("❌ Error during send data process:", error.response?.data || error.message);
+      toast.error("Failed to process sensor cleanup.");
+    }
+  };
+
 
   /** ✅ Show Sensor Info */
   const showInfo = (sensor) => {
@@ -110,9 +153,13 @@ const ActiveSensor = () => {
               <div className="dropdown">
                 <button className="dropdown-button">Options ▼</button>
                 <div className="dropdown-content">
-                  <button onClick={() => toast.info("Sending data...")}>Send Data</button>
-                  <button onClick={() => deactivateSensor(sensor.id)}>Deactivate</button>
-                  <button onClick={() => removeSensor(sensor.id)}>Remove</button>
+                  <button onClick={() => handleSendData(sensor)}>Send Data</button>
+
+                  <button onClick={() => deactivateSensor(sensor.bank_id)}>Deactivate</button>
+
+
+                  <button onClick={() => removeSensor(sensor.bank_id)}>Remove</button>
+
                   <button onClick={() => showInfo(sensor)}>Show Info</button>
                 </div>
               </div>

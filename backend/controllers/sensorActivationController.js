@@ -152,18 +152,19 @@ const removeActiveSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID is required" });
         }
 
-        // ✅ Validate Token & Get Admin ID
         const adminDetails = getAdminDetailsFromToken(req);
         if (!adminDetails) {
             return res.status(401).json({ message: "Unauthorized: Invalid token" });
         }
+
         const { companyId } = adminDetails;
+        const sensorTable = `Sensor_${companyId}`;
+        const sensorDataTable = `SensorData_${companyId}_${sensorId}`;
 
-        console.log(`🔍 Removing Sensor ${sensorId} from Active Sensors for Company ${companyId}`);
+        console.log(`🔍 Checking sensor ${sensorId} in ${sensorTable}`);
 
-        // ✅ Check if Sensor Exists and is Deactivated (`is_active = 0`)
         const [sensor] = await db.execute(
-            `SELECT * FROM Sensor_${companyId} WHERE bank_id = ?`, 
+            `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
             [sensorId]
         );
 
@@ -175,34 +176,30 @@ const removeActiveSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor must be deactivated before removal" });
         }
 
-        // ✅ Remove the sensor from Active Sensors Table
+        // ✅ Delete sensor row
         await db.execute(
-            `DELETE FROM Sensor_${companyId} WHERE bank_id = ?`, 
+            `DELETE FROM ${sensorTable} WHERE bank_id = ?`,
             [sensorId]
         );
+        console.log(`✅ Sensor ${sensorId} deleted from ${sensorTable}`);
 
-        console.log(`✅ Sensor ${sensorId} removed from active sensors for Company ${companyId}`);
-
-        // ✅ Drop the corresponding SensorData Table
-        const sensorTableName = `SensorData_${companyId}_${sensorId}`;
-        console.log(`🗑 Dropping Sensor Data Table: ${sensorTableName}`);
-
-        const dropTableQuery = `DROP TABLE IF EXISTS ${sensorTableName}`;
-
+        // ✅ Drop sensor data table
         try {
-            await db.execute(dropTableQuery);
-            console.log(`✅ Table ${sensorTableName} dropped successfully from Cloud DB.`);
-        } catch (error) {
-            console.error(`❌ Error dropping table ${sensorTableName} in Cloud DB:`, error.message);
-            return res.status(500).json({ message: "Failed to drop sensor data table in Cloud DB" });
+            await db.execute(`DROP TABLE IF EXISTS ${sensorDataTable}`);
+            console.log(`🗑 Table ${sensorDataTable} dropped successfully.`);
+        } catch (dropErr) {
+            console.error(`❌ Error dropping table ${sensorDataTable}:`, dropErr.message);
+            return res.status(500).json({ message: "Failed to drop sensor data table", error: dropErr.message });
         }
 
         res.status(200).json({ message: `Sensor ${sensorId} removed and table dropped successfully` });
+
     } catch (error) {
-        console.error("❌ Error removing sensor:", error);
+        console.error("❌ Error in removeActiveSensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 const getAllActiveSensors = async (req, res) => {
     try {

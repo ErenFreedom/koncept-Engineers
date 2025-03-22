@@ -5,11 +5,11 @@
 
 .sensor-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(4, 1fr); /* 🖥️ Default: 4 columns */
     gap: 20px;
-    justify-content: center;
     padding: 20px;
 }
+
 
 /* ✅ Sensor Card Styling */
 .sensor-card {
@@ -107,6 +107,13 @@
     z-index: 1;
 }
 
+.dropdown-content button:disabled {
+    background-color: #e0e0e0;
+    color: #999;
+    cursor: not-allowed;
+}
+
+
 .dropdown-content button {
     width: 100%;
     padding: 10px;
@@ -188,4 +195,27 @@
 
 .close-button:hover {
     background-color: darkred;
+}
+
+
+.active-indicator {
+    color: #00ff88;
+    margin-left: 6px;
+    font-size: 1.2rem;
+    vertical-align: middle;
+}
+
+  
+
+@media (max-width: 1024px) {
+    .sensor-grid {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns */
+    }
+}
+
+/* 📱 For screens smaller than 600px (e.g. mobile) */
+@media (max-width: 600px) {
+    .sensor-grid {
+        grid-template-columns: 1fr; /* 1 column */
+    }
 }

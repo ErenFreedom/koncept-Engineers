@@ -30,24 +30,24 @@ const SensorBank = () => {
       setShowActivateModal(false);
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("adminToken");
-  
+
       const payload = {
         sensorId: selectedSensor.id,
         interval_seconds: parseInt(activateInterval, 10),
         batch_size: parseInt(activateBatch, 10),
       };
-  
+
       const response = await axios.post("http://localhost:5004/api/sensors/activate", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-  
+
       toast.success(`Sensor ${selectedSensor.name} activated!`);
-  
+
       // ✅ Update UI State
       setActiveSensorIds([...activeSensorIds, selectedSensor.id]);
       setShowActivateModal(false);
@@ -59,7 +59,7 @@ const SensorBank = () => {
       toast.error("Failed to activate sensor.");
     }
   };
-  
+
 
 
   const deleteSensor = async (sensor) => {
@@ -158,17 +158,18 @@ const SensorBank = () => {
         const response = await axios.get("http://localhost:5004/api/sensors/active", {
           headers: { Authorization: `Bearer ${token}` },
         });
-  
-        const ids = response.data?.activeSensors?.map(sensor => sensor.sensorId) || [];
+
+        const ids = response.data?.sensors?.map(sensor => sensor.bank_id) || [];
+
         setActiveSensorIds(ids);
       } catch (error) {
         console.error("❌ Failed to fetch active sensors:", error.response?.data || error.message);
       }
     };
-  
+
     fetchActiveSensors();
   }, []);
-  
+
 
   // ✅ Add Sensor (with Desigo Token)
   const addSensor = async () => {
@@ -176,10 +177,10 @@ const SensorBank = () => {
       toast.error("All fields are required!");
       return;
     }
-
+  
     try {
       const token = localStorage.getItem("adminToken");
-
+  
       const response = await axios.post(
         "http://localhost:5004/api/sensor/add",
         {
@@ -190,23 +191,44 @@ const SensorBank = () => {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Desigo-Authorization": `Bearer ${desigoToken}`, // ✅ Send Desigo Token
+            "Desigo-Authorization": `Bearer ${desigoToken}`,
             "Content-Type": "application/json",
           },
         }
       );
-
-      toast.success("Sensor added successfully!");
-      setSensors([...sensors, response.data.sensor]); // ✅ Update UI
-      setShowAddModal(false); // ✅ Close modal
-      setSensorApi("");
-      setSensorName("");
-      setRateLimit("");
+  
+      console.log("✅ Sensor Add Response:", response.data);
+  
+      if (response.data?.message?.includes("successfully")) {
+        toast.success("Sensor added successfully!");
+  
+        // ✅ Clear modal inputs and close
+        setSensorApi("");
+        setSensorName("");
+        setRateLimit("");
+        setShowAddModal(false);
+  
+        // ✅ Re-fetch updated sensor list
+        const fetchUpdatedSensors = async () => {
+          const updated = await axios.get("http://localhost:5004/api/sensor/", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+  
+          const updatedList = updated.data?.sensors?.sensors || updated.data?.sensors || [];
+          setSensors(updatedList);
+        };
+  
+        await fetchUpdatedSensors();
+      } else {
+        toast.error("Sensor added but UI update failed.");
+      }
     } catch (error) {
-      console.error("❌ Error adding sensor:", error.response?.data || error.message);
+      console.error("❌ Add Sensor Error:", error.response?.data || error.message);
       toast.error("Failed to add sensor.");
     }
   };
+  
+  
 
   // ✅ Show Sensor Info
   const showInfo = (sensor) => {
@@ -233,7 +255,13 @@ const SensorBank = () => {
 
             return (
               <div key={sensor?.id || index} className="sensor-card">
-                <p><strong>Name:</strong> {sensor?.name || "Unknown Sensor"}</p>
+                <p>
+                  <strong>Name:</strong> {sensor?.name || "Unknown Sensor"}{" "}
+                  {activeSensorIds.includes(sensor.id) && (
+                    <span className="active-indicator" title="Sensor is active">✅</span>
+                  )}
+                </p>
+
                 <p><strong>ID:</strong> {sensor?.id || "N/A"}</p>
 
                 {/* ✅ Dropdown for actions */}
@@ -241,7 +269,15 @@ const SensorBank = () => {
                   <button className="dropdown-button">Options ▼</button>
                   <div className="dropdown-content">
                     <button onClick={() => showInfo(sensor)}>Show Info</button>
-                    <button onClick={() => openActivateModal(sensor)}>Activate</button>
+                    {activeSensorIds.includes(sensor.id) ? (
+                      <button disabled title="Already activated" style={{ opacity: 0.5, cursor: "not-allowed" }}>
+                        Activate
+                      </button>
+                    ) : (
+                      <button onClick={() => openActivateModal(sensor)}>Activate</button>
+                    )}
+
+
 
                     <button onClick={() => deleteSensor(sensor)}>Delete</button>
                   </div>
