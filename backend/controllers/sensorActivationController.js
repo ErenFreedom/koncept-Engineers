@@ -44,9 +44,12 @@ const activateSensor = async (req, res) => {
 
         console.log(`🔍 Activating Sensor ${sensorId} for Company ${companyId}`);
 
-        // ✅ Verify if Sensor Exists in Sensor Bank
+        const sensorTable = `Sensor_${companyId}`;
+        const sensorBankTable = `SensorBank_${companyId}`;
+
+        // ✅ Verify Sensor Exists in Sensor Bank
         const [sensorExists] = await db.execute(
-            `SELECT * FROM SensorBank_${companyId} WHERE id = ?`, 
+            `SELECT * FROM ${sensorBankTable} WHERE id = ?`,
             [sensorId]
         );
 
@@ -54,44 +57,49 @@ const activateSensor = async (req, res) => {
             return res.status(404).json({ message: "Sensor not found in Sensor Bank" });
         }
 
-        // ✅ Push to Active Sensors Table
+        // ✅ Check if already activated
+        const [alreadyActive] = await db.execute(
+            `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
+            [sensorId]
+        );
+
+        if (alreadyActive.length > 0) {
+            return res.status(400).json({ message: "Sensor is already activated" });
+        }
+
+        // ✅ Insert into Active Sensors Table
         await db.execute(
-            `INSERT INTO Sensor_${companyId} (bank_id, is_active) VALUES (?, 1)`, 
+            `INSERT INTO ${sensorTable} (bank_id, is_active) VALUES (?, 1)`,
             [sensorId]
         );
 
         console.log(`✅ Sensor ${sensorId} activated for Company ${companyId}`);
 
-        // ✅ Create Sensor Data Table for this sensor in Cloud DB
-        const sensorTableName = `SensorData_${companyId}_${sensorId}`;
-        console.log(`📌 Creating Sensor Data Table: ${sensorTableName}`);
-
+        // ✅ Create Sensor Data Table
+        const sensorDataTable = `SensorData_${companyId}_${sensorId}`;
         const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS ${sensorTableName} (
+            CREATE TABLE IF NOT EXISTS ${sensorDataTable} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 sensor_id INT NOT NULL,
                 value VARCHAR(255),
                 quality VARCHAR(255),
                 quality_good BOOLEAN,
                 timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (sensor_id) REFERENCES Sensor_${companyId}(bank_id) ON DELETE CASCADE
+                FOREIGN KEY (sensor_id) REFERENCES ${sensorTable}(bank_id) ON DELETE CASCADE
             )
         `;
 
-        try {
-            await db.execute(createTableQuery);
-            console.log(`✅ Table ${sensorTableName} created successfully in Cloud DB.`);
-        } catch (error) {
-            console.error("❌ Error creating SensorData table in Cloud DB:", error.message);
-            return res.status(500).json({ message: "Failed to create sensor data table in Cloud DB" });
-        }
+        await db.execute(createTableQuery);
+        console.log(`✅ Table ${sensorDataTable} created.`);
 
-        res.status(200).json({ message: `Sensor ${sensorId} activated and table created successfully` });
+        res.status(200).json({ message: `Sensor ${sensorId} activated successfully` });
+
     } catch (error) {
         console.error("❌ Error activating sensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 /** ✅ Deactivate Sensor (Update `is_active` field) */
 const deactivateSensor = async (req, res) => {
