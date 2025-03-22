@@ -7,7 +7,7 @@ router.get("/active", getAllActiveSensors);  // Get all Sensors
 router.post("/activate", activateSensor);   // ✅ Activate a Sensor
 router.post("/deactivate", deactivateSensor); // ✅ Deactivate a Sensor
 router.post("/remove", removeActiveSensor); // ✅ Remove a Sensor from Active Sensors
-router.get("/managed", verifyAuthToken, getAllManagedSensors);
+router.get("/managed", getAllManagedSensors);
 
 
 module.exports = router;
