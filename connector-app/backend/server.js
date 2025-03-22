@@ -12,8 +12,9 @@ const PORT = process.env.PORT || 5004;
 app.use(cors({
     origin: "*",  // Allow requests from all origins (change this in production)
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    allowedHeaders: ["Content-Type", "Authorization", "Desigo-Authorization"] // ✅ Added Desigo-Authorization
 }));
+
 
 // ✅ Middleware to parse JSON requests
 app.use(express.json());

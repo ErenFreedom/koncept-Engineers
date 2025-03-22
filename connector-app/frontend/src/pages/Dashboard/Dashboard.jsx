@@ -7,6 +7,7 @@ import logo from "../../assets/logo.png";
 import Footer from "../../components/Footer/Footer";
 import { FaUserCircle } from "react-icons/fa"; 
 import SensorBank from "../../components/Dashboard/Sensorbank"; // ✅ Importing SensorBank
+import ActiveSensor from "../../components/Dashboard/ActiveSensor"; // ✅ Importing ActiveSensor
 
 const Dashboard = () => {
   const { id } = useParams(); // ✅ Extract Admin ID from URL
@@ -94,7 +95,7 @@ const Dashboard = () => {
           {activeTab === "sensor-bank" ? (
             <SensorBank /> // ✅ Display SensorBank component when active
           ) : (
-            <h3>Active Sensors Content</h3>
+            <ActiveSensor /> // ✅ Display ActiveSensor component when active
           )}
         </div>
       </div>

@@ -227,4 +227,21 @@ const getAllSensors = async (req, res) => {
     }
 };
 
-module.exports = { addSensor, getAllSensors, deleteSensor };
+const getStoredDesigoToken = async (req, res) => {
+    try {
+        // Query the latest Desigo Token from the database
+        db.get("SELECT token FROM DesigoAuthTokens ORDER BY id DESC LIMIT 1", [], (err, row) => {
+            if (err || !row) {
+                console.error("❌ Error fetching Desigo token:", err?.message || "No token found");
+                return res.status(401).json({ message: "Unauthorized: No Desigo Token Found" });
+            }
+            res.status(200).json({ desigoToken: row.token });
+        });
+    } catch (error) {
+        console.error("❌ Error retrieving Desigo token:", error.message);
+        res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+
+module.exports = { addSensor, getAllSensors, deleteSensor ,getStoredDesigoToken};

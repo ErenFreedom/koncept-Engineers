@@ -11,6 +11,7 @@
     padding: 20px;
 }
 
+/* ✅ Sensor Card Styling */
 .sensor-card {
     background-color: white;
     color: black;
@@ -24,21 +25,59 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
+    transition: transform 0.2s ease-in-out;
 }
 
+.sensor-card:hover {
+    transform: scale(1.05);
+}
+
+/* ✅ Active Sensor Indicator */
+.sensor-active {
+    color: green;
+    font-weight: bold;
+    animation: blink-animation 1s infinite alternate;
+}
+
+@keyframes blink-animation {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+
+/* ✅ Add Sensor Button Styling */
 .add-sensor {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: #f0f0f0;
     min-height: 150px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s;
+    font-weight: bold;
+    font-size: 16px;
+    position: relative;
 }
 
-.add-button {
-    font-size: 32px;
-    border: none;
-    background-color: transparent;
-    cursor: pointer;
+
+.add-sensor:hover {
+    background-color: #e0e0e0;
+}
+
+.plus-sign {
+    font-size: 36px;  /* Bigger "+" symbol */
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+.add-text {
+    font-size: 16px;
+    font-weight: bold;
+    margin-top: 10px;
 }
 
 /* ✅ Dropdown Menu */
@@ -86,7 +125,7 @@
     display: block;
 }
 
-/* ✅ Modal for Sensor Info */
+/* ✅ Modal for Adding Sensor */
 .modal {
     position: fixed;
     top: 0;
@@ -99,31 +138,52 @@
     justify-content: center;
 }
 
-/* ✅ Modal for Sensor Info */
+/* ✅ Modal Content */
 .modal-content {
     background: white;
     padding: 20px;
     border-radius: 10px;
     text-align: center;
     width: 400px;
-    color: black; /* ✅ Ensure text is visible */
+    color: black;
     font-size: 16px;
 }
 
-.modal-content p {
-    margin: 5px 0;
-    font-weight: bold;
-    text-align: left;
+/* ✅ Input Fields in Modal */
+.modal-content input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
-
-.close-button {
-    background-color: red;
+/* ✅ Confirm Button */
+.confirm-button {
+    background-color: green;
     color: white;
-    padding: 8px 16px;
+    padding: 10px;
     border: none;
     cursor: pointer;
     margin-top: 10px;
+    border-radius: 5px;
+    width: 100%;
+}
+
+.confirm-button:hover {
+    background-color: darkgreen;
+}
+
+/* ✅ Close Button */
+.close-button {
+    background-color: red;
+    color: white;
+    padding: 8px;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+    border-radius: 5px;
+    width: 100%;
 }
 
 .close-button:hover {
