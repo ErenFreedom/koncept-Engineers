@@ -203,25 +203,26 @@ const removeActiveSensor = async (req, res) => {
 
 const getAllActiveSensors = async (req, res) => {
     try {
-        // 🔹 Decode JWT to get `companyId`
-        const adminDetails = getAdminDetailsFromToken(req);
-        if (!adminDetails) {
-            return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
-        }
-
-        const { companyId } = adminDetails;
-        const activeSensorTable = `Sensor_${companyId}`;
-
-        // ✅ Fetch all active sensors
-        const [activeSensors] = await db.execute(`SELECT * FROM ${activeSensorTable} WHERE is_active = 1`);
-
-        res.status(200).json({ sensors: activeSensors });
-
+      // 🔹 Decode JWT to get `companyId`
+      const adminDetails = getAdminDetailsFromToken(req);
+      if (!adminDetails) {
+        return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
+      }
+  
+      const { companyId } = adminDetails;
+      const sensorTable = `Sensor_${companyId}`;
+  
+      // ✅ Fetch all sensors (active and inactive)
+      const [sensors] = await db.execute(`SELECT * FROM ${sensorTable}`);
+  
+      res.status(200).json({ sensors });
+  
     } catch (error) {
-        console.error("❌ Error fetching active sensors:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      console.error("❌ Error fetching sensors:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-};
+  };
+  
 
 const getAllManagedSensors = async (req, res) => {
     try {
