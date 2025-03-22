@@ -71,22 +71,24 @@ const ActiveSensor = () => {
         }
       );
 
-      toast.success(`Sensor ${id} removed!`);
+      toast.success(`✅ Sensor ${id} removed successfully.`);
       setSensors((prev) => prev.filter((s) => s.id !== id));
     } catch (error) {
-      const errorMsg = error.response?.data?.message || "Failed to remove sensor.";
+      const errorMsg = error.response?.data?.message || error.message || "Failed to remove sensor.";
 
-      if (errorMsg.includes("must be deactivated")) {
-        toast.error("❌ Sensor must be deactivated before removal.");
-      } else if (error.response?.status === 404) {
-        toast.error("Sensor not found in active sensors.");
+      if (errorMsg.toLowerCase().includes("must be deactivated")) {
+        toast.error("⚠️ Please deactivate the sensor before removing it.");
+      } else if (errorMsg.toLowerCase().includes("not found")) {
+        toast.error("❌ Sensor not found in active sensors.");
       } else {
-        toast.error(errorMsg);
+        toast.error(`❌ ${errorMsg}`);
       }
 
       console.error("❌ Error removing sensor:", errorMsg);
     }
   };
+
+
 
 
   const handleSendData = async (sensor) => {

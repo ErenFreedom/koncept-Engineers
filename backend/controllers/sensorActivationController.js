@@ -223,5 +223,25 @@ const getAllActiveSensors = async (req, res) => {
     }
 };
 
+const getAllManagedSensors = async (req, res) => {
+    try {
+      const adminDetails = getAdminDetailsFromToken(req);
+      if (!adminDetails) {
+        return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
+      }
+  
+      const { companyId } = adminDetails;
+      const sensorTable = `Sensor_${companyId}`;
+  
+      // ✅ Fetch all managed sensors with active/inactive flag
+      const [sensors] = await db.execute(`SELECT * FROM ${sensorTable}`);
+  
+      res.status(200).json({ sensors });
+    } catch (error) {
+      console.error("❌ Error fetching managed sensors:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+  };
+
 /** ✅ Export All Functions */
-module.exports = { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensors };
+module.exports = { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensors,getAllManagedSensors };
