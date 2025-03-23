@@ -111,6 +111,13 @@
     display: block;
 }
 
+button:disabled {
+    background-color: #eee;
+    color: #888;
+    cursor: not-allowed;
+  }
+  
+
 
 @media (max-width: 1400px) {
     .sensor-grid {

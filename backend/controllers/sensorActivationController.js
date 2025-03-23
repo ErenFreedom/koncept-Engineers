@@ -203,7 +203,6 @@ const removeActiveSensor = async (req, res) => {
 
 const getAllActiveSensors = async (req, res) => {
     try {
-      // 🔹 Decode JWT to get `companyId`
       const adminDetails = getAdminDetailsFromToken(req);
       if (!adminDetails) {
         return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
@@ -211,12 +210,16 @@ const getAllActiveSensors = async (req, res) => {
   
       const { companyId } = adminDetails;
       const sensorTable = `Sensor_${companyId}`;
+      const sensorBankTable = `SensorBank_${companyId}`;
   
-      // ✅ Fetch all sensors (active and inactive)
-      const [sensors] = await db.execute(`SELECT * FROM ${sensorTable}`);
+      // ✅ JOIN Sensor_<companyId> with SensorBank_<companyId> to get name
+      const [sensors] = await db.execute(`
+        SELECT s.*, b.name 
+        FROM ${sensorTable} s
+        JOIN ${sensorBankTable} b ON s.bank_id = b.id
+      `);
   
       res.status(200).json({ sensors });
-  
     } catch (error) {
       console.error("❌ Error fetching sensors:", error);
       res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -244,5 +247,54 @@ const getAllManagedSensors = async (req, res) => {
     }
   };
 
+  /** ✅ Reactivate a previously deactivated Sensor */
+const reactivateSensor = async (req, res) => {
+    try {
+        const { sensorId } = req.body;
+
+        if (!sensorId) {
+            return res.status(400).json({ message: "Sensor ID is required" });
+        }
+
+        const adminDetails = getAdminDetailsFromToken(req);
+        if (!adminDetails) {
+            return res.status(401).json({ message: "Unauthorized: Invalid token" });
+        }
+
+        const { companyId } = adminDetails;
+        const sensorTable = `Sensor_${companyId}`;
+
+        console.log(`🔄 Reactivating Sensor ${sensorId} for Company ${companyId}`);
+
+        // ✅ Check if the sensor exists and is currently inactive
+        const [sensor] = await db.execute(
+            `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
+            [sensorId]
+        );
+
+        if (sensor.length === 0) {
+            return res.status(404).json({ message: "Sensor not found in managed sensors" });
+        }
+
+        if (sensor[0].is_active === 1) {
+            return res.status(400).json({ message: "Sensor is already active" });
+        }
+
+        // ✅ Reactivate sensor
+        await db.execute(
+            `UPDATE ${sensorTable} SET is_active = 1 WHERE bank_id = ?`,
+            [sensorId]
+        );
+
+        console.log(`✅ Sensor ${sensorId} reactivated successfully`);
+        res.status(200).json({ message: `Sensor ${sensorId} reactivated successfully` });
+
+    } catch (error) {
+        console.error("❌ Error reactivating sensor:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+
 /** ✅ Export All Functions */
-module.exports = { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensors,getAllManagedSensors };
+module.exports = { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensors,getAllManagedSensors, reactivateSensor };

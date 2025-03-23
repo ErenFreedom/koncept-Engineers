@@ -88,6 +88,24 @@ const ActiveSensor = () => {
     }
   };
 
+  const reactivateSensor = async (id) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      await axios.post("http://localhost:5004/api/sensors/reactivate", { sensorId: id }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      toast.success(`Sensor ${id} reactivated!`);
+      setSensors(prev =>
+        prev.map(sensor => sensor.bank_id === id ? { ...sensor, is_active: 1 } : sensor)
+      );
+    } catch (error) {
+      console.error("❌ Error reactivating sensor:", error.response?.data || error.message);
+      toast.error("Failed to reactivate sensor.");
+    }
+  };
+
+
 
 
 
@@ -134,7 +152,8 @@ const ActiveSensor = () => {
         ) : sensors.length > 0 ? (
           sensors.map((sensor) => (
             <div key={sensor.id} className="sensor-card">
-              <p><strong>Name:</strong> Sensor {sensor.bank_id}</p>
+              <p><strong>Name:</strong> {sensor.name || `Sensor ${sensor.bank_id}`}</p>
+
               <p><strong>ID:</strong> {sensor.id}</p>
               <p><strong>Bank ID:</strong> {sensor.bank_id}</p>
 
@@ -155,15 +174,32 @@ const ActiveSensor = () => {
               <div className="dropdown">
                 <button className="dropdown-button">Options ▼</button>
                 <div className="dropdown-content">
-                  <button onClick={() => handleSendData(sensor)}>Send Data</button>
+                  {/* ✅ Send Data (Only if active) */}
+                  {sensor.is_active ? (
+                    <button onClick={() => handleSendData(sensor)}>Send Data</button>
+                  ) : (
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>Send Data</button>
+                  )}
 
-                  <button onClick={() => deactivateSensor(sensor.bank_id)}>Deactivate</button>
+                  {/* ✅ Deactivate (Only if active) */}
+                  {sensor.is_active ? (
+                    <button onClick={() => deactivateSensor(sensor.bank_id)}>Deactivate</button>
+                  ) : (
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>Deactivate</button>
+                  )}
 
+                  {/* ✅ Reactivate (Only if inactive) */}
+                  {sensor.is_active ? (
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>Reactivate</button>
+                  ) : (
+                    <button onClick={() => reactivateSensor(sensor.bank_id)}>Reactivate</button>
+                  )}
 
+                  {/* ✅ Always allow remove and show info */}
                   <button onClick={() => removeSensor(sensor.bank_id)}>Remove</button>
-
                   <button onClick={() => showInfo(sensor)}>Show Info</button>
                 </div>
+
               </div>
             </div>
           ))
