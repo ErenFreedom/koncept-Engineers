@@ -294,8 +294,108 @@ const getAllActiveSensors = async (req, res) => {
 };
 
 
+/** ✅ Reactivate Sensor (Connector Sends Request to Cloud + Updates Local DB) */
+const reactivateSensor = async (req, res) => {
+    try {
+        const { sensorId } = req.body;
+
+        if (!sensorId) {
+            return res.status(400).json({ message: "Sensor ID is required" });
+        }
+
+        // ✅ Fetch stored JWT from local DB
+        let token;
+        try {
+            token = await getStoredToken();
+            console.log(`🔍 Using Token: ${token}`);
+        } catch (error) {
+            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
+        }
+
+        // ✅ Get companyId from JWT
+        let companyId;
+        try {
+            companyId = await getCompanyIdFromToken();
+        } catch (error) {
+            return res.status(401).json({ message: "Unauthorized: Failed to fetch company ID" });
+        }
+
+        // ✅ Send reactivation request to Cloud Backend
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/reactivate`;
+        console.log(`📤 Re-activating Sensor in Cloud: ${cloudApiUrl}`);
+
+        try {
+            const cloudResponse = await axios.post(cloudApiUrl, { sensorId }, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            console.log("✅ Sensor reactivated successfully in Cloud:", cloudResponse.data);
+
+            // ✅ Update Local DB (Set is_active = 1)
+            db.run(
+                `UPDATE LocalActiveSensors SET is_active = 1 WHERE bank_id = ?`,
+                [sensorId],
+                (err) => {
+                    if (err) {
+                        console.error("❌ Error updating Local DB:", err.message);
+                    } else {
+                        console.log(`✅ Sensor ${sensorId} reactivated in Local DB.`);
+                    }
+                }
+            );
+
+            res.status(200).json({ message: "Sensor reactivated successfully", cloudResponse: cloudResponse.data });
+        } catch (error) {
+            console.error("❌ Failed to reactivate sensor in Cloud:", error.response?.data || error.message);
+            res.status(500).json({ message: "Failed to reactivate sensor in Cloud", error: error.response?.data || error.message });
+        }
+    } catch (error) {
+        console.error("❌ Error reactivating sensor:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+};
+
+
+const updateSensorSettings = async (req, res) => {
+    try {
+      const { sensorId, interval_seconds, batch_size } = req.body;
+  
+      if (!sensorId || interval_seconds == null || batch_size == null) {
+        return res.status(400).json({ message: "Sensor ID, interval_seconds, and batch_size are required" });
+      }
+  
+      db.run(
+        `UPDATE LocalActiveSensors 
+         SET interval_seconds = ?, 
+             batch_size = ?, 
+             updated_at = CURRENT_TIMESTAMP 
+         WHERE bank_id = ? AND is_active = 0`,
+        [interval_seconds, batch_size, sensorId],
+        function (err) {
+          if (err) {
+            console.error("❌ Error updating Local DB:", err.message);
+            return res.status(500).json({ message: "Failed to update settings", error: err.message });
+          }
+  
+          if (this.changes === 0) {
+            return res.status(400).json({ message: "Sensor must be deactivated to update settings" });
+          }
+  
+          console.log(`✅ Sensor ${sensorId} settings updated locally.`);
+          res.status(200).json({ message: `Sensor ${sensorId} settings updated successfully` });
+        }
+      );
+    } catch (error) {
+      console.error("❌ Error updating sensor settings:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+  };
+
+  
+
+
 
 
 
 /** ✅ Export Functions */
-module.exports = { activateSensor, deactivateSensor, removeActiveSensor,getAllActiveSensors  };
+module.exports = { activateSensor, deactivateSensor, removeActiveSensor,getAllActiveSensors, reactivateSensor, updateSensorSettings  };

@@ -145,58 +145,70 @@ const addSensor = async (req, res) => {
 /** ✅ Delete a Sensor (Connector Requests Cloud to Delete + Remove from Local DB) */
 const deleteSensor = async (req, res) => {
     try {
-        const { id } = req.params;
-
-        // ✅ Fetch stored JWT from local DB
-        let token;
-        try {
-            token = await getStoredToken();
-            console.log(`🔍 Using Token: ${token}`);
-        } catch (error) {
-            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
-        }
-
-        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/delete/${id}`;
-        console.log(`🗑 Deleting Sensor from Cloud: ${cloudApiUrl}`);
-
-        let cloudResponse;
-        try {
-            cloudResponse = await axios.delete(cloudApiUrl, { headers: { Authorization: `Bearer ${token}` } });
-            console.log("✅ Sensor deleted successfully from Cloud:", cloudResponse.data);
-        } catch (error) {
-            console.error("❌ Error deleting sensor from cloud:", error.response?.data || error.message);
-            return res.status(500).json({ message: "Failed to delete sensor from cloud", error: error.response?.data || error.message });
-        }
-
-        // ✅ Delete Sensor from Local Databases (`LocalSensorBank` & `LocalSensorAPIs`)
-        db.serialize(() => {
-            const deleteSensorQuery = `DELETE FROM LocalSensorBank WHERE id = ?`;
-            db.run(deleteSensorQuery, [id], async (err) => {
-                if (err) {
-                    console.error("❌ Error deleting sensor from Local DB:", err.message);
-                } else {
-                    console.log(`✅ Sensor ${id} deleted from Local DB.`);
-
-                    // ✅ Delete from `LocalSensorAPIs`
-                    const deleteApiQuery = `DELETE FROM LocalSensorAPIs WHERE sensor_id = ?`;
-                    db.run(deleteApiQuery, [id], async (err) => {
-                        if (err) console.error("❌ Error deleting API from Local DB:", err.message);
-                        else {
-                            console.log(`✅ API for Sensor ${id} deleted from Local DB.`);
-                            // ✅ Trigger Local Sensor ID Sync after deletion
-                            await updateLocalSensorIds();
-                        }
-                    });
-                }
-            });
+      const { id } = req.params;
+  
+      // ✅ Get Token
+      let token;
+      try {
+        token = await getStoredToken();
+      } catch (error) {
+        return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
+      }
+  
+      const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/delete/${id}`;
+      console.log(`🗑 Deleting Sensor from Cloud: ${cloudApiUrl}`);
+  
+      let cloudResponse;
+      try {
+        cloudResponse = await axios.delete(cloudApiUrl, {
+          headers: { Authorization: `Bearer ${token}` },
         });
-
-        res.status(200).json({ message: "Sensor deleted successfully", cloudResponse: cloudResponse.data });
+        console.log("✅ Sensor deleted successfully from Cloud:", cloudResponse.data);
+      } catch (error) {
+        console.error("❌ Error deleting sensor from cloud:", error.response?.data || error.message);
+        return res.status(500).json({
+          message: "Failed to delete sensor from cloud",
+          error: error.response?.data || error.message,
+        });
+      }
+  
+      // ✅ Delete from LocalSensorBank
+      db.run(`DELETE FROM LocalSensorBank WHERE id = ?`, [id], (err) => {
+        if (err) {
+          console.error("❌ Error deleting sensor from LocalSensorBank:", err.message);
+        } else {
+          console.log(`✅ Sensor ${id} deleted from LocalSensorBank.`);
+        }
+      });
+  
+      // ✅ Delete from LocalActiveSensors (important!)
+      db.run(`DELETE FROM LocalActiveSensors WHERE bank_id = ?`, [id], (err) => {
+        if (err) {
+          console.error("❌ Error deleting from LocalActiveSensors:", err.message);
+        } else {
+          console.log(`✅ Sensor ${id} deleted from LocalActiveSensors.`);
+        }
+      });
+  
+      // ✅ Delete from LocalSensorAPIs
+      db.run(`DELETE FROM LocalSensorAPIs WHERE sensor_id = ?`, [id], async (err) => {
+        if (err) console.error("❌ Error deleting API from Local DB:", err.message);
+        else {
+          console.log(`✅ API for Sensor ${id} deleted from Local DB.`);
+          await updateLocalSensorIds(); // 🔄 Sync
+        }
+      });
+  
+      res.status(200).json({
+        message: "Sensor deleted successfully",
+        cloudResponse: cloudResponse.data,
+      });
     } catch (error) {
-        console.error("❌ Error deleting sensor:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      console.error("❌ Error deleting sensor:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-};
+  };
+  
 
 /** ✅ Get All Sensors (Connector Fetches from Cloud Only) */
 const getAllSensors = async (req, res) => {

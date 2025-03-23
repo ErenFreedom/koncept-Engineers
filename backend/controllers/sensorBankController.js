@@ -108,26 +108,26 @@ const deleteSensor = async (req, res) => {
       const sensorTable = `SensorBank_${companyId}`;
       const activeTable = `Sensor_${companyId}`;
   
-      // ✅ Check if the sensor is active in `Sensor_X` table
+      // ❌ If sensor is even present in active table (regardless of is_active), disallow deletion
       const [activeRows] = await db.execute(
-        `SELECT * FROM ${activeTable} WHERE bank_id = ? AND is_active = 1`,
+        `SELECT * FROM ${activeTable} WHERE bank_id = ?`,
         [id]
       );
   
       if (activeRows.length > 0) {
-        return res.status(400).json({ message: "Cannot delete an active sensor. Please deactivate it first." });
+        return res.status(400).json({ message: "Sensor must be removed from active sensors first." });
       }
   
-      // ✅ Delete from SensorBank_X
+      // ✅ Now safe to delete from SensorBank
       await db.execute(`DELETE FROM ${sensorTable} WHERE id = ?`, [id]);
   
-      res.status(200).json({ message: "Sensor deleted successfully" });
-  
+      res.status(200).json({ message: "Sensor deleted successfully from SensorBank." });
     } catch (error) {
       console.error("❌ Error deleting sensor:", error);
       res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
   };
+  
   
 
 module.exports = { addSensor, getAllSensors, deleteSensor };

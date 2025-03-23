@@ -9,6 +9,9 @@ const ActiveSensor = () => {
   const [sensors, setSensors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSensor, setSelectedSensor] = useState(null); // Stores selected sensor info
+  const [editSensor, setEditSensor] = useState(null); // holds sensor being edited
+  const [editValues, setEditValues] = useState({ interval: "", batch: "" });
+
 
   useEffect(() => {
     const fetchActiveSensors = async () => {
@@ -52,7 +55,12 @@ const ActiveSensor = () => {
       });
 
       toast.success(`Sensor ${id} deactivated!`);
-      setSensors(sensors.map(sensor => sensor.id === id ? { ...sensor, is_active: 0 } : sensor));
+      setSensors((prev) =>
+        prev.map((sensor) =>
+          sensor.bank_id === id ? { ...sensor, is_active: 0 } : sensor
+        )
+      );
+
     } catch (error) {
       console.error("❌ Error deactivating sensor:", error.response?.data || error.message);
       toast.error("Failed to deactivate sensor.");
@@ -106,6 +114,33 @@ const ActiveSensor = () => {
   };
 
 
+  const updateSensorSettings = async (sensorId, interval, batch) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.post("http://localhost:5004/api/sensors/update-settings", {
+        sensorId,
+        interval_seconds: Number(interval),
+        batch_size: Number(batch),
+      }, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      toast.success(`✅ Sensor ${sensorId} settings updated!`);
+
+      // Update state
+      setSensors((prev) =>
+        prev.map((sensor) =>
+          sensor.bank_id === sensorId
+            ? { ...sensor, interval_seconds: Number(interval), batch_size: Number(batch) }
+            : sensor
+        )
+      );
+      setSelectedSensor(null);
+    } catch (error) {
+      console.error("❌ Error updating sensor settings:", error.response?.data || error.message);
+      toast.error("Failed to update sensor settings.");
+    }
+  };
 
 
 
@@ -152,7 +187,8 @@ const ActiveSensor = () => {
         ) : sensors.length > 0 ? (
           sensors.map((sensor) => (
             <div key={sensor.id} className="sensor-card">
-              <p><strong>Name:</strong> {sensor.name || `Sensor ${sensor.bank_id}`}</p>
+              <p><strong>Name:</strong> {sensor.name}</p>
+
 
               <p><strong>ID:</strong> {sensor.id}</p>
               <p><strong>Bank ID:</strong> {sensor.bank_id}</p>
@@ -176,28 +212,38 @@ const ActiveSensor = () => {
                 <div className="dropdown-content">
                   {/* ✅ Send Data (Only if active) */}
                   {sensor.is_active ? (
-                    <button onClick={() => handleSendData(sensor)}>Send Data</button>
+                    <button onClick={() => handleSendData(sensor)}>📤 Send Data</button>
                   ) : (
-                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>Send Data</button>
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>📤 Send Data</button>
                   )}
 
                   {/* ✅ Deactivate (Only if active) */}
                   {sensor.is_active ? (
-                    <button onClick={() => deactivateSensor(sensor.bank_id)}>Deactivate</button>
+                    <button onClick={() => deactivateSensor(sensor.bank_id)}>🛑 Deactivate</button>
                   ) : (
-                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>Deactivate</button>
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>🛑 Deactivate</button>
                   )}
 
                   {/* ✅ Reactivate (Only if inactive) */}
                   {sensor.is_active ? (
-                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>Reactivate</button>
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>🔄 Reactivate</button>
                   ) : (
-                    <button onClick={() => reactivateSensor(sensor.bank_id)}>Reactivate</button>
+                    <button onClick={() => reactivateSensor(sensor.bank_id)}>🔄 Reactivate</button>
                   )}
 
+                  {sensor.is_active ? (
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>✏️ Edit Sensor</button>
+                  ) : (
+                    <button onClick={() => setSelectedSensor(sensor)}>✏️ Edit Sensor</button>
+                  )}
+
+
+
+
                   {/* ✅ Always allow remove and show info */}
-                  <button onClick={() => removeSensor(sensor.bank_id)}>Remove</button>
-                  <button onClick={() => showInfo(sensor)}>Show Info</button>
+                  <button onClick={() => removeSensor(sensor.bank_id)}>❌ Remove</button>
+                  <button onClick={() => showInfo(sensor)}>ℹ️ Show Info</button>
+
                 </div>
 
               </div>
@@ -209,18 +255,43 @@ const ActiveSensor = () => {
       </div>
 
       {/* ✅ Modal for displaying sensor info */}
-      {selectedSensor && (
+      {selectedSensor && selectedSensor.is_active && (
         <div className="modal">
           <div className="modal-content">
             <h3>Sensor Details</h3>
-            <p><strong>Name:</strong> Sensor {selectedSensor.bank_id}</p>
+            <p><strong>Name:</strong> {selectedSensor.name}</p>
             <p><strong>ID:</strong> {selectedSensor.id}</p>
             <p><strong>Bank ID:</strong> {selectedSensor.bank_id}</p>
-            <p><strong>Status:</strong> {selectedSensor.is_active ? "Activated" : "Inactive"}</p>
+            <p><strong>Status:</strong> Activated</p>
             <button className="close-button" onClick={() => setSelectedSensor(null)}>Close</button>
           </div>
         </div>
       )}
+
+
+      {selectedSensor && !selectedSensor.is_active && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Edit Sensor Settings</h3>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const interval = e.target.interval.value;
+              const batch = e.target.batch.value;
+              updateSensorSettings(selectedSensor.bank_id, interval, batch);
+            }}>
+              <label>Interval (seconds):</label>
+              <input type="number" name="interval" defaultValue={selectedSensor.interval_seconds || 10} required />
+
+              <label>Batch Size:</label>
+              <input type="number" name="batch" defaultValue={selectedSensor.batch_size || 1} required />
+
+              <button type="submit">✅ Save</button>
+              <button className="close-button" type="button" onClick={() => setSelectedSensor(null)}>Cancel</button>
+            </form>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

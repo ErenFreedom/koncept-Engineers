@@ -212,7 +212,6 @@ const getAllActiveSensors = async (req, res) => {
       const sensorTable = `Sensor_${companyId}`;
       const sensorBankTable = `SensorBank_${companyId}`;
   
-      // ✅ JOIN Sensor_<companyId> with SensorBank_<companyId> to get name
       const [sensors] = await db.execute(`
         SELECT s.*, b.name 
         FROM ${sensorTable} s
@@ -221,10 +220,11 @@ const getAllActiveSensors = async (req, res) => {
   
       res.status(200).json({ sensors });
     } catch (error) {
-      console.error("❌ Error fetching sensors:", error);
+      console.error("❌ Error fetching active sensors with names:", error);
       res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
   };
+  
   
 
 const getAllManagedSensors = async (req, res) => {
