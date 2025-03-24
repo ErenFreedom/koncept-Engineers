@@ -11,6 +11,10 @@ const ActiveSensor = () => {
   const [selectedSensor, setSelectedSensor] = useState(null); // Stores selected sensor info
   const [editSensor, setEditSensor] = useState(null); // holds sensor being edited
   const [editValues, setEditValues] = useState({ interval: "", batch: "" });
+  const [localSensorsWithAPI, setLocalSensorsWithAPI] = useState([]);
+  const [isViewingInfo, setIsViewingInfo] = useState(false); // NEW
+
+
 
 
   useEffect(() => {
@@ -45,6 +49,26 @@ const ActiveSensor = () => {
 
     fetchActiveSensors();
   }, []);
+
+  useEffect(() => {
+    const fetchLocalSensorAPIs = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const response = await axios.get("http://localhost:5004/api/sensor/localAPIs", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setLocalSensorsWithAPI(response.data?.sensors || []);
+      } catch (error) {
+        console.error("❌ Failed to fetch local sensor APIs:", error.response?.data || error.message);
+      }
+    };
+
+    fetchLocalSensorAPIs();
+  }, []);
+
 
   /** ✅ Deactivate Sensor */
   const deactivateSensor = async (id) => {
@@ -175,8 +199,13 @@ const ActiveSensor = () => {
 
   /** ✅ Show Sensor Info */
   const showInfo = (sensor) => {
-    setSelectedSensor(sensor);
+    const localMatch = localSensorsWithAPI.find((s) => Number(s.id) === Number(sensor.bank_id));
+    setSelectedSensor({ ...sensor, api_endpoint: localMatch?.api_endpoint || "Not Available" });
+    setIsViewingInfo(true); // <- show info modal
   };
+
+
+
 
   return (
     <div className="active-sensor-bank">
@@ -234,8 +263,12 @@ const ActiveSensor = () => {
                   {sensor.is_active ? (
                     <button disabled style={{ color: "gray", cursor: "not-allowed" }}>✏️ Edit Sensor</button>
                   ) : (
-                    <button onClick={() => setSelectedSensor(sensor)}>✏️ Edit Sensor</button>
+                    <button onClick={() => {
+                      setSelectedSensor(sensor);
+                      setIsViewingInfo(false); // ✅ Edit mode
+                    }}>✏️ Edit Sensor</button>
                   )}
+
 
 
 
@@ -255,21 +288,41 @@ const ActiveSensor = () => {
       </div>
 
       {/* ✅ Modal for displaying sensor info */}
-      {selectedSensor && selectedSensor.is_active && (
+      {selectedSensor && isViewingInfo ? (
         <div className="modal">
           <div className="modal-content">
             <h3>Sensor Details</h3>
             <p><strong>Name:</strong> {selectedSensor.name}</p>
             <p><strong>ID:</strong> {selectedSensor.id}</p>
             <p><strong>Bank ID:</strong> {selectedSensor.bank_id}</p>
-            <p><strong>Status:</strong> Activated</p>
+            <p><strong>Status:</strong> {selectedSensor.is_active ? "Activated" : "Inactive"}</p>
+
+            <p>
+              <strong>Sensor API:</strong>{" "}
+              <span style={{ userSelect: "text" }}>{selectedSensor.api_endpoint}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedSensor.api_endpoint);
+                  toast.success("✅ API copied to clipboard!");
+                }}
+                style={{
+                  marginLeft: "10px",
+                  padding: "2px 8px",
+                  backgroundColor: "#eee",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  fontSize: "0.9rem"
+                }}
+              >
+                📋 Copy
+              </button>
+            </p>
+
             <button className="close-button" onClick={() => setSelectedSensor(null)}>Close</button>
           </div>
         </div>
-      )}
-
-
-      {selectedSensor && !selectedSensor.is_active && (
+      ) : selectedSensor && (
         <div className="modal">
           <div className="modal-content">
             <h3>Edit Sensor Settings</h3>
@@ -291,6 +344,7 @@ const ActiveSensor = () => {
           </div>
         </div>
       )}
+
 
     </div>
   );

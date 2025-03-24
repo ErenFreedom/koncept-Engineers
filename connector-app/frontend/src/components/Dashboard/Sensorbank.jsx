@@ -17,6 +17,8 @@ const SensorBank = () => {
   const [activateInterval, setActivateInterval] = useState("");
   const [activateBatch, setActivateBatch] = useState("");
   const [activeSensorIds, setActiveSensorIds] = useState([]);
+  const [localSensorsWithAPI, setLocalSensorsWithAPI] = useState([]);
+
 
 
 
@@ -171,16 +173,36 @@ const SensorBank = () => {
   }, []);
 
 
+  useEffect(() => {
+    const fetchLocalSensorAPIs = async () => {
+      try {
+        const token = localStorage.getItem("adminToken");
+        const response = await axios.get("http://localhost:5004/api/sensor/localAPIs", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        setLocalSensorsWithAPI(response.data?.sensors || []);
+      } catch (error) {
+        console.error("❌ Failed to fetch local sensor APIs:", error.response?.data || error.message);
+      }
+    };
+
+    fetchLocalSensorAPIs();
+  }, []);
+
+
   // ✅ Add Sensor (with Desigo Token)
   const addSensor = async () => {
     if (!sensorApi || !sensorName || !rateLimit) {
       toast.error("All fields are required!");
       return;
     }
-  
+
     try {
       const token = localStorage.getItem("adminToken");
-  
+
       const response = await axios.post(
         "http://localhost:5004/api/sensor/add",
         {
@@ -196,28 +218,28 @@ const SensorBank = () => {
           },
         }
       );
-  
+
       console.log("✅ Sensor Add Response:", response.data);
-  
+
       if (response.data?.message?.includes("successfully")) {
         toast.success("Sensor added successfully!");
-  
+
         // ✅ Clear modal inputs and close
         setSensorApi("");
         setSensorName("");
         setRateLimit("");
         setShowAddModal(false);
-  
+
         // ✅ Re-fetch updated sensor list
         const fetchUpdatedSensors = async () => {
           const updated = await axios.get("http://localhost:5004/api/sensor/", {
             headers: { Authorization: `Bearer ${token}` },
           });
-  
+
           const updatedList = updated.data?.sensors?.sensors || updated.data?.sensors || [];
           setSensors(updatedList);
         };
-  
+
         await fetchUpdatedSensors();
       } else {
         toast.error("Sensor added but UI update failed.");
@@ -227,14 +249,21 @@ const SensorBank = () => {
       toast.error("Failed to add sensor.");
     }
   };
-  
-  
+
+
 
   // ✅ Show Sensor Info
   const showInfo = (sensor) => {
-    setSelectedSensor(sensor);
+    // 🔍 Try to find the matching API using sensor.id
+    const localMatch = localSensorsWithAPI.find((s) => s.id === sensor.id);
+
+    // 🧠 Merge the API into the selected sensor object
+    setSelectedSensor({ ...sensor, api_endpoint: localMatch?.api_endpoint || "Not Available" });
+
+    // 👁️ Show the modal
     setShowInfoModal(true);
   };
+
 
   const openActivateModal = (sensor) => {
     setSelectedSensor(sensor);
@@ -268,19 +297,19 @@ const SensorBank = () => {
                 <div className="dropdown">
                   <button className="dropdown-button">Options ▼</button>
                   <div className="dropdown-content">
-                    <button onClick={() => showInfo(sensor)}>Show Info</button>
+                    <button onClick={() => showInfo(sensor)}>ℹ️ Show Info</button>
+
                     {activeSensorIds.includes(sensor.id) ? (
                       <button disabled title="Already activated" style={{ opacity: 0.5, cursor: "not-allowed" }}>
-                        Activate
+                        🚫 Activate
                       </button>
                     ) : (
-                      <button onClick={() => openActivateModal(sensor)}>Activate</button>
+                      <button onClick={() => openActivateModal(sensor)}>⚡ Activate</button>
                     )}
 
-
-
-                    <button onClick={() => deleteSensor(sensor)}>Delete</button>
+                    <button onClick={() => deleteSensor(sensor)}>🗑 Delete</button>
                   </div>
+
 
                 </div>
               </div>
@@ -335,7 +364,19 @@ const SensorBank = () => {
             <p><strong>Name:</strong> {selectedSensor.name}</p>
             <p><strong>ID:</strong> {selectedSensor.id}</p>
             <p><strong>Description:</strong> {selectedSensor.description || "No description provided"}</p>
-            <p><strong>Rate Limit:</strong> {selectedSensor.rateLimit || "N/A"}</p>
+            <p><strong>Created At:</strong> {selectedSensor.created_at || "N/A"}</p>
+            <p>
+              <strong>Sensor API:</strong> {selectedSensor.api_endpoint}
+              <button
+                onClick={() => navigator.clipboard.writeText(selectedSensor.api_endpoint)}
+                style={{ marginLeft: "10px" }}
+                title="Copy to clipboard"
+              >
+                📋
+              </button>
+            </p>
+
+
             <button className="close-button" onClick={() => setShowInfoModal(false)}>Close</button>
           </div>
         </div>

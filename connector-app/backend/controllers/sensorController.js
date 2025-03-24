@@ -11,7 +11,14 @@ console.log(`📌 Using database path: ${dbPath}`);
 // ✅ Open Local Database
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) console.error("❌ Error opening database:", err.message);
+    else {
+        db.run("PRAGMA foreign_keys = ON;", (err) => {
+            if (err) console.error("❌ Failed to enable foreign keys:", err.message);
+            else console.log("✅ Foreign keys enabled.");
+        });
+    }
 });
+
 
 /** ✅ Function to Fetch Latest Token from Local DB */
 const getStoredToken = () => {
@@ -38,7 +45,7 @@ const addSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor API, name, and rate limit are required" });
         }
 
-        // ✅ Fetch stored cloud JWT (AuthTokens table)
+        // ✅ Fetch stored cloud JWT
         let cloudToken;
         try {
             cloudToken = await getStoredToken();
@@ -50,28 +57,25 @@ const addSensor = async (req, res) => {
         // ✅ Fetch Desigo token from request header
         const desigoAuthHeader = req.headers["desigo-authorization"];
         const desigoToken = desigoAuthHeader && desigoAuthHeader.split(" ")[1];
-
         if (!desigoToken) {
             return res.status(401).json({ message: "Unauthorized: Desigo token missing" });
         }
 
-        // ✅ Verify if the sensor API is accessible with Desigo Token
+        // ✅ Verify sensor API is accessible
         let sensorData;
         try {
             console.log(`🔍 Fetching Sensor Data from: ${sensorApi}`);
             const response = await axios.get(sensorApi, {
-                headers: {
-                    Authorization: `Bearer ${desigoToken}`
-                }
+                headers: { Authorization: `Bearer ${desigoToken}` }
             });
             sensorData = response.data;
             console.log(`✅ Sensor Data Received:`, sensorData);
         } catch (error) {
-            console.error("❌ Invalid Sensor API. No response received:", error.message);
+            console.error("❌ Invalid Sensor API:", error.message);
             return res.status(400).json({ message: "Invalid Sensor API. No response received." });
         }
 
-        // ✅ Extract required fields from Desigo CC response
+        // ✅ Extract required Desigo fields
         if (!sensorData || !sensorData[0]?.DataType || !sensorData[0]?.ObjectId || !sensorData[0]?.PropertyName) {
             console.error("❌ Invalid sensor API response format:", sensorData);
             return res.status(400).json({ message: "Invalid sensor API response format" });
@@ -79,26 +83,22 @@ const addSensor = async (req, res) => {
 
         const { DataType, ObjectId, PropertyName } = sensorData[0];
 
-        // ✅ Push Sensor to Cloud Backend
+        // ✅ Push to Cloud
         const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/add`;
-        console.log(`📤 Sending Sensor Data to Cloud: ${cloudApiUrl}`);
-
         let cloudResponse;
         try {
-            cloudResponse = await axios.post(
-                cloudApiUrl,
-                {
-                    sensorName,
-                    description: `Sensor added via Connector App`,
-                    objectId: ObjectId,
-                    propertyName: PropertyName,
-                    dataType: DataType,
-                    isActive: false, // Initially inactive
-                },
-                { headers: { Authorization: `Bearer ${cloudToken}` } }
-            );
+            cloudResponse = await axios.post(cloudApiUrl, {
+                sensorName,
+                description: `Sensor added via Connector App`,
+                objectId: ObjectId,
+                propertyName: PropertyName,
+                dataType: DataType,
+                isActive: false
+            }, {
+                headers: { Authorization: `Bearer ${cloudToken}` }
+            });
 
-            console.log("✅ Sensor added successfully to Cloud:", cloudResponse.data);
+            console.log("✅ Sensor added to Cloud:", cloudResponse.data);
         } catch (error) {
             console.error("❌ Failed to add sensor to cloud:", error.response?.data || error.message);
             return res.status(500).json({
@@ -107,7 +107,7 @@ const addSensor = async (req, res) => {
             });
         }
 
-        // ✅ Insert Sensor into Local Databases (`LocalSensorBank` & `LocalSensorAPIs`)
+        // ✅ Insert to Local DB
         db.serialize(() => {
             const insertSensorQuery = `
                 INSERT INTO LocalSensorBank (name, description, object_id, property_name, data_type, is_active)
@@ -115,99 +115,107 @@ const addSensor = async (req, res) => {
             `;
             db.run(insertSensorQuery, [sensorName, "Sensor added via Connector App", ObjectId, PropertyName, DataType, 0], function (err) {
                 if (err) {
-                    console.error("❌ Error inserting sensor into Local DB:", err.message);
-                } else {
-                    console.log(`✅ Sensor ${sensorName} added to Local DB.`);
-
-                    // ✅ Insert into `LocalSensorAPIs`
-                    const insertApiQuery = `
-                        INSERT INTO LocalSensorAPIs (sensor_id, api_endpoint) VALUES (?, ?)
-                    `;
-                    db.run(insertApiQuery, [this.lastID, sensorApi], async (err) => {
-                        if (err) console.error("❌ Error inserting API into Local DB:", err.message);
-                        else {
-                            console.log(`✅ API for Sensor ${sensorName} stored in Local DB.`);
-                            // ✅ Trigger Local Sensor ID Sync after adding
-                            await updateLocalSensorIds();
-                        }
-                    });
+                    console.error("❌ Error inserting into LocalSensorBank:", err.message);
+                    return;
                 }
+
+                const newSensorId = this.lastID; // ✅ Capture the correct ID
+                console.log(`✅ Sensor inserted with ID: ${newSensorId}`);
+
+                const insertApiQuery = `
+                    INSERT INTO LocalSensorAPIs (sensor_id, api_endpoint)
+                    VALUES (?, ?)
+                `;
+                db.run(insertApiQuery, [newSensorId, sensorApi], async (err) => {
+                    if (err) {
+                        console.error("❌ Error inserting into LocalSensorAPIs:", err.message);
+                    } else {
+                        console.log(`✅ API for sensor ${newSensorId} stored in LocalSensorAPIs.`);
+                        await updateLocalSensorIds(); // ✅ Optional sync
+                    }
+                });
             });
         });
 
         res.status(200).json({ message: "Sensor added successfully", cloudResponse: cloudResponse.data });
+
     } catch (error) {
         console.error("❌ Error adding sensor:", error);
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
+
 /** ✅ Delete a Sensor (Connector Requests Cloud to Delete + Remove from Local DB) */
 const deleteSensor = async (req, res) => {
     try {
-      const { id } = req.params;
-  
-      // ✅ Get Token
-      let token;
-      try {
-        token = await getStoredToken();
-      } catch (error) {
-        return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
-      }
-  
-      const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/delete/${id}`;
-      console.log(`🗑 Deleting Sensor from Cloud: ${cloudApiUrl}`);
-  
-      let cloudResponse;
-      try {
-        cloudResponse = await axios.delete(cloudApiUrl, {
-          headers: { Authorization: `Bearer ${token}` },
+        const { id } = req.params;
+        console.log(`🧩 Sensor ID received in request: ${id}`);
+
+        // ✅ Get Token
+        let token;
+        try {
+            token = await getStoredToken();
+        } catch (error) {
+            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
+        }
+
+        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensor-bank/delete/${id}`;
+        console.log(`🗑 Deleting Sensor from Cloud: ${cloudApiUrl}`);
+
+        let cloudResponse;
+        try {
+            cloudResponse = await axios.delete(cloudApiUrl, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log("✅ Sensor deleted successfully from Cloud:", cloudResponse.data);
+        } catch (error) {
+            console.error("❌ Error deleting sensor from cloud:", error.response?.data || error.message);
+            return res.status(500).json({
+                message: "Failed to delete sensor from cloud",
+                error: error.response?.data || error.message,
+            });
+        }
+
+        // ✅ Delete from LocalSensorBank
+        db.run(`DELETE FROM LocalSensorBank WHERE id = ?`, [id], (err) => {
+            if (err) {
+                console.error("❌ Error deleting sensor from LocalSensorBank:", err.message);
+            } else {
+                console.log(`✅ Sensor ${id} deleted from LocalSensorBank.`);
+            }
         });
-        console.log("✅ Sensor deleted successfully from Cloud:", cloudResponse.data);
-      } catch (error) {
-        console.error("❌ Error deleting sensor from cloud:", error.response?.data || error.message);
-        return res.status(500).json({
-          message: "Failed to delete sensor from cloud",
-          error: error.response?.data || error.message,
+
+        // ✅ Delete from LocalActiveSensors
+        db.run(`DELETE FROM LocalActiveSensors WHERE bank_id = ?`, [id], (err) => {
+            if (err) {
+                console.error("❌ Error deleting from LocalActiveSensors:", err.message);
+            } else {
+                console.log(`✅ Sensor ${id} deleted from LocalActiveSensors.`);
+            }
         });
-      }
-  
-      // ✅ Delete from LocalSensorBank
-      db.run(`DELETE FROM LocalSensorBank WHERE id = ?`, [id], (err) => {
-        if (err) {
-          console.error("❌ Error deleting sensor from LocalSensorBank:", err.message);
-        } else {
-          console.log(`✅ Sensor ${id} deleted from LocalSensorBank.`);
-        }
-      });
-  
-      // ✅ Delete from LocalActiveSensors (important!)
-      db.run(`DELETE FROM LocalActiveSensors WHERE bank_id = ?`, [id], (err) => {
-        if (err) {
-          console.error("❌ Error deleting from LocalActiveSensors:", err.message);
-        } else {
-          console.log(`✅ Sensor ${id} deleted from LocalActiveSensors.`);
-        }
-      });
-  
-      // ✅ Delete from LocalSensorAPIs
-      db.run(`DELETE FROM LocalSensorAPIs WHERE sensor_id = ?`, [id], async (err) => {
-        if (err) console.error("❌ Error deleting API from Local DB:", err.message);
-        else {
-          console.log(`✅ API for Sensor ${id} deleted from Local DB.`);
-          await updateLocalSensorIds(); // 🔄 Sync
-        }
-      });
-  
-      res.status(200).json({
-        message: "Sensor deleted successfully",
-        cloudResponse: cloudResponse.data,
-      });
+
+        // ✅ Delete from LocalSensorAPIs
+        console.log(`🔍 Attempting to delete from LocalSensorAPIs with sensor_id = ${id}`);
+        db.run(`DELETE FROM LocalSensorAPIs WHERE sensor_id = ?`, [id], async (err) => {
+            if (err) {
+                console.error("❌ Error deleting from LocalSensorAPIs:", err.message);
+            } else {
+                console.log(`✅ API for Sensor ${id} deleted from LocalSensorAPIs.`);
+                await updateLocalSensorIds();
+            }
+        });
+
+        res.status(200).json({
+            message: "Sensor deleted successfully",
+            cloudResponse: cloudResponse.data,
+        });
     } catch (error) {
-      console.error("❌ Error deleting sensor:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("❌ Error deleting sensor:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-  };
+};
+
   
 
 /** ✅ Get All Sensors (Connector Fetches from Cloud Only) */
@@ -256,4 +264,30 @@ const getStoredDesigoToken = async (req, res) => {
 };
 
 
-module.exports = { addSensor, getAllSensors, deleteSensor ,getStoredDesigoToken};
+/** ✅ Get All Sensors from Local DB with API */
+const getAllLocalSensorsWithAPI = async (req, res) => {
+    try {
+      const query = `
+        SELECT 
+          b.id, b.name, b.description, b.object_id, b.property_name, 
+          b.data_type, b.is_active, b.created_at, b.updated_at,
+          a.api_endpoint
+        FROM LocalSensorBank b
+        LEFT JOIN LocalSensorAPIs a ON a.sensor_id = b.id
+      `;
+  
+      db.all(query, [], (err, rows) => {
+        if (err) {
+          console.error("❌ Error fetching local sensors with API:", err.message);
+          return res.status(500).json({ message: "Failed to fetch sensors", error: err.message });
+        }
+  
+        return res.status(200).json({ sensors: rows });
+      });
+    } catch (error) {
+      console.error("❌ Internal error in getAllLocalSensorsWithAPI:", error.message);
+      return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+  };
+  
+module.exports = { addSensor, getAllSensors, deleteSensor ,getStoredDesigoToken, getAllLocalSensorsWithAPI};
