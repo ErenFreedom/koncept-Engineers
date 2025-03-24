@@ -10,10 +10,15 @@ const PORT = process.env.PORT || 5004;
 
 // ✅ Enable CORS Middleware
 app.use(cors({
-    origin: "*",  // Allow requests from all origins (change this in production)
+    origin: "*", // ✅ Allow all origins (in dev only)
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization", "Desigo-Authorization"] // ✅ Added Desigo-Authorization
-}));
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "x-desigo-token" // ✅ this is what you're sending from frontend
+    ]
+  }));
+  
 
 
 // ✅ Middleware to parse JSON requests
@@ -29,6 +34,9 @@ const sensorDataRoutes = require("./routes/sensorDataRoutes");
 const fetchSensorDataRoutes = require("./routes/fetchSensorDataRoutes");
 const sendSensorDataRoutes = require("./routes/sendSensorDataRoutes");
 const desigoAuthRoutes = require("./routes/desigoAuthRoutes");
+const logRoutes = require("./routes/logRoutes");
+const intervalStatusRoutes = require("./routes/intervalStatusRoutes");
+
 
 
 // ✅ Use Routes
@@ -41,6 +49,9 @@ app.use("/api/local", sensorDataRoutes);
 app.use("/api/local", fetchSensorDataRoutes);
 app.use("/api/connector-data", sendSensorDataRoutes);
 app.use("/api/desigo/auth", desigoAuthRoutes);
+app.use("/api/logs", logRoutes);
+
+app.use("/api/connector-data", intervalStatusRoutes);
 
 // ✅ Root endpoint
 app.get('/', (req, res) => {

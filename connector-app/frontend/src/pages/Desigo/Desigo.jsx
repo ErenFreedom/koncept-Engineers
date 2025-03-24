@@ -41,27 +41,27 @@ const Desigo = () => {
         try {
             console.log("🔍 Sending Request to:", `${apiUrl}`);
             console.log("📩 Payload:", { username, password });
-
+    
             const response = await axios.post(apiUrl, {
                 username,
                 password,
             }, {
                 headers: { "Content-Type": "application/json" },
             });
-
+    
             console.log("✅ Authentication Successful:", response.data);
     
-            // ✅ Store Token in Local Storage
             const token = response.data.token;
+    
+            // ✅ Save token in storage and DB
             localStorage.setItem("desigoToken", token);
-
-            // ✅ Store Token in Local DB via Backend API
+            localStorage.setItem("desigoUsername", username); // 🟨 THIS LINE is important
+    
             await storeTokenInDB(token);
     
             setAuthenticated(true);
             setLoading(false);
-
-            // ✅ Extract adminId from stored token and navigate to dashboard
+    
             const storedToken = localStorage.getItem("adminToken");
             if (storedToken) {
                 const decoded = jwtDecode(storedToken);
@@ -74,6 +74,7 @@ const Desigo = () => {
             setLoading(false);
         }
     };
+    
 
     return (
         <div className="desigo-page">

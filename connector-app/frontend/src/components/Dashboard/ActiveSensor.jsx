@@ -13,6 +13,34 @@ const ActiveSensor = () => {
   const [editValues, setEditValues] = useState({ interval: "", batch: "" });
   const [localSensorsWithAPI, setLocalSensorsWithAPI] = useState([]);
   const [isViewingInfo, setIsViewingInfo] = useState(false); // NEW
+  const [sendingSensorId, setSendingSensorId] = useState(null); // Currently sending sensor
+  const [showSendModal, setShowSendModal] = useState(false); // Modal toggle
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const [logs, setLogs] = useState([]);
+  const [activeSensorStatus, setActiveSensorStatus] = useState({});
+  const [isShowingLogs, setIsShowingLogs] = useState(false);
+
+
+
+  const openSendDataModal = (sensor) => {
+    const localMatch = localSensorsWithAPI.find(
+      (s) => Number(s.id) === Number(sensor.bank_id)
+    );
+
+    setSelectedSensor({
+      ...sensor,
+      api_endpoint: localMatch?.api_endpoint || "Not Available"
+    });
+
+
+    setShowSendModal(true);
+  };
+
+
+
+
+
+
 
 
 
@@ -68,6 +96,58 @@ const ActiveSensor = () => {
 
     fetchLocalSensorAPIs();
   }, []);
+
+  const fetchSensorLogs = async (sensorId) => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.get(`http://localhost:5004/api/logs/status`, {
+        params: { sensor_id: sensorId },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setLogs(response.data.logs || []);
+      setIsViewingInfo(false);
+      setIsShowingLogs(true);
+      setIsLogModalOpen(true);
+    } catch (error) {
+      console.error("❌ Error fetching logs:", error.response?.data || error.message);
+      toast.error("Failed to fetch logs.");
+    }
+  };
+
+
+  const fetchSensorStatus = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+      const response = await axios.get("http://localhost:5004/api/connector-data/status", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setActiveSensorStatus(response.data || {});
+    } catch (error) {
+      console.error("❌ Error fetching interval status:", error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchSensorStatus(); // initial
+    const intervalId = setInterval(fetchSensorStatus, 3000); // poll every 3s
+    return () => clearInterval(intervalId);
+  }, []);
+
+
+  useEffect(() => {
+    let intervalId;
+    if (isLogModalOpen && selectedSensor) {
+      intervalId = setInterval(() => {
+        fetchSensorLogs(selectedSensor.bank_id);
+      }, 3000); // every 3 seconds
+    }
+    return () => clearInterval(intervalId);
+  }, [isLogModalOpen, selectedSensor]);
+
+
+
 
 
   /** ✅ Deactivate Sensor */
@@ -166,6 +246,27 @@ const ActiveSensor = () => {
     }
   };
 
+  const getDesigoToken = async () => {
+    try {
+      const username = localStorage.getItem("desigoUsername");
+      if (!username) {
+        toast.error("No username found in storage.");
+        return null;
+      }
+
+      const response = await axios.get("http://localhost:5004/api/desigo/auth/stored-token", {
+        params: { username },
+      });
+
+      return response.data?.token || null;
+    } catch (error) {
+      console.error("❌ Failed to fetch Desigo token:", error.response?.data || error.message);
+      toast.error("Failed to retrieve Desigo token.");
+      return null;
+    }
+  };
+
+
 
 
   const handleSendData = async (sensor) => {
@@ -196,13 +297,77 @@ const ActiveSensor = () => {
     }
   };
 
+  const startSendingData = async (sensorId, api) => {
+    try {
+      const adminToken = localStorage.getItem("adminToken");
+      const desigoToken = await getDesigoToken();
+
+      if (!desigoToken) {
+        toast.error("Desigo token missing. Cannot start.");
+        return;
+      }
+
+      // ✅ Call fetch-sensor with Desigo token included
+      await axios.get(`http://localhost:5004/api/local/fetch-sensor`, {
+        params: { api_endpoint: api, sensor_id: sensorId },
+        headers: {
+          Authorization: `Bearer ${adminToken}`,
+          "x-desigo-token": desigoToken // or as a param if backend expects it like ?desigo_token=
+        },
+      });
+
+      // ✅ Call send-data to cloud
+      await axios.get(`http://localhost:5004/api/connector-data/send`, {
+        params: { sensor_id: sensorId },
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+
+      toast.success("✅ Sensor started sending data to cloud");
+      setSendingSensorId(sensorId);
+    } catch (err) {
+      console.error("❌ Error starting data send:", err.response?.data || err.message);
+      toast.error("Failed to start sending data.");
+    }
+  };
+
+
+  const stopSendingData = async () => {
+    try {
+      const token = localStorage.getItem("adminToken");
+
+      await axios.get("http://localhost:5004/api/connector-data/stop-send", {
+        params: { sensor_id: selectedSensor.bank_id },
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      toast.info("🛑 Sensor data transmission fully stopped.");
+      setSendingSensorId(null);
+    } catch (err) {
+      console.error("❌ Failed to stop data:", err.response?.data || err.message);
+      toast.error("Failed to stop sending data.");
+    }
+  };
+
+
+
+
 
   /** ✅ Show Sensor Info */
   const showInfo = (sensor) => {
-    const localMatch = localSensorsWithAPI.find((s) => Number(s.id) === Number(sensor.bank_id));
-    setSelectedSensor({ ...sensor, api_endpoint: localMatch?.api_endpoint || "Not Available" });
-    setIsViewingInfo(true); // <- show info modal
+    const localMatch = localSensorsWithAPI.find(
+      (s) => Number(s.id) === Number(sensor.bank_id)
+    );
+
+    setSelectedSensor({
+      ...sensor,
+      api_endpoint: localMatch?.api_endpoint || "Not Available",
+      interval_seconds: localMatch?.interval_seconds || sensor.interval_seconds || "-",
+      batch_size: localMatch?.batch_size || sensor.batch_size || "-"
+    });
+
+    setIsViewingInfo(true);
   };
+
 
 
 
@@ -217,6 +382,10 @@ const ActiveSensor = () => {
           sensors.map((sensor) => (
             <div key={sensor.id} className="sensor-card">
               <p><strong>Name:</strong> {sensor.name}</p>
+              {activeSensorStatus[sensor.bank_id]?.is_fetching === 1 || activeSensorStatus[sensor.bank_id]?.is_sending === 1 ? (
+                <div className="pulsating-dot" title="Fetching or Sending..."></div>
+              ) : null}
+
 
 
               <p><strong>ID:</strong> {sensor.id}</p>
@@ -241,10 +410,11 @@ const ActiveSensor = () => {
                 <div className="dropdown-content">
                   {/* ✅ Send Data (Only if active) */}
                   {sensor.is_active ? (
-                    <button onClick={() => handleSendData(sensor)}>📤 Send Data</button>
+                    <button onClick={() => openSendDataModal(sensor)}>📡 Manage Data Sending</button>
                   ) : (
-                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>📤 Send Data</button>
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>📡 Manage Data Sending</button>
                   )}
+
 
                   {/* ✅ Deactivate (Only if active) */}
                   {sensor.is_active ? (
@@ -265,9 +435,42 @@ const ActiveSensor = () => {
                   ) : (
                     <button onClick={() => {
                       setSelectedSensor(sensor);
-                      setIsViewingInfo(false); // ✅ Edit mode
-                    }}>✏️ Edit Sensor</button>
+                      setIsViewingInfo(false); // make sure info/edit modal doesn’t show
+                      setIsShowingLogs(true);  // tell React we're showing logs
+                      fetchSensorLogs(sensor.bank_id);
+                    }}
+                    >✏️ Edit Sensor</button>
                   )}
+
+                  <button
+                    disabled={
+                      !(
+                        activeSensorStatus[sensor.bank_id]?.is_fetching ||
+                        activeSensorStatus[sensor.bank_id]?.is_sending
+                      )
+                    }
+                    onClick={() => {
+                      setSelectedSensor(sensor);
+                      fetchSensorLogs(sensor.bank_id);
+                    }}
+                    style={{
+                      color:
+                        activeSensorStatus[sensor.bank_id]?.is_fetching ||
+                          activeSensorStatus[sensor.bank_id]?.is_sending
+                          ? "inherit"
+                          : "gray",
+                      cursor:
+                        activeSensorStatus[sensor.bank_id]?.is_fetching ||
+                          activeSensorStatus[sensor.bank_id]?.is_sending
+                          ? "pointer"
+                          : "not-allowed",
+                    }}
+                  >
+                    🧾 View Logs
+                  </button>
+
+
+
 
 
 
@@ -288,7 +491,8 @@ const ActiveSensor = () => {
       </div>
 
       {/* ✅ Modal for displaying sensor info */}
-      {selectedSensor && isViewingInfo ? (
+      {/* ✅ Modal for Sensor Info */}
+      {selectedSensor && isViewingInfo && !isShowingLogs && (
         <div className="modal">
           <div className="modal-content">
             <h3>Sensor Details</h3>
@@ -296,6 +500,8 @@ const ActiveSensor = () => {
             <p><strong>ID:</strong> {selectedSensor.id}</p>
             <p><strong>Bank ID:</strong> {selectedSensor.bank_id}</p>
             <p><strong>Status:</strong> {selectedSensor.is_active ? "Activated" : "Inactive"}</p>
+            <p><strong>Interval:</strong> {selectedSensor.interval_seconds}s</p>
+            <p><strong>Batch Size:</strong> {selectedSensor.batch_size}</p>
 
             <p>
               <strong>Sensor API:</strong>{" "}
@@ -319,10 +525,16 @@ const ActiveSensor = () => {
               </button>
             </p>
 
-            <button className="close-button" onClick={() => setSelectedSensor(null)}>Close</button>
+            <button className="close-button" onClick={() => {
+              setSelectedSensor(null);
+              setIsViewingInfo(false);
+            }}>Close</button>
           </div>
         </div>
-      ) : selectedSensor && (
+      )}
+
+      {/* ✅ Modal for Editing Sensor */}
+      {selectedSensor && !isViewingInfo && !isShowingLogs && (
         <div className="modal">
           <div className="modal-content">
             <h3>Edit Sensor Settings</h3>
@@ -344,6 +556,114 @@ const ActiveSensor = () => {
           </div>
         </div>
       )}
+
+      {/* ✅ Modal for Viewing Logs */}
+      {selectedSensor && isShowingLogs && isLogModalOpen && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Logs for Sensor {selectedSensor?.bank_id}</h3>
+            <div
+              className="log-stream"
+              style={{
+                maxHeight: "300px",
+                overflowY: "scroll",
+                backgroundColor: "#111",
+                color: "#0f0",
+                padding: "10px",
+                border: "1px solid #333",
+                marginTop: "10px"
+              }}
+            >
+              {logs.length > 0 ? (
+                logs.map((log, idx) => <p key={idx}>📄 {log}</p>)
+              ) : (
+                <p>No logs yet.</p>
+              )}
+            </div>
+            <button className="close-button" onClick={() => {
+              setIsLogModalOpen(false);
+              setIsShowingLogs(false);
+              setSelectedSensor(null);
+            }}>Close</button>
+          </div>
+        </div>
+      )}
+
+
+
+      {showSendModal && selectedSensor && (
+        <div className="modal">
+          <div className="modal-content">
+            <h3>Send Sensor Data to Cloud</h3>
+            <p><strong>Name:</strong> {selectedSensor.name}</p>
+            <p><strong>ID:</strong> {selectedSensor.id}</p>
+            <p><strong>Bank ID:</strong> {selectedSensor.bank_id}</p>
+            <p><strong>Interval:</strong> {selectedSensor.interval_seconds}s</p>
+            <p><strong>Batch Size:</strong> {selectedSensor.batch_size}</p>
+            <p>
+              <strong>Sensor API:</strong>{" "}
+              <span style={{ userSelect: "text" }}>{selectedSensor.api_endpoint}</span>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(selectedSensor.api_endpoint);
+                  toast.success("✅ API copied to clipboard!");
+                }}
+                style={{
+                  marginLeft: "10px",
+                  padding: "2px 8px",
+                  backgroundColor: "#eee",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  fontSize: "0.9rem"
+                }}
+              >
+                📋 Copy
+              </button>
+            </p>
+
+            {/* Pulsating icon */}
+            {sendingSensorId === selectedSensor.bank_id ? (
+              <p style={{ color: "green", fontWeight: "bold" }}>
+                🟢 Sending data...
+              </p>
+            ) : (
+              <p style={{ color: "gray" }}>⚫ Not sending data.</p>
+            )}
+
+            {/* Start / Stop Buttons */}
+            <button
+              className="confirm-button"
+              disabled={sendingSensorId === selectedSensor.bank_id}
+              onClick={() =>
+                startSendingData(selectedSensor.bank_id, selectedSensor.api_endpoint)
+              }
+            >
+              🚀 Start Sending
+            </button>
+
+            <button
+              className="stop-button"
+              disabled={sendingSensorId !== selectedSensor.bank_id}
+              onClick={stopSendingData}
+            >
+              🛑 Stop Sending
+            </button>
+
+
+            <button
+              className="close-button"
+              onClick={() => {
+                setShowSendModal(false);
+                setSelectedSensor(null);
+              }}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
 
 
     </div>

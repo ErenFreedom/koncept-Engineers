@@ -259,40 +259,49 @@ const removeActiveSensor = async (req, res) => {
 
 const getAllActiveSensors = async (req, res) => {
     try {
-        // ✅ Fetch stored JWT from local DB
-        let token;
-        try {
-            token = await getStoredToken();
-            console.log(`🔍 Using Token: ${token}`);
-        } catch (error) {
-            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
-        }
-
-        // ✅ Get companyId from JWT
-        let companyId;
-        try {
-            companyId = await getCompanyIdFromToken();
-        } catch (error) {
-            return res.status(401).json({ message: "Unauthorized: Failed to fetch company ID" });
-        }
-
-        // ✅ Send request to Cloud Backend
-        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/active`;
-        console.log(`📤 Fetching Active Sensors from Cloud: ${cloudApiUrl}`);
-
-        const cloudResponse = await axios.get(cloudApiUrl, { 
-            headers: { Authorization: `Bearer ${token}` } 
+      // ✅ Fetch stored JWT
+      const token = await getStoredToken();
+      const companyId = await getCompanyIdFromToken();
+  
+      // ✅ Get Cloud Data
+      const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/active`;
+      const cloudResponse = await axios.get(cloudApiUrl, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+  
+      const cloudSensors = cloudResponse.data?.sensors || [];
+  
+      // ✅ Fetch local sensor settings (interval, batch)
+      const localSensors = await new Promise((resolve, reject) => {
+        db.all(`SELECT bank_id, interval_seconds, batch_size FROM LocalActiveSensors WHERE is_active = 1`, [], (err, rows) => {
+          if (err) {
+            console.error("❌ Error fetching from Local DB:", err.message);
+            return reject("Failed to fetch local sensors");
+          }
+          resolve(rows);
         });
-
-        console.log("✅ Active Sensors fetched successfully:", cloudResponse.data);
-
-        res.status(200).json(cloudResponse.data);
+      });
+  
+      // ✅ Merge local and cloud data by bank_id
+      const enrichedSensors = cloudSensors.map(sensor => {
+        const local = localSensors.find(l => Number(l.bank_id) === Number(sensor.bank_id));
+        return {
+          ...sensor,
+          interval_seconds: local?.interval_seconds || 10,
+          batch_size: local?.batch_size || 1,
+        };
+      });
+  
+      res.status(200).json({
+        message: "Fetched active sensors with local settings",
+        sensors: enrichedSensors,
+      });
     } catch (error) {
-        console.error("❌ Failed to fetch active sensors from Cloud:", error.response?.data || error.message);
-        res.status(500).json({ message: "Failed to fetch active sensors from Cloud", error: error.response?.data || error.message });
+      console.error("❌ Error in getAllActiveSensors:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-};
-
+  };
+  
 
 /** ✅ Reactivate Sensor (Connector Sends Request to Cloud + Updates Local DB) */
 const reactivateSensor = async (req, res) => {

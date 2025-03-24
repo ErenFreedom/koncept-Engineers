@@ -3,167 +3,143 @@ const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const jwt = require("jsonwebtoken");
 
-// ✅ Database Path
+// ✅ DB Path & Connection
 const dbPath = path.resolve(__dirname, "../db/localDB.sqlite");
-console.log(`📌 Using Local Database: ${dbPath}`);
-
-// ✅ Open Local Database
 const db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE, (err) => {
     if (err) console.error("❌ Error opening database:", err.message);
     else console.log("✅ Connected to Local SQLite Database.");
 });
 
-/** ✅ Function to Fetch Latest Token from Local DB */
+/** ✅ Fetch Auth Token from Local DB */
 const getStoredToken = () => {
     return new Promise((resolve, reject) => {
         db.get("SELECT token FROM AuthTokens ORDER BY id DESC LIMIT 1", [], (err, row) => {
-            if (err) {
-                console.error("❌ Error fetching token:", err.message);
-                reject("Error fetching token from database");
-            } else if (!row) {
-                reject("No stored token found.");
-            } else {
-                resolve(row.token);
-            }
+            if (err) reject("Error fetching token");
+            else if (!row) reject("No stored token");
+            else resolve(row.token);
         });
     });
 };
 
-/** ✅ Function to Fetch Company ID from JWT */
+/** ✅ Decode JWT to Get Company ID */
 const getCompanyIdFromToken = async () => {
-    try {
-        const token = await getStoredToken();
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_APP);
-        console.log(`🔍 Extracted companyId: ${decoded.companyId}`);
-        return decoded.companyId;
-    } catch (error) {
-        console.error("❌ Error decoding JWT:", error.message);
-        throw new Error("Invalid token");
-    }
+    const token = await getStoredToken();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET_APP);
+    return decoded.companyId;
 };
 
-/** ✅ Fetch & Store Sensor Data */
-const fetchAndStoreSensorData = async (sensor, companyId) => {
+/** ✅ Function to Fetch and Store Data */
+const fetchAndStoreSensorData = async (sensor, companyId, desigoToken) => {
     try {
-        const { sensor_id, api_endpoint, interval_seconds } = sensor;
+        const { sensor_id, api_endpoint } = sensor;
 
-        console.log(`📤 Fetching data from Desigo CC: ${api_endpoint}`);
+        const response = await axios.get(api_endpoint, {
+            headers: { Authorization: `Bearer ${desigoToken}` },
+        });
 
-        const response = await axios.get(api_endpoint);
+        const sensorData = response.data?.[0]?.Value;
+        if (!sensorData) return;
 
-        if (!response.data || !Array.isArray(response.data) || response.data.length === 0) {
-            console.error("❌ Invalid sensor API response format.");
-            return;
-        }
-
-        const sensorData = response.data[0]; // Assuming single object response
-
-        // ✅ Extract Required Values
-        const { Value, Quality, QualityGood, Timestamp } = sensorData.Value;
-        console.log(`✅ Sensor ${sensor_id} Data: Value=${Value}, Quality=${Quality}, Timestamp=${Timestamp}`);
-
-        // ✅ Get the correct table name using companyId
+        const { Value, Quality, QualityGood, Timestamp } = sensorData;
         const tableName = `SensorData_${companyId}_${sensor_id}`;
-        console.log(`📌 Storing data in table: ${tableName}`);
 
         const insertQuery = `
             INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp)
-            VALUES (?, ?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?)
         `;
 
         db.run(insertQuery, [sensor_id, Value, Quality, QualityGood, Timestamp], (err) => {
             if (err) {
-                console.error(`❌ Error inserting data into ${tableName}:`, err.message);
+                console.error(`❌ DB Insert Error in ${tableName}:`, err.message);
             } else {
-                console.log(`✅ Data stored successfully in ${tableName}`);
+                console.log(`✅ Data saved in ${tableName}`);
             }
         });
-
-    } catch (error) {
-        console.error(`❌ Error fetching data from Desigo CC: ${error.message}`);
+    } catch (err) {
+        console.error(`❌ Error fetching from Desigo CC for sensor ${sensor.sensor_id}:`, err.message);
     }
 };
 
-/** ✅ Process Data Based on API & Sensor ID */
+/** ✅ Main Controller */
 const processSensorByAPI = async (req, res) => {
     try {
         const { api_endpoint, sensor_id } = req.query;
+        const desigoToken = req.headers["x-desigo-token"];
 
-        if (!api_endpoint || !sensor_id) {
-            return res.status(400).json({ message: "API Endpoint and Sensor ID are required." });
+        if (!api_endpoint || !sensor_id || !desigoToken) {
+            return res.status(400).json({ message: "API endpoint, sensor ID, and Desigo token are required." });
         }
 
-        console.log(`🔍 Checking API: ${api_endpoint} and Sensor ID: ${sensor_id}`);
+        console.log(`🔍 API: ${api_endpoint} | Sensor ID: ${sensor_id}`);
 
-        // ✅ Fetch companyId from JWT
-        let companyId;
-        try {
-            companyId = await getCompanyIdFromToken();
-        } catch (error) {
-            return res.status(401).json({ message: "Unauthorized: Failed to fetch company ID" });
-        }
+        const companyId = await getCompanyIdFromToken();
 
-        // ✅ Step 1: Check if API exists in LocalSensorAPIs
-        db.get(
-            `SELECT api_endpoint FROM LocalSensorAPIs WHERE api_endpoint = ?`,
-            [api_endpoint],
-            async (err, row) => {
-                if (err) {
-                    console.error("❌ Error fetching API details:", err.message);
-                    return res.status(500).json({ message: "Database error while fetching API." });
+        // ✅ Step 1: Validate Sensor API
+        db.get(`SELECT api_endpoint FROM LocalSensorAPIs WHERE api_endpoint = ?`, [api_endpoint], (err, row) => {
+            if (err || !row) {
+                return res.status(404).json({ message: "Sensor API not found in LocalSensorAPIs." });
+            }
+
+            // ✅ Step 2: Check Active Sensor Status
+            db.get(`SELECT bank_id, interval_seconds, is_active FROM LocalActiveSensors WHERE bank_id = ? AND is_active = 1`, [sensor_id], (err, sensor) => {
+                if (err || !sensor) {
+                    return res.status(404).json({ message: "Sensor not active or not found in LocalActiveSensors." });
                 }
 
-                if (!row) {
-                    return res.status(404).json({ message: "API endpoint not found in LocalSensorAPIs." });
-                }
+                const { bank_id, interval_seconds } = sensor;
 
-                console.log(`✅ API exists in LocalSensorAPIs: ${api_endpoint}`);
+                // ✅ Step 3: Check IntervalControl Table
+                db.get(`SELECT is_fetching FROM IntervalControl WHERE sensor_id = ?`, [bank_id], (err, row) => {
+                    if (err) return res.status(500).json({ message: "Error checking IntervalControl table." });
 
-                // ✅ Step 2: Verify if sensor_id is active in LocalActiveSensors
-                db.get(
-                    `SELECT bank_id, interval_seconds, is_active FROM LocalActiveSensors WHERE bank_id = ? AND is_active = 1`,
-                    [sensor_id],
-                    async (err, sensor) => {
+                    if (row && row.is_fetching === 1) {
+                        return res.status(409).json({ message: `Sensor ${bank_id} is already fetching.` });
+                    }
+
+                    // ✅ Step 4: Insert or Update IntervalControl
+                    db.run(`
+                        INSERT INTO IntervalControl (sensor_id, is_fetching) VALUES (?, 1)
+                        ON CONFLICT(sensor_id) DO UPDATE SET is_fetching = 1;
+                    `, [bank_id], (err) => {
                         if (err) {
-                            console.error("❌ Error fetching sensor details:", err.message);
-                            return res.status(500).json({ message: "Failed to fetch sensor details" });
+                            console.error("❌ Failed to update IntervalControl:", err.message);
+                            return res.status(500).json({ message: "Failed to update fetch status." });
                         }
 
-                        if (!sensor) {
-                            return res.status(404).json({ message: "Sensor ID is not active or does not exist in LocalActiveSensors." });
-                        }
-
-                        const { bank_id, interval_seconds, is_active } = sensor;
-
-                        if (is_active !== 1) {
-                            return res.status(403).json({ message: "Sensor is not active." });
-                        }
-
-                        console.log(`✅ Found Active Sensor: ID ${bank_id}, Interval ${interval_seconds}s, CompanyID ${companyId}`);
-
-                        // ✅ Start fetching data based on interval
+                        // ✅ Step 5: Start Interval
                         setInterval(() => {
-                            fetchAndStoreSensorData(
-                                { sensor_id: bank_id, api_endpoint, interval_seconds },
-                                companyId
+                            db.get(
+                                `SELECT is_fetching FROM IntervalControl WHERE sensor_id = ?`,
+                                [bank_id],
+                                (err, row) => {
+                                    if (err || !row || row.is_fetching !== 1) return;
+
+                                    fetchAndStoreSensorData(
+                                        { sensor_id: bank_id, api_endpoint, interval_seconds },
+                                        companyId,
+                                        desigoToken
+                                    );
+                                }
                             );
                         }, interval_seconds * 1000);
 
-                        res.status(200).json({
+
+                        console.log(`🚀 Started fetching for sensor ${bank_id} every ${interval_seconds}s`);
+
+                        return res.status(200).json({
                             message: "Fetching started for sensor",
                             sensor_id: bank_id,
                             companyId,
-                            interval_seconds,
+                            interval_seconds
                         });
-                    }
-                );
-            }
-        );
+                    });
+                });
+            });
+        });
     } catch (error) {
-        console.error("❌ Error processing request:", error.message);
+        console.error("❌ Error in processSensorByAPI:", error.message);
         return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
-/** ✅ Export Function */
 module.exports = { processSensorByAPI };
