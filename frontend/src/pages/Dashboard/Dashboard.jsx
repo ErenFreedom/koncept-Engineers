@@ -2,42 +2,35 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
+import axios from "axios";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 import HomeFooter from "../../components/HomePage/HomeFooter";
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  const { id } = useParams(); // Extract admin ID from URL
+  const { id } = useParams();
   const navigate = useNavigate();
   const [admin, setAdmin] = useState(null);
+  const [sensors, setSensors] = useState([]);
 
   useEffect(() => {
-    // ✅ Get JWT Token from Local Storage
     const token = localStorage.getItem("adminToken");
 
     if (!token) {
       toast.error("Session expired. Please log in again.");
-      navigate("/AuthAdmin"); // Redirect if not logged in
+      navigate("/AuthAdmin");
       return;
     }
 
     try {
-      // ✅ Decode JWT Token
       const decoded = jwtDecode(token);
-
-      console.log("🔍 Decoded Token Data:", decoded);
-      console.log("🔍 URL Admin ID:", id);
-
-      // ✅ Ensure adminId matches the URL parameter
       if (decoded.adminId.toString() !== id.toString()) {
-        console.error("❌ Unauthorized access! Token ID does not match URL ID.");
         toast.error("Unauthorized access!");
-        localStorage.removeItem("adminToken"); // Force logout
+        localStorage.removeItem("adminToken");
         navigate("/AuthAdmin");
         return;
       }
 
-      // ✅ Set Admin Details from JWT (TEMP FIX)
       setAdmin({
         id: decoded.adminId,
         firstName: decoded.firstName,
@@ -45,13 +38,25 @@ const Dashboard = () => {
         email: decoded.email,
         phoneNumber: decoded.phoneNumber,
         companyId: decoded.companyId,
-        nationality: decoded.nationality
+        nationality: decoded.nationality,
       });
 
+      // ✅ Fetch Sensors from Backend
+      axios
+        .get("http://ec2-98-84-241-148.compute-1.amazonaws.com:3001/api/dashboard/sensors", {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+        .then((response) => {
+          setSensors(response.data.sensors || []);
+        })
+        .catch((error) => {
+          console.error("❌ Failed to fetch sensors:", error.response?.data || error.message);
+          toast.error("Failed to fetch sensor data.");
+        });
+
     } catch (error) {
-      console.error("❌ Error decoding token:", error);
       toast.error("Invalid session. Please log in again.");
-      localStorage.removeItem("adminToken"); // Force logout
+      localStorage.removeItem("adminToken");
       navigate("/AuthAdmin");
     }
   }, [id, navigate]);
@@ -60,7 +65,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      <DashboardHeader /> {/* Header */}
+      <DashboardHeader />
       <div className="dashboard-content">
         <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
         <p><strong>Email:</strong> {admin.email}</p>
@@ -68,7 +73,26 @@ const Dashboard = () => {
         <p><strong>Company:</strong> {admin.companyId}</p>
         <p><strong>Nationality:</strong> {admin.nationality}</p>
       </div>
-      <HomeFooter /> {/* Footer */}
+
+      {/* ✅ Sensor Cards Section */}
+      <div className="sensor-grid-container">
+        {sensors.length > 0 ? (
+          sensors.map((sensor, index) => (
+            <div className="sensor-card" key={index}>
+              <h3>{sensor.name}</h3>
+              <p><strong>Bank ID:</strong> {sensor.bank_id}</p>
+              <p><strong>Value:</strong> {sensor.value}</p>
+              <p><strong>Quality:</strong> {sensor.quality}</p>
+              <p><strong>Good?</strong> {sensor.quality_good ? "Yes" : "No"}</p>
+              <p><strong>Timestamp:</strong> {sensor.timestamp}</p>
+            </div>
+          ))
+        ) : (
+          <p style={{ textAlign: "center", marginTop: "20px" }}>No sensors found.</p>
+        )}
+      </div>
+
+      <HomeFooter />
     </div>
   );
 };

@@ -31,3 +31,26 @@
     margin: 0; /* Remove default margin */
   }
   
+
+  .sensor-grid-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 30px;
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+  
+  .sensor-card {
+    background-color: #ffffff;
+    color: #000000;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    transition: transform 0.2s ease-in-out;
+  }
+  
+  .sensor-card:hover {
+    transform: translateY(-5px);
+  }
+  
