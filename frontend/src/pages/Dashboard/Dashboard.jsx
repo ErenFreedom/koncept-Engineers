@@ -13,6 +13,17 @@ const Dashboard = () => {
   const [admin, setAdmin] = useState(null);
   const [sensors, setSensors] = useState([]);
 
+  const fetchSensorData = async (token) => {
+    try {
+      const res = await axios.get("http://ec2-98-84-241-148.compute-1.amazonaws.com:3001/api/dashboard/sensors", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setSensors(res.data.sensors || []);
+    } catch (err) {
+      console.error("❌ Failed to fetch sensors:", err.response?.data || err.message);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
 
@@ -35,24 +46,11 @@ const Dashboard = () => {
         id: decoded.adminId,
         firstName: decoded.firstName,
         lastName: decoded.lastName,
-        email: decoded.email,
-        phoneNumber: decoded.phoneNumber,
-        companyId: decoded.companyId,
-        nationality: decoded.nationality,
       });
 
-      // ✅ Fetch Sensors from Backend
-      axios
-        .get("http://ec2-98-84-241-148.compute-1.amazonaws.com:3001/api/dashboard/sensors", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        .then((response) => {
-          setSensors(response.data.sensors || []);
-        })
-        .catch((error) => {
-          console.error("❌ Failed to fetch sensors:", error.response?.data || error.message);
-          toast.error("Failed to fetch sensor data.");
-        });
+      fetchSensorData(token); // Initial load
+      const interval = setInterval(() => fetchSensorData(token), 3000); // Refresh every 3 sec
+      return () => clearInterval(interval); // Clean up
 
     } catch (error) {
       toast.error("Invalid session. Please log in again.");
@@ -66,29 +64,29 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <DashboardHeader />
+
       <div className="dashboard-content">
         <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
-        <p><strong>Email:</strong> {admin.email}</p>
-        <p><strong>Phone:</strong> {admin.phoneNumber}</p>
-        <p><strong>Company:</strong> {admin.companyId}</p>
-        <p><strong>Nationality:</strong> {admin.nationality}</p>
       </div>
 
-      {/* ✅ Sensor Cards Section */}
+      {/* ✅ Sensors Grid */}
       <div className="sensor-grid-container">
         {sensors.length > 0 ? (
           sensors.map((sensor, index) => (
             <div className="sensor-card" key={index}>
-              <h3>{sensor.name}</h3>
+              <div className="sensor-header">
+                <h3>{sensor.name}</h3>
+                <span className="green-dot" title="Active"></span>
+              </div>
               <p><strong>Bank ID:</strong> {sensor.bank_id}</p>
-              <p><strong>Value:</strong> {sensor.value}</p>
-              <p><strong>Quality:</strong> {sensor.quality}</p>
-              <p><strong>Good?</strong> {sensor.quality_good ? "Yes" : "No"}</p>
-              <p><strong>Timestamp:</strong> {sensor.timestamp}</p>
+              <p><strong>Value:</strong> {sensor.latest_data?.value ?? "N/A"}</p>
+              <p><strong>Quality:</strong> {sensor.latest_data?.quality ?? "N/A"}</p>
+              <p><strong>Good?</strong> {sensor.latest_data?.quality_good ? "Yes" : "No"}</p>
+              <p><strong>Timestamp:</strong> {sensor.latest_data?.timestamp ?? "N/A"}</p>
             </div>
           ))
         ) : (
-          <p style={{ textAlign: "center", marginTop: "20px" }}>No sensors found.</p>
+          <p style={{ textAlign: "center", marginTop: "20px" }}>No active sensors found.</p>
         )}
       </div>
 
