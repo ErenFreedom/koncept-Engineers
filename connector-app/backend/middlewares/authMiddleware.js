@@ -37,7 +37,7 @@ const verifyAuthToken = async (req, res, next) => {
             return res.status(401).json({ message: "Unauthorized: Token missing" });
         }
 
-        console.log(`🔍 Received Token from Request: ${token}`); // Debugging
+        //console.log(`🔍 Received Token from Request: ${token}`); // Debugging
 
         // ✅ Fetch stored JWT from localDB
         let storedToken;
@@ -48,7 +48,7 @@ const verifyAuthToken = async (req, res, next) => {
         }
 
         // ✅ Allow access if a token exists
-        console.log(`✅ Token exists in DB. Allowing request.`);
+        //console.log(`✅ Token exists in DB. Allowing request.`);
         req.user = { token: storedToken }; // Just attach token reference (no verification)
         next();
     } catch (error) {

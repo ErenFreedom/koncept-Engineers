@@ -2,6 +2,7 @@ const axios = require("axios");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const { insertLog } = require("../utils/logHelpers");
 
 // ✅ DB Path & Connection
 const dbPath = path.resolve(__dirname, "../db/localDB.sqlite");
@@ -38,7 +39,10 @@ const fetchAndStoreSensorData = async (sensor, companyId, desigoToken) => {
         });
 
         const sensorData = response.data?.[0]?.Value;
-        if (!sensorData) return;
+        if (!sensorData) {
+            insertLog(sensor_id, "⚠️ No data returned from Desigo endpoint.");
+            return;
+        }
 
         const { Value, Quality, QualityGood, Timestamp } = sensorData;
         const tableName = `SensorData_${companyId}_${sensor_id}`;
@@ -51,12 +55,14 @@ const fetchAndStoreSensorData = async (sensor, companyId, desigoToken) => {
         db.run(insertQuery, [sensor_id, Value, Quality, QualityGood, Timestamp], (err) => {
             if (err) {
                 console.error(`❌ DB Insert Error in ${tableName}:`, err.message);
+                insertLog(sensor_id, `❌ Failed to insert data into ${tableName}: ${err.message}`);
             } else {
-                console.log(`✅ Data saved in ${tableName}`);
+                insertLog(sensor_id, `✅ Data saved successfully to ${tableName}`);
             }
         });
     } catch (err) {
         console.error(`❌ Error fetching from Desigo CC for sensor ${sensor.sensor_id}:`, err.message);
+        insertLog(sensor.sensor_id, `❌ Fetch failed: ${err.message}`);
     }
 };
 
@@ -71,18 +77,19 @@ const processSensorByAPI = async (req, res) => {
         }
 
         console.log(`🔍 API: ${api_endpoint} | Sensor ID: ${sensor_id}`);
-
         const companyId = await getCompanyIdFromToken();
 
         // ✅ Step 1: Validate Sensor API
         db.get(`SELECT api_endpoint FROM LocalSensorAPIs WHERE api_endpoint = ?`, [api_endpoint], (err, row) => {
             if (err || !row) {
+                insertLog(sensor_id, "❌ Sensor API not found in LocalSensorAPIs.");
                 return res.status(404).json({ message: "Sensor API not found in LocalSensorAPIs." });
             }
 
             // ✅ Step 2: Check Active Sensor Status
             db.get(`SELECT bank_id, interval_seconds, is_active FROM LocalActiveSensors WHERE bank_id = ? AND is_active = 1`, [sensor_id], (err, sensor) => {
                 if (err || !sensor) {
+                    insertLog(sensor_id, "❌ Sensor is not active or not found.");
                     return res.status(404).json({ message: "Sensor not active or not found in LocalActiveSensors." });
                 }
 
@@ -93,6 +100,7 @@ const processSensorByAPI = async (req, res) => {
                     if (err) return res.status(500).json({ message: "Error checking IntervalControl table." });
 
                     if (row && row.is_fetching === 1) {
+                        insertLog(bank_id, "⚠️ Fetching already in progress.");
                         return res.status(409).json({ message: `Sensor ${bank_id} is already fetching.` });
                     }
 
@@ -103,6 +111,7 @@ const processSensorByAPI = async (req, res) => {
                     `, [bank_id], (err) => {
                         if (err) {
                             console.error("❌ Failed to update IntervalControl:", err.message);
+                            insertLog(bank_id, `❌ Failed to update fetch control: ${err.message}`);
                             return res.status(500).json({ message: "Failed to update fetch status." });
                         }
 
@@ -123,8 +132,7 @@ const processSensorByAPI = async (req, res) => {
                             );
                         }, interval_seconds * 1000);
 
-
-                        console.log(`🚀 Started fetching for sensor ${bank_id} every ${interval_seconds}s`);
+                        insertLog(bank_id, `🚀 Started data fetch every ${interval_seconds}s`);
 
                         return res.status(200).json({
                             message: "Fetching started for sensor",
