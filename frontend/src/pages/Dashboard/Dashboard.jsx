@@ -75,11 +75,11 @@ const Dashboard = () => {
                 <h3>{sensor.name}</h3>
                 <span className="green-dot" title="Active"></span>
               </div>
-              <p><strong>Bank ID:</strong> {sensor.bank_id}</p>
-              <p><strong>Value:</strong> {sensor.latest_data?.value ?? "N/A"}</p>
-              <p><strong>Quality:</strong> {sensor.latest_data?.quality ?? "N/A"}</p>
-              <p><strong>Good?</strong> {sensor.latest_data?.quality_good ? "Yes" : "No"}</p>
-              <p><strong>Timestamp:</strong> {sensor.latest_data?.timestamp ?? "N/A"}</p>
+              <p><strong>Value:</strong> {sensor.value ?? "N/A"}</p>
+              <p><strong>Quality:</strong> {sensor.quality ?? "N/A"}</p>
+              <p><strong>Good?</strong> {sensor.quality_good === 1 ? "Yes" : "No"}</p>
+              <p><strong>Timestamp:</strong> {sensor.timestamp ?? "N/A"}</p>
+
             </div>
           ))
         ) : (
