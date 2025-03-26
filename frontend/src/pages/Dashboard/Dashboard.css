@@ -26,11 +26,14 @@
 .sensor-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 30px;
-  padding: 30px 60px;
+  gap: 40px; /* more spacing between cards */
+  padding: 40px 80px; /* generous side padding */
+  justify-content: center;
+  align-items: start;
+  max-width: 1600px;
   margin: 0 auto;
-  max-width: 1400px;
 }
+
 
 /* Individual Sensor Cards */
 .sensor-card {
