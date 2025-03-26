@@ -4,7 +4,6 @@ import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 import axios from "axios";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
-import HomeFooter from "../../components/HomePage/HomeFooter";
 import "./Dashboard.css";
 
 const Dashboard = () => {
@@ -48,9 +47,10 @@ const Dashboard = () => {
         lastName: decoded.lastName,
       });
 
-      fetchSensorData(token); // Load once
-      const interval = setInterval(() => fetchSensorData(token), 3000); // Refresh every 3s
+      fetchSensorData(token); // Initial fetch
+      const interval = setInterval(() => fetchSensorData(token), 3000); // Poll every 3s
       return () => clearInterval(interval);
+
     } catch (error) {
       toast.error("Invalid session. Please log in again.");
       localStorage.removeItem("adminToken");
@@ -63,7 +63,6 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <DashboardHeader />
-
       <div className="dashboard-heading">
         <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
       </div>
@@ -87,8 +86,6 @@ const Dashboard = () => {
           <p style={{ textAlign: "center", marginTop: "20px" }}>No active sensors found.</p>
         )}
       </div>
-
-      <HomeFooter />
     </div>
   );
 };
