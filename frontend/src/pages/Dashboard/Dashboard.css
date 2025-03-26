@@ -26,7 +26,7 @@
 .sensor-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 120px; /* more spacing between cards */
+  gap: 200px; /* more spacing between cards */
   padding: 40px 80px; /* generous side padding */
   justify-content: center;
   align-items: start;
