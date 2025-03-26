@@ -48,10 +48,9 @@ const Dashboard = () => {
         lastName: decoded.lastName,
       });
 
-      fetchSensorData(token); // Initial load
-      const interval = setInterval(() => fetchSensorData(token), 3000); // Refresh every 3 sec
-      return () => clearInterval(interval); // Clean up
-
+      fetchSensorData(token); // Load once
+      const interval = setInterval(() => fetchSensorData(token), 3000); // Refresh every 3s
+      return () => clearInterval(interval);
     } catch (error) {
       toast.error("Invalid session. Please log in again.");
       localStorage.removeItem("adminToken");
@@ -65,11 +64,10 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <DashboardHeader />
 
-      <div className="dashboard-content">
+      <div className="dashboard-heading">
         <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
       </div>
 
-      {/* ✅ Sensors Grid */}
       <div className="sensor-grid-container">
         {sensors.length > 0 ? (
           sensors.map((sensor, index) => (

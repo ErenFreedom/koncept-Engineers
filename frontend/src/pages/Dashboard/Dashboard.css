@@ -1,84 +1,79 @@
 /* Main container styling */
 .dashboard-container {
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    min-height: 100vh; /* Ensure the dashboard covers the full viewport height */
-    background-color: #000000; /* Black background */
-    color: #ffffff; /* White text */
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    text-align: center; /* Center text alignment */
-  }
-  
-  /* Content styling */
-  .dashboard-content {
-    flex: 1; /* Take remaining height between header and footer */
-    display: flex;
-    flex-direction: column; /* Stack text vertically */
-    align-items: center; /* Center content horizontally */
-    justify-content: center; /* Center content vertically */
-    padding: 20px; /* Add padding */
-  }
-  
-  .dashboard-content h1 {
-    font-size: 2rem; /* Title font size */
-    font-weight: bold; /* Bold title */
-    margin-bottom: 10px; /* Space below the title */
-  }
-  
-  .dashboard-content p {
-    font-size: 1.2rem; /* Paragraph font size */
-    color: #cccccc; /* Lighter grey for description */
-    margin: 0; /* Remove default margin */
-  }
-  
+  display: flex;
+  flex-direction: column; /* Stack elements vertically */
+  min-height: 100vh;
+  background-color: #000000; /* Black background */
+  color: #ffffff; /* White text */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  text-align: center;
+}
 
-  .sensor-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 30px;
-    padding: 30px;
-    margin: 0 auto;
-    max-width: 1200px;
+/* Welcome text just below header */
+.dashboard-heading {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.dashboard-heading h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #ffffff;
+}
+
+/* Sensor Grid Section */
+.sensor-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  padding: 30px 60px;
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+/* Individual Sensor Cards */
+.sensor-card {
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+  transition: transform 0.2s ease-in-out;
+}
+
+.sensor-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Card Header with green dot */
+.sensor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+/* Green pulsating dot */
+.green-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #00ff00;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
   }
-  
-  .sensor-card {
-    background-color: #ffffff;
-    color: #000000;
-    border-radius: 20px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-    transition: transform 0.2s ease-in-out;
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
   }
-  
-  .sensor-card:hover {
-    transform: translateY(-5px);
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
   }
-  
-  .sensor-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-  
-  .green-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    background-color: #00ff00;
-    animation: pulse 1s infinite;
-  }
-  
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 0.6;
-    }
-    50% {
-      transform: scale(1.3);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 0.6;
-    }
-  }
+}

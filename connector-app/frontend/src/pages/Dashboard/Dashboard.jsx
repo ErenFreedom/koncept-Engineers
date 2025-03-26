@@ -38,7 +38,7 @@ const Dashboard = () => {
         return;
       }
 
-      // ✅ Set Admin Name
+      
       setAdmin({
         id: decoded.adminId,
         firstName: decoded.firstName,
