@@ -54,3 +54,39 @@
   color: #ffffff; /* White icon */
   cursor: pointer;
 }
+
+/* Profile dropdown container */
+.profile-dropdown {
+  position: relative;
+}
+
+/* Dropdown menu */
+.dropdown-menu {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  background-color: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 10px 0;
+  width: 180px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+}
+
+/* Dropdown items */
+.dropdown-item {
+  padding: 10px 16px;
+  font-size: 0.95rem;
+  color: #f1f1f1;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #333333;
+}
+
+.logout {
+  color: #ff4d4d;
+}
