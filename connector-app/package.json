@@ -1,0 +1,60 @@
+{
+  "name": "connector-app",
+  "version": "1.0.0",
+  "description": "Koncept Manager Desktop App",
+  "main": "electron/main.js",
+  "author": "Your Name",
+  "license": "ISC",
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"wait-on http://localhost:3001 && electron .\"",
+    "start:backend": "cd backend && node server.js",
+    "build": "cd frontend && npm run build",
+    "package": "electron-builder"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "electron": "^35.1.1",
+    "wait-on": "^8.0.3",
+    "electron-builder": "^24.13.2"
+  },
+  "build": {
+    "appId": "com.koncept.manager",
+    "productName": "Koncept Manager",
+    "directories": {
+      "buildResources": "assets",
+      "output": "dist"
+    },
+    "files": [
+      "frontend/build/**/*",
+      "electron/**/*",
+      "backend/**/*",
+      "backend/node_modules/**/*"
+    ],
+    "asarUnpack": [
+      "backend/**",
+      "backend/node_modules/**"
+    ],
+    "extraResources": [
+      {
+        "from": "backend/db",
+        "to": "db"
+      },
+      {
+        "from": "start.sh",
+        "to": "start.sh"
+      },
+      {
+        "from": "start.bat",
+        "to": "start.bat"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.ico"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const db = require('./db/localDB'); // Import Local Database for storing tokens
+require('./db/localDB');
 
 dotenv.config();
 

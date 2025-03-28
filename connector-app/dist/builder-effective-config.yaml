@@ -1,0 +1,28 @@
+directories:
+  output: dist
+  buildResources: assets
+appId: com.koncept.manager
+productName: Koncept Manager
+files:
+  - filter:
+      - frontend/build/**/*
+      - electron/**/*
+      - backend/**/*
+      - backend/node_modules/**/*
+asarUnpack:
+  - backend/**
+  - backend/node_modules/**
+extraResources:
+  - from: backend/db
+    to: db
+  - from: start.sh
+    to: start.sh
+  - from: start.bat
+    to: start.bat
+win:
+  target: nsis
+  icon: assets/icon.ico
+linux:
+  target: AppImage
+  icon: assets/icon.ico
+electronVersion: 35.1.2
