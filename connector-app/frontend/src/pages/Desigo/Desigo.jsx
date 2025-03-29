@@ -39,23 +39,23 @@ const Desigo = () => {
         setErrorMessage("");
     
         try {
-            console.log("🔍 Sending Request to:", `${apiUrl}`);
-            console.log("📩 Payload:", { username, password });
+            const formData = new URLSearchParams();
+            formData.append("grant_type", "password");
+            formData.append("username", username);
+            formData.append("password", password);
     
-            const response = await axios.post(apiUrl, {
-                username,
-                password,
-            }, {
-                headers: { "Content-Type": "application/json" },
+            const response = await axios.post(apiUrl, formData, {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded"
+                }
             });
     
             console.log("✅ Authentication Successful:", response.data);
     
-            const token = response.data.token;
+            const token = response.data.access_token;
     
-            // ✅ Save token in storage and DB
             localStorage.setItem("desigoToken", token);
-            localStorage.setItem("desigoUsername", username); // 🟨 THIS LINE is important
+            localStorage.setItem("desigoUsername", username);
     
             await storeTokenInDB(token);
     
@@ -74,6 +74,8 @@ const Desigo = () => {
             setLoading(false);
         }
     };
+    
+    
     
 
     return (

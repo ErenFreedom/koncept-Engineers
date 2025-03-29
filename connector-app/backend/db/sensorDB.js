@@ -3,19 +3,9 @@ const path = require("path");
 const fs = require('fs');
 
 
-let isProd = false;
-try {
-  isProd = require("electron").app.isPackaged;
-} catch (_) {}
+const dbPath = path.join(__dirname, "localDB.sqlite");
+console.log("📌 Using database path:", dbPath);
 
-const dbPath = isProd
-  ? path.join(process.resourcesPath, "db", "authDB.sqlite")
-  : path.join(__dirname, "authDB.sqlite");
-
-if (!fs.existsSync(dbPath)) {
-  fs.writeFileSync(dbPath, "");
-  console.log("🆕 Created new authDB.sqlite file.");
-}
 
 // ✅ Open SQLite Database
 const db = new sqlite3.Database(dbPath, (err) => {

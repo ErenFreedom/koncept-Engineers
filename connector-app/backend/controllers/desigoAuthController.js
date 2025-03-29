@@ -1,6 +1,8 @@
 const axios = require("axios");
 const db = require("../db/localDB"); // Import Local SQLite DB
 require("dotenv").config();
+const https = require("https");
+const crypto = require("crypto");
 
 /** ✅ Fetch Token from Desigo Server and Store in Local DB */
 const saveDesigoToken = async (req, res) => {
@@ -11,41 +13,62 @@ const saveDesigoToken = async (req, res) => {
             return res.status(400).json({ message: "Username and Token are required" });
         }
 
-        console.log(`📝 Storing Desigo token for user: ${username}`);
+        const createdAt = new Date().toISOString(); 
+        const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(); // +6h
 
-        // ✅ Generate timestamps in UTC using JavaScript
-        const createdAt = new Date().toISOString(); // Current UTC time
-        const expiresAt = new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString(); // +6 hours in UTC
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
 
-        db.run(`DELETE FROM DesigoAuthTokens WHERE username = ?`, [username], function (err) {
+        console.log("📝 Saving Desigo Token for:", username);
+        console.log("🔑 Token Length:", token.length);
+        console.log("🔐 Token Hash:", tokenHash);
+
+        // ✅ Delete existing tokens
+        db.run(`DELETE FROM DesigoAuthTokens`, function (err) {
             if (err) {
-                console.error("❌ Error deleting old Desigo token:", err.message);
-                return res.status(500).json({ message: "Database error: Unable to delete old token" });
+                console.error("❌ Failed to delete old token:", err.message);
+                return res.status(500).json({ message: "DB error: Token delete" });
             }
-            console.log("✅ Old token deleted (if existed). Proceeding with insert...");
 
             db.run(
-                `INSERT INTO DesigoAuthTokens (username, token, expires_at, created_at) 
-                 VALUES (?, ?, ?, ?)`,
+                `INSERT INTO DesigoAuthTokens (username, token, expires_at, created_at) VALUES (?, ?, ?, ?)`,
                 [username, token, expiresAt, createdAt],
                 function (err) {
                     if (err) {
-                        console.error("❌ Error inserting new Desigo token:", err.message);
-                        return res.status(500).json({ message: "Database error: Unable to store token" });
+                        console.error("❌ Failed to insert token:", err.message);
+                        return res.status(500).json({ message: "DB error: Token insert" });
                     }
-                    console.log("✅ Token successfully saved in DesigoAuthTokens!");
-                    res.status(200).json({ message: "Token stored successfully" });
+
+                    // ✅ Now immediately read it back and compare
+                    db.get(`SELECT token FROM DesigoAuthTokens WHERE username = ?`, [username], (err, row) => {
+                        if (err || !row) {
+                            return res.status(500).json({ message: "Failed to fetch token for validation" });
+                        }
+
+                        const storedToken = row.token;
+                        const storedTokenHash = crypto.createHash('sha256').update(storedToken).digest('hex');
+
+                        console.log("📦 Stored Token Length:", storedToken.length);
+                        console.log("📦 Stored Token Hash:", storedTokenHash);
+
+                        if (storedToken === token) {
+                            console.log("✅ Token matched exactly after DB insert!");
+                        } else {
+                            console.warn("❌ Token mismatch after DB insert!");
+                        }
+
+                        return res.status(200).json({ message: "Token stored and verified." });
+                    });
                 }
             );
         });
     } catch (error) {
-        console.error("❌ Error saving Desigo token:", error.message);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("❌ Error saving token:", error.message);
+        return res.status(500).json({ message: "Internal error", error: error.message });
     }
 };
 
 
-/** ✅ Fetch Token from Desigo Server */
+
 const getDesigoAuthToken = async (req, res) => {
     try {
         const { apiUrl, username, password } = req.body;
@@ -56,8 +79,16 @@ const getDesigoAuthToken = async (req, res) => {
 
         console.log("🔍 Requesting token from Desigo Server:", apiUrl);
 
-        const response = await axios.post(apiUrl, `grant_type=password&username=${username}&password=${password}`, {
+        // ✅ Ignore self-signed SSL certs (for local Desigo servers)
+        const agent = new https.Agent({
+            rejectUnauthorized: false
+        });
+
+        const formData = `grant_type=password&username=${username}&password=${password}`;
+
+        const response = await axios.post(apiUrl, formData, {
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            httpsAgent: agent // ✅ Important!
         });
 
         if (!response.data || !response.data.access_token) {
@@ -67,7 +98,6 @@ const getDesigoAuthToken = async (req, res) => {
         const accessToken = response.data.access_token;
         console.log("✅ Desigo Token Received:", accessToken);
 
-        // ✅ Send token to frontend (Frontend will call `saveDesigoToken` separately)
         res.status(200).json({ message: "Token retrieved successfully", accessToken });
     } catch (error) {
         console.error("❌ Error fetching Desigo token:", error.response?.data || error.message);

@@ -1,8 +1,11 @@
 const axios = require("axios");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const https = require("https");
 require("dotenv").config();
 const { updateLocalSensorIds } = require("../utils/syncLocalSensorIds");
+
+const agent = new https.Agent({ rejectUnauthorized: false });
 
 // ✅ Ensure correct database path
 const dbPath = path.resolve(__dirname, "../db/localDB.sqlite");
@@ -66,8 +69,10 @@ const addSensor = async (req, res) => {
         try {
             console.log(`🔍 Fetching Sensor Data from: ${sensorApi}`);
             const response = await axios.get(sensorApi, {
-                headers: { Authorization: `Bearer ${desigoToken}` }
+                headers: { Authorization: `Bearer ${desigoToken}` },
+                httpsAgent: agent // ✅ This allows self-signed SSL
             });
+
             sensorData = response.data;
             console.log(`✅ Sensor Data Received:`, sensorData);
         } catch (error) {
@@ -216,7 +221,7 @@ const deleteSensor = async (req, res) => {
 };
 
 
-  
+
 
 /** ✅ Get All Sensors (Connector Fetches from Cloud Only) */
 const getAllSensors = async (req, res) => {
@@ -267,7 +272,7 @@ const getStoredDesigoToken = async (req, res) => {
 /** ✅ Get All Sensors from Local DB with API */
 const getAllLocalSensorsWithAPI = async (req, res) => {
     try {
-      const query = `
+        const query = `
         SELECT 
           b.id, b.name, b.description, b.object_id, b.property_name, 
           b.data_type, b.is_active, b.created_at, b.updated_at,
@@ -275,19 +280,19 @@ const getAllLocalSensorsWithAPI = async (req, res) => {
         FROM LocalSensorBank b
         LEFT JOIN LocalSensorAPIs a ON a.sensor_id = b.id
       `;
-  
-      db.all(query, [], (err, rows) => {
-        if (err) {
-          console.error("❌ Error fetching local sensors with API:", err.message);
-          return res.status(500).json({ message: "Failed to fetch sensors", error: err.message });
-        }
-  
-        return res.status(200).json({ sensors: rows });
-      });
+
+        db.all(query, [], (err, rows) => {
+            if (err) {
+                console.error("❌ Error fetching local sensors with API:", err.message);
+                return res.status(500).json({ message: "Failed to fetch sensors", error: err.message });
+            }
+
+            return res.status(200).json({ sensors: rows });
+        });
     } catch (error) {
-      console.error("❌ Internal error in getAllLocalSensorsWithAPI:", error.message);
-      return res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("❌ Internal error in getAllLocalSensorsWithAPI:", error.message);
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-  };
-  
-module.exports = { addSensor, getAllSensors, deleteSensor ,getStoredDesigoToken, getAllLocalSensorsWithAPI};
+};
+
+module.exports = { addSensor, getAllSensors, deleteSensor, getStoredDesigoToken, getAllLocalSensorsWithAPI };

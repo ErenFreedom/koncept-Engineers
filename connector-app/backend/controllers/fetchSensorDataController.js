@@ -3,6 +3,9 @@ const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const { insertLog } = require("../utils/logHelpers");
+const https = require("https");
+const agent = new https.Agent({ rejectUnauthorized: false });
+
 
 // ✅ DB Path & Connection
 const dbPath = path.resolve(__dirname, "../db/localDB.sqlite");
@@ -36,6 +39,7 @@ const fetchAndStoreSensorData = async (sensor, companyId, desigoToken) => {
 
         const response = await axios.get(api_endpoint, {
             headers: { Authorization: `Bearer ${desigoToken}` },
+            httpsAgent: new https.Agent({ rejectUnauthorized: false }) // 👈 Add this
         });
 
         const sensorData = response.data?.[0]?.Value;
@@ -65,6 +69,7 @@ const fetchAndStoreSensorData = async (sensor, companyId, desigoToken) => {
         insertLog(sensor.sensor_id, `❌ Fetch failed: ${err.message}`);
     }
 };
+
 
 /** ✅ Main Controller */
 const processSensorByAPI = async (req, res) => {
