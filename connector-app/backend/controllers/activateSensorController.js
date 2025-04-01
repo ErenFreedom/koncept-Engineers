@@ -137,6 +137,7 @@ const activateSensor = async (req, res) => {
 
 
 /** ✅ Deactivate Sensor (Connector Sends Request to Cloud + Updates Local DB) */
+/** ✅ Deactivate Sensor (Connector Sends Request to Cloud + Updates Local DB) */
 const deactivateSensor = async (req, res) => {
     try {
         const { sensorId } = req.body;
@@ -144,43 +145,67 @@ const deactivateSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID is required" });
         }
 
-        // ✅ Fetch stored JWT from local DB
-        let token;
-        try {
-            token = await getStoredToken();
-            console.log(`🔍 Using Token: ${token}`);
-        } catch (error) {
-            return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
-        }
-
-        // ✅ Send deactivation request to Cloud Backend
-        const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/deactivate`;
-        console.log(`📤 Deactivating Sensor in Cloud: ${cloudApiUrl}`);
-
-        try {
-            const cloudResponse = await axios.post(cloudApiUrl, { sensorId }, { headers: { Authorization: `Bearer ${token}` } });
-            console.log("✅ Sensor deactivated successfully in Cloud:", cloudResponse.data);
-
-            // ✅ Update in Local DB (Set is_active = 0)
-            db.run(
-                `UPDATE LocalActiveSensors SET is_active = 0 WHERE bank_id = ?`,
-                [sensorId],
-                (err) => {
-                    if (err) console.error("❌ Error updating Local DB:", err.message);
-                    else console.log(`✅ Sensor ${sensorId} deactivated in Local DB.`);
+        // ✅ First check IntervalControl table
+        db.get(
+            `SELECT is_fetching, is_sending FROM IntervalControl WHERE sensor_id = ?`,
+            [sensorId],
+            async (err, statusRow) => {
+                if (err) {
+                    console.error("❌ Error checking IntervalControl:", err.message);
+                    return res.status(500).json({ message: "Database error" });
                 }
-            );
 
-            res.status(200).json({ message: "Sensor deactivated successfully", cloudResponse: cloudResponse.data });
-        } catch (error) {
-            console.error("❌ Failed to deactivate sensor in Cloud:", error.response?.data || error.message);
-            res.status(500).json({ message: "Failed to deactivate sensor in Cloud", error: error.response?.data || error.message });
-        }
+                if (!statusRow) {
+                    console.warn("⚠️ No IntervalControl entry found. Proceeding with caution.");
+                } else if (statusRow.is_fetching === 1 || statusRow.is_sending === 1) {
+                    return res.status(403).json({
+                        message: `❌ Sensor is actively fetching or sending. Please stop it first before deactivating.`,
+                        is_fetching: statusRow.is_fetching === 1,
+                        is_sending: statusRow.is_sending === 1
+                    });
+                }
+
+                // ✅ Fetch stored JWT from local DB
+                let token;
+                try {
+                    token = await getStoredToken();
+                    console.log(`🔍 Using Token: ${token}`);
+                } catch (error) {
+                    return res.status(401).json({ message: "Unauthorized: Token missing or invalid" });
+                }
+
+                // ✅ Send deactivation request to Cloud Backend
+                const cloudApiUrl = `${process.env.CLOUD_API_URL}/api/sensors/deactivate`;
+                console.log(`📤 Deactivating Sensor in Cloud: ${cloudApiUrl}`);
+
+                try {
+                    const cloudResponse = await axios.post(cloudApiUrl, { sensorId }, { headers: { Authorization: `Bearer ${token}` } });
+                    console.log("✅ Sensor deactivated successfully in Cloud:", cloudResponse.data);
+
+                    // ✅ Update in Local DB (Set is_active = 0)
+                    db.run(
+                        `UPDATE LocalActiveSensors SET is_active = 0 WHERE bank_id = ?`,
+                        [sensorId],
+                        (err) => {
+                            if (err) console.error("❌ Error updating Local DB:", err.message);
+                            else console.log(`✅ Sensor ${sensorId} deactivated in Local DB.`);
+                        }
+                    );
+
+                    return res.status(200).json({ message: "Sensor deactivated successfully", cloudResponse: cloudResponse.data });
+
+                } catch (error) {
+                    console.error("❌ Failed to deactivate sensor in Cloud:", error.response?.data || error.message);
+                    return res.status(500).json({ message: "Failed to deactivate sensor in Cloud", error: error.response?.data || error.message });
+                }
+            }
+        );
     } catch (error) {
         console.error("❌ Error deactivating sensor:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 /** ✅ Remove Sensor (Connector Sends Request to Cloud + Deletes from Local DB) */
 const removeActiveSensor = async (req, res) => {

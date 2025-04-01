@@ -418,10 +418,33 @@ const ActiveSensor = () => {
 
                   {/* ✅ Deactivate (Only if active) */}
                   {sensor.is_active ? (
-                    <button onClick={() => deactivateSensor(sensor.bank_id)}>🛑 Deactivate</button>
+                    <button
+                      onClick={() => deactivateSensor(sensor.bank_id)}
+                      disabled={
+                        activeSensorStatus[sensor.bank_id]?.is_fetching ||
+                        activeSensorStatus[sensor.bank_id]?.is_sending
+                      }
+                      style={{
+                        color:
+                          activeSensorStatus[sensor.bank_id]?.is_fetching ||
+                            activeSensorStatus[sensor.bank_id]?.is_sending
+                            ? "gray"
+                            : "inherit",
+                        cursor:
+                          activeSensorStatus[sensor.bank_id]?.is_fetching ||
+                            activeSensorStatus[sensor.bank_id]?.is_sending
+                            ? "not-allowed"
+                            : "pointer",
+                      }}
+                    >
+                      🛑 Deactivate
+                    </button>
                   ) : (
-                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>🛑 Deactivate</button>
+                    <button disabled style={{ color: "gray", cursor: "not-allowed" }}>
+                      🛑 Deactivate
+                    </button>
                   )}
+
 
                   {/* ✅ Reactivate (Only if inactive) */}
                   {sensor.is_active ? (
