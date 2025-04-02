@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./Desigo.css";
 import logo from "../../assets/logo.png";
 import { useNavigate } from "react-router-dom";
-import { FaCheckCircle } from "react-icons/fa"; 
+import { FaCheckCircle } from "react-icons/fa";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode"; // ✅ Import JWT Decoder
 import Footer from "../../components/Footer/Footer";
@@ -34,34 +34,35 @@ const Desigo = () => {
             setErrorMessage("Please enter all fields.");
             return;
         }
-    
+
         setLoading(true);
         setErrorMessage("");
-    
+
         try {
             const formData = new URLSearchParams();
             formData.append("grant_type", "password");
             formData.append("username", username);
             formData.append("password", password);
-    
-            const response = await axios.post(apiUrl, formData, {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded"
-                }
+
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/desigo/auth/get-token`, {
+                apiUrl,
+                username,
+                password
             });
-    
+
+
             console.log("✅ Authentication Successful:", response.data);
-    
+
             const token = response.data.access_token;
-    
+
             localStorage.setItem("desigoToken", token);
             localStorage.setItem("desigoUsername", username);
-    
+
             await storeTokenInDB(token);
-    
+
             setAuthenticated(true);
             setLoading(false);
-    
+
             const storedToken = localStorage.getItem("adminToken");
             if (storedToken) {
                 const decoded = jwtDecode(storedToken);
@@ -74,9 +75,9 @@ const Desigo = () => {
             setLoading(false);
         }
     };
-    
-    
-    
+
+
+
 
     return (
         <div className="desigo-page">
@@ -94,25 +95,25 @@ const Desigo = () => {
                 <p className="desigo-subtext">Enter your API URL and credentials to request a token.</p>
 
                 <div className="desigo-auth-form">
-                    <input 
-                        type="text" 
-                        placeholder="Desigo CC API URL" 
-                        className="desigo-input" 
-                        value={apiUrl} 
+                    <input
+                        type="text"
+                        placeholder="Desigo CC API URL"
+                        className="desigo-input"
+                        value={apiUrl}
                         onChange={(e) => setApiUrl(e.target.value)}
                     />
-                    <input 
-                        type="text" 
-                        placeholder="Desigo CC Username" 
-                        className="desigo-input" 
-                        value={username} 
+                    <input
+                        type="text"
+                        placeholder="Desigo CC Username"
+                        className="desigo-input"
+                        value={username}
                         onChange={(e) => setUsername(e.target.value)}
                     />
-                    <input 
-                        type="password" 
-                        placeholder="Desigo CC Password" 
-                        className="desigo-input" 
-                        value={password} 
+                    <input
+                        type="password"
+                        placeholder="Desigo CC Password"
+                        className="desigo-input"
+                        value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
 
