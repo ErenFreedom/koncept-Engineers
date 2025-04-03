@@ -56,6 +56,29 @@ const createSensorAPITable = `
     );
 `;
 
+// ✅ Create `DesigoAuthTokens` Table
+const createDesigoAuthTable = `
+    CREATE TABLE IF NOT EXISTS DesigoAuthTokens (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL,
+        token TEXT NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+`;
+
+// ✅ Create `SensorLogs` Table
+const createSensorLogsTable = `
+    CREATE TABLE IF NOT EXISTS SensorLogs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sensor_id INTEGER NOT NULL,
+        log TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sensor_id) REFERENCES LocalActiveSensors(id) ON DELETE CASCADE
+    );
+`;
+
+
 // ✅ Create Trigger for `updated_at` Column
 const createUpdateTrigger = `
     CREATE TRIGGER IF NOT EXISTS update_timestamp
@@ -101,6 +124,17 @@ db.serialize(() => {
         if (err) console.error("❌ Error creating update trigger:", err.message);
         else console.log("✅ Update trigger for LocalActiveSensors created.");
     });
+
+    db.run(createDesigoAuthTable, (err) => {
+        if (err) console.error("❌ Error creating DesigoAuthTokens:", err.message);
+        else console.log("✅ DesigoAuthTokens table created (or already exists).");
+    });
+
+    db.run(createSensorLogsTable, (err) => {
+        if (err) console.error("❌ Error creating SensorLogs:", err.message);
+        else console.log("✅ SensorLogs table created (or already exists).");
+    });
+
 });
 
 // ✅ Function to Create `SensorData_<SensorID>` Table Dynamically

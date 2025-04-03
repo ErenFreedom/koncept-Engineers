@@ -17,13 +17,18 @@ const Desigo = () => {
     const [errorMessage, setErrorMessage] = useState(""); // ✅ Error Handling
 
     /** ✅ Function to store token in local DB */
-    const storeTokenInDB = async (token) => {
+    const storeTokenInDB = async (token, usernameToStore) => {
         try {
-            await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/desigo/auth/save-token`, {
-                username,
+            console.log("📤 Attempting to store token in local DB...");
+            console.log("🔐 Token length:", token.length);
+            console.log("👤 Username being sent:", usernameToStore);
+    
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/desigo/auth/save-token`, {
+                username: usernameToStore,
                 token
             });
-            console.log("✅ Token stored in local DB successfully!");
+    
+            console.log("✅ Token stored in local DB successfully!", response.data);
         } catch (error) {
             console.error("❌ Failed to store token in DB:", error.response?.data || error.message);
         }
@@ -34,39 +39,39 @@ const Desigo = () => {
             setErrorMessage("Please enter all fields.");
             return;
         }
-
+    
         setLoading(true);
         setErrorMessage("");
-
+        console.log("🚀 Starting authentication process...");
+    
         try {
-            const formData = new URLSearchParams();
-            formData.append("grant_type", "password");
-            formData.append("username", username);
-            formData.append("password", password);
-
+            console.log("🌐 Sending token request to API URL:", apiUrl);
+    
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/desigo/auth/get-token`, {
                 apiUrl,
                 username,
                 password
             });
-
-
+    
             console.log("✅ Authentication Successful:", response.data);
-
-            const token = response.data.access_token;
-
+    
+            const token = response.data.accessToken || response.data.access_token;
+            console.log("🔐 Received Token:", token);
+    
             localStorage.setItem("desigoToken", token);
             localStorage.setItem("desigoUsername", username);
-
-            await storeTokenInDB(token);
-
+    
+            // ✅ Explicitly pass username
+            await storeTokenInDB(token, username);
+    
             setAuthenticated(true);
             setLoading(false);
-
+    
             const storedToken = localStorage.getItem("adminToken");
             if (storedToken) {
                 const decoded = jwtDecode(storedToken);
-                console.log("🔑 Extracted Admin ID:", decoded.adminId);
+                console.log("🔓 Decoded Admin Token:", decoded);
+                console.log("📍 Navigating to dashboard with Admin ID:", decoded.adminId);
                 navigate(`/dashboard/${decoded.adminId}`);
             }
         } catch (error) {
@@ -75,7 +80,7 @@ const Desigo = () => {
             setLoading(false);
         }
     };
-
+    
 
 
 

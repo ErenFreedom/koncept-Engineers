@@ -22,50 +22,54 @@ const saveDesigoToken = async (req, res) => {
         console.log("🔑 Token Length:", token.length);
         console.log("🔐 Token Hash:", tokenHash);
 
-        // ✅ Delete existing tokens
-        db.run(`DELETE FROM DesigoAuthTokens`, function (err) {
-            if (err) {
-                console.error("❌ Failed to delete old token:", err.message);
-                return res.status(500).json({ message: "DB error: Token delete" });
-            }
-
-            db.run(
-                `INSERT INTO DesigoAuthTokens (username, token, expires_at, created_at) VALUES (?, ?, ?, ?)`,
-                [username, token, expiresAt, createdAt],
-                function (err) {
-                    if (err) {
-                        console.error("❌ Failed to insert token:", err.message);
-                        return res.status(500).json({ message: "DB error: Token insert" });
-                    }
-
-                    // ✅ Now immediately read it back and compare
-                    db.get(`SELECT token FROM DesigoAuthTokens WHERE username = ?`, [username], (err, row) => {
-                        if (err || !row) {
-                            return res.status(500).json({ message: "Failed to fetch token for validation" });
-                        }
-
-                        const storedToken = row.token;
-                        const storedTokenHash = crypto.createHash('sha256').update(storedToken).digest('hex');
-
-                        console.log("📦 Stored Token Length:", storedToken.length);
-                        console.log("📦 Stored Token Hash:", storedTokenHash);
-
-                        if (storedToken === token) {
-                            console.log("✅ Token matched exactly after DB insert!");
-                        } else {
-                            console.warn("❌ Token mismatch after DB insert!");
-                        }
-
-                        return res.status(200).json({ message: "Token stored and verified." });
-                    });
+        // ✅ Serialize DB operations to prevent overlapping executions
+        db.serialize(() => {
+            db.run(`DELETE FROM DesigoAuthTokens`, function (err) {
+                if (err) {
+                    console.error("❌ Failed to delete old token:", err.message);
+                    return res.status(500).json({ message: "DB error: Token delete" });
                 }
-            );
+
+                db.run(
+                    `INSERT INTO DesigoAuthTokens (username, token, expires_at, created_at) VALUES (?, ?, ?, ?)`,
+                    [username, token, expiresAt, createdAt],
+                    function (err) {
+                        if (err) {
+                            console.error("❌ Failed to insert token:", err.message);
+                            return res.status(500).json({ message: "DB error: Token insert", error: err.message });
+                        }
+
+                        // ✅ Read back for verification
+                        db.get(`SELECT token FROM DesigoAuthTokens WHERE username = ?`, [username], (err, row) => {
+                            if (err || !row) {
+                                return res.status(500).json({ message: "Failed to fetch token for validation" });
+                            }
+
+                            const storedToken = row.token;
+                            const storedTokenHash = crypto.createHash('sha256').update(storedToken).digest('hex');
+
+                            console.log("📦 Stored Token Length:", storedToken.length);
+                            console.log("📦 Stored Token Hash:", storedTokenHash);
+
+                            if (storedToken === token) {
+                                console.log("✅ Token matched exactly after DB insert!");
+                            } else {
+                                console.warn("❌ Token mismatch after DB insert!");
+                            }
+
+                            return res.status(200).json({ message: "Token stored and verified." });
+                        });
+                    }
+                );
+            });
         });
+
     } catch (error) {
         console.error("❌ Error saving token:", error.message);
         return res.status(500).json({ message: "Internal error", error: error.message });
     }
 };
+
 
 
 
