@@ -32,7 +32,8 @@ const sensorRoutes = require("./routes/sensorRoutes");
 const activateSensorRoutes = require("./routes/activateSensorRoutes");
 const listSensorsRoutes = require("./routes/listSensorsRoutes");
 const sensorDataRoutes = require("./routes/sensorDataCloudRoutes");
-const getAdminProfile = require("./routes/getAdminRoutes");
+const displayRoutes = require("./routes/displayRoutes");
+const getAdminProfile = require("./routes/getAdminRoutes")
 
 // Use Routes
 app.use("/api/admin", adminRoutes);
@@ -46,7 +47,8 @@ app.use("/api/sensor-bank", sensorRoutes);
 app.use("/api/sensors", activateSensorRoutes); 
 app.use("/api/sensors", listSensorsRoutes);
 app.use("/api/sensor-data", sensorDataRoutes);
-app.use("/api", getAdminProfile);
+app.use("/api", displayRoutes);
+app.use("./api", getAdminProfile);
 
 // Test database connection
 (async () => {
