@@ -29,14 +29,10 @@ const DashboardHeader = () => {
     navigate("/Auth");
   };
 
-  const handleEditProfile = () => {
-    setShowModal(true);
-  };
-
   const verifyPasswordAndNavigate = async () => {
     const token = localStorage.getItem("adminToken");
     if (!token) {
-      toast.error("Missing token. Please log in again.");
+      toast.error("Missing token. Please login again.");
       navigate("/Auth");
       return;
     }
@@ -76,16 +72,13 @@ const DashboardHeader = () => {
         <div className="dashboard-icons">
           <Bell className="notification-icon" />
           <div className="profile-dropdown" ref={dropdownRef}>
-            <User
-              className="profile-icon"
-              onClick={() => setDropdownVisible((prev) => !prev)}
-            />
+            <User className="profile-icon" onClick={() => setDropdownVisible((prev) => !prev)} />
             {dropdownVisible && (
               <div className="dropdown-menu">
                 <div className="dropdown-item" onClick={() => navigate("/admin/view-profile")}>
                   👤 View Profile
                 </div>
-                <div className="dropdown-item" onClick={handleEditProfile}>
+                <div className="dropdown-item" onClick={() => setShowModal(true)}>
                   ✏️ Edit Profile
                 </div>
                 <div className="dropdown-item">🔐 Change Password</div>

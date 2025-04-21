@@ -1,6 +1,38 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 
+
+
+const verifyAdminPassword = async (req, res) => {
+  const { adminId, password } = req.body;
+
+  if (!adminId || !password) {
+    return res.status(400).json({ message: "Admin ID and password are required." });
+  }
+
+  try {
+    const [[admin]] = await db.execute(
+      `SELECT password_hash FROM Admin WHERE id = ?`,
+      [adminId]
+    );
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    const isMatch = await bcrypt.compare(password, admin.password_hash);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Incorrect password" });
+    }
+
+    res.status(200).json({ success: true, message: "Password verified" });
+  } catch (err) {
+    console.error("❌ Error verifying password:", err);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
+  }
+};
+
+
 const updateAdminProfile = async (req, res) => {
   const { adminId } = req.params;
   const {
@@ -79,4 +111,4 @@ const updateAdminProfile = async (req, res) => {
   }
 };
 
-module.exports = { updateAdminProfile };
+module.exports = { updateAdminProfile,verifyAdminPassword };
