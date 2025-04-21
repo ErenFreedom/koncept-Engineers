@@ -20,8 +20,13 @@ const EditProfile = () => {
         if (!token) return navigate("/Auth");
 
         const decoded = jwtDecode(token);
+        if (decoded.adminId.toString() !== adminId) {
+          toast.error("Unauthorized access.");
+          return navigate("/dashboard/" + decoded.adminId);
+        }
+
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${decoded.adminId}`
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${adminId}`
         );
 
         setProfile(response.data.profile);
@@ -33,7 +38,7 @@ const EditProfile = () => {
     };
 
     fetchProfile();
-  }, [navigate]);
+  }, [adminId, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,7 +46,7 @@ const EditProfile = () => {
   };
 
   const handleUpdate = async () => {
-    const password = prompt("Enter password again to save changes:");
+    const password = prompt("Enter your password to confirm changes:");
     if (!password) return;
 
     try {
