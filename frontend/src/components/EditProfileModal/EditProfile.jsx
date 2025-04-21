@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./EditProfile.css";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -11,13 +11,15 @@ const EditProfile = () => {
   const [showAdmin, setShowAdmin] = useState(true);
   const [showCompany, setShowCompany] = useState(false);
   const [form, setForm] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("adminToken");
-        const decoded = jwtDecode(token);
+        if (!token) return navigate("/Auth");
 
+        const decoded = jwtDecode(token);
         const response = await axios.get(
           `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${decoded.adminId}`
         );
@@ -31,7 +33,7 @@ const EditProfile = () => {
     };
 
     fetchProfile();
-  }, []);
+  }, [navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,7 +52,7 @@ const EditProfile = () => {
       toast.success("✅ Profile updated successfully.");
     } catch (err) {
       console.error("❌ Update failed:", err);
-      toast.error("Failed to update profile.");
+      toast.error(err.response?.data?.message || "Failed to update profile.");
     }
   };
 
