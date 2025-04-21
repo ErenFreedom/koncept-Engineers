@@ -17,6 +17,7 @@ import StaffOtp from "./pages/OTP/StaffOTP";
 import AdminAuthOtp from "./pages/OTP/AdminAuthOtp";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ViewProfile from "./components/ToViewInfo/ViewProfile";
+import EditProfile from "./components/EditProfileModal/EditProfile";
 
 import { FormDataProvider } from "./context/FormDataContext"; // ✅ Import FormData Context Provider
 
@@ -40,6 +41,7 @@ const App = () => {
               <Route path="/AdminAuthOtp" element={<AdminAuthOtp />} />
               <Route path="/Dashboard/:id" element={<Dashboard />} />
               <Route path="/admin/view-profile" element={<ViewProfile />} />
+              <Route path="/admin/edit-profile/:id" element={<EditProfile />} />
 
             </Routes>
           </Router>
