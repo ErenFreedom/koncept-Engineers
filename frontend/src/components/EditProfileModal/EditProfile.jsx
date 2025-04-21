@@ -1,107 +1,69 @@
-import React, { useEffect, useState } from "react";
-import "./EditProfile.css";
-import { useParams } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import axios from "axios";
-import { toast } from "react-toastify";
+import React, { useState, useRef, useEffect } from "react";
+import { Bell, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import EditProfileModal from "../EditProfileModal/EditProfileModal"; // ✅ Import modal
+import "./DashboardHeader.css";
 
-const EditProfile = () => {
-  const { id: adminId } = useParams();
-  const [profile, setProfile] = useState(null);
-  const [showAdmin, setShowAdmin] = useState(true);
-  const [showCompany, setShowCompany] = useState(false);
-  const [form, setForm] = useState({});
+const DashboardHeader = () => {
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [showModal, setShowModal] = useState(false); // ✅ Modal state
+  const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
+  // Handle outside click to close dropdown
   useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const token = localStorage.getItem("adminToken");
-        const decoded = jwtDecode(token);
-
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${decoded.adminId}`
-        );
-
-        setProfile(response.data.profile);
-        setForm(response.data.profile);
-      } catch (err) {
-        console.error("❌ Error loading profile:", err);
-        toast.error("Failed to load profile.");
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownVisible(false);
       }
     };
-
-    fetchProfile();
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
+  const handleLogout = () => {
+    localStorage.removeItem("adminToken");
+    localStorage.removeItem("identifier");
+    navigate("/Auth");
   };
-
-  const handleUpdate = async () => {
-    const password = prompt("Enter password again to save changes:");
-    if (!password) return;
-
-    try {
-      await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/edit/${adminId}`,
-        { ...form, password }
-      );
-      toast.success("✅ Profile updated successfully.");
-    } catch (err) {
-      console.error("❌ Update failed:", err);
-      toast.error("Failed to update profile.");
-    }
-  };
-
-  if (!profile) return <div className="edit-loading">Loading profile...</div>;
 
   return (
-    <div className="edit-profile-container">
-      <h1 className="edit-heading">Edit Profile</h1>
-
-      <div className="edit-section">
-        <button className="edit-toggle" onClick={() => setShowAdmin((prev) => !prev)}>
-          {showAdmin ? "▼" : "►"} Edit Admin Info
-        </button>
-        {showAdmin && (
-          <div className="edit-form">
-            <input name="first_name" value={form.first_name} onChange={handleChange} placeholder="First Name" />
-            <input name="middle_name" value={form.middle_name || ""} onChange={handleChange} placeholder="Middle Name" />
-            <input name="last_name" value={form.last_name} onChange={handleChange} placeholder="Last Name" />
-            <input name="date_of_birth" value={form.date_of_birth} onChange={handleChange} placeholder="DOB" />
-            <input name="nationality" value={form.nationality || ""} onChange={handleChange} placeholder="Nationality" />
-            <input name="phone_number" value={form.phone_number} onChange={handleChange} placeholder="Phone Number" />
-            <input name="email" value={form.email} onChange={handleChange} placeholder="Email" />
-            <input name="alt_email" value={form.alt_email || ""} onChange={handleChange} placeholder="Alternate Email" />
-            <input name="landline" value={form.landline || ""} onChange={handleChange} placeholder="Landline" />
-            <input name="address1" value={form.address1 || ""} onChange={handleChange} placeholder="Address Line 1" />
-            <input name="address2" value={form.address2 || ""} onChange={handleChange} placeholder="Address Line 2" />
-            <input name="pincode" value={form.pincode || ""} onChange={handleChange} placeholder="Pincode" />
-            <input type="password" value="********" disabled placeholder="Password (not editable)" />
-          </div>
-        )}
+    <header className="dashboard-header">
+      <div className="dashboard-logo">
+        <img src="/Logo.png" alt="Koncept Engineers Logo" className="logo-image" />
       </div>
 
-      <div className="edit-section">
-        <button className="edit-toggle" onClick={() => setShowCompany((prev) => !prev)}>
-          {showCompany ? "▼" : "►"} Edit Company Info
-        </button>
-        {showCompany && (
-          <div className="edit-form">
-            <input name="company_name" value={form.company_name} onChange={handleChange} placeholder="Company Name" />
-            <input name="company_email" value={form.company_email} onChange={handleChange} placeholder="Company Email" />
-            <input name="company_address1" value={form.company_address1} onChange={handleChange} placeholder="Company Address 1" />
-            <input name="company_address2" value={form.company_address2 || ""} onChange={handleChange} placeholder="Company Address 2" />
-            <input name="company_pincode" value={form.company_pincode} onChange={handleChange} placeholder="Company Pincode" />
-            <input type="text" value="(File uploads not editable here)" disabled />
-          </div>
-        )}
+      <div className="dashboard-title">Koncept Manager - Overview</div>
+
+      <div className="dashboard-icons">
+        <Bell className="notification-icon" />
+        <div className="profile-dropdown" ref={dropdownRef}>
+          <User
+            className="profile-icon"
+            onClick={() => setDropdownVisible((prev) => !prev)}
+          />
+          {dropdownVisible && (
+            <div className="dropdown-menu">
+              <div className="dropdown-item" onClick={() => navigate("/admin/view-profile")}>
+                👤 View Profile
+              </div>
+              <div className="dropdown-item" onClick={() => setShowModal(true)}>
+                ✏️ Edit Profile
+              </div>
+              <div className="dropdown-item">🔐 Change Password</div>
+              <div className="dropdown-item">❓ Need Help?</div>
+              <div className="dropdown-item logout" onClick={handleLogout}>
+                🚪 Logout
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
-      <button className="save-button" onClick={handleUpdate}>💾 Save Changes</button>
-    </div>
+      {/* ✅ Render modal conditionally */}
+      {showModal && <EditProfileModal onClose={() => setShowModal(false)} />}
+    </header>
   );
 };
 
-export default EditProfile;
+export default DashboardHeader;
