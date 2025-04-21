@@ -1,10 +1,13 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Bell, User } from "lucide-react"; // Import icons
+import { useNavigate } from "react-router-dom";
+
 import "./DashboardHeader.css";
 
 const DashboardHeader = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   // Handle outside click to close dropdown
   useEffect(() => {
@@ -16,6 +19,14 @@ const DashboardHeader = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleLogout = () => {
+    console.log("🚪 Logging out...");
+    localStorage.removeItem("adminToken");     // destroy token
+    localStorage.removeItem("identifier");     // optional: clear cached login
+    navigate("/Auth");                         // go to Auth page
+  };
+
 
   return (
     <header className="dashboard-header">
@@ -34,11 +45,15 @@ const DashboardHeader = () => {
           />
           {dropdownVisible && (
             <div className="dropdown-menu">
-              <div className="dropdown-item">👤 View Profile</div>
+              <div className="dropdown-item" onClick={() => navigate("/admin/view-profile")}>
+                👤 View Profile
+              </div>
+
               <div className="dropdown-item">✏️ Edit Profile</div>
               <div className="dropdown-item">🔐 Change Password</div>
               <div className="dropdown-item">❓ Need Help?</div>
-              <div className="dropdown-item logout">🚪 Logout</div>
+              <div className="dropdown-item logout" onClick={handleLogout}>🚪 Logout</div>
+
             </div>
           )}
         </div>

@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "homepage": ".",
   "description": "React + Electron Desktop App",
+  "main": "electron/main.js",
   "author": "YourName",
   "license": "MIT",
   "keywords": [],
-  "main": "electron/main.js",  
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
@@ -45,17 +45,14 @@
       {
         "from": "../backend",
         "to": "backend",
-        "filter": [
-          "**/*"
-        ]
+        "filter": ["**/*"]
       }
     ],
-    "main": "electron/main.js",
+    "extraMetadata": {
+      "main": "electron/main.js"
+    },
     "win": {
-      "target": [
-        "zip",
-        "nsis"
-      ],
+      "target": ["zip", "nsis"],
       "icon": "public/icon.ico"
     },
     "nsis": {

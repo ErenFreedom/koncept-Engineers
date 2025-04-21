@@ -42,6 +42,7 @@ const sendSensorDataRoutes = require("./routes/sendSensorDataRoutes");
 const desigoAuthRoutes = require("./routes/desigoAuthRoutes");
 const logRoutes = require("./routes/logRoutes");
 const intervalStatusRoutes = require("./routes/intervalStatusRoutes");
+const getAdminRoutes = require("./routes/getAdminRoutes");
 
 /** ✅ Use Routes */
 app.use("/api/admin/auth", cloudAdminAuthRoutes);
@@ -55,6 +56,7 @@ app.use("/api/connector-data", sendSensorDataRoutes);
 app.use("/api/desigo/auth", desigoAuthRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/connector-data", intervalStatusRoutes);
+app.use("/api", getAdminRoutes);
 
 /** ✅ Health Check */
 app.get('/', (req, res) => {

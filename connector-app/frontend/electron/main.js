@@ -1,13 +1,15 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
-const isDev = require('electron-is-dev');
 
 let mainWindow;
 let backendProcess;
 
 app.commandLine.appendSwitch('ignore-certificate-errors');
 app.disableHardwareAcceleration();
+
+// 🟢 Detect dev mode
+const isDev = !app.isPackaged;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -20,38 +22,39 @@ function createWindow() {
     },
   });
 
-  const indexPath = path.join(__dirname, '../build/index.html');
-  mainWindow.loadFile(indexPath);
+  const indexPath = isDev
+    ? 'http://localhost:3000'
+    : path.join(__dirname, '..', 'build', 'index.html');
 
-  mainWindow.webContents.openDevTools(); // Optional
+  if (isDev) {
+    mainWindow.loadURL(indexPath);
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(indexPath);
+  }
+
+  console.log('✅ Electron window created');
 }
 
-// ✅ Use BAT to launch backend on Windows
 function startBackend() {
   const isWindows = process.platform === 'win32';
-  if (isWindows) {
-    const batPath = path.join(__dirname, '../start.bat');
 
-    backendProcess = spawn('cmd.exe', ['/c', batPath], {
-      cwd: path.join(__dirname, '..'),
-      shell: true,
-      detached: false,
-      stdio: 'inherit',
-    });
+  const backendPath = isDev
+    ? path.join(__dirname, '../../backend/server.js')
+    : path.join(__dirname, '..', 'backend', 'server.js');
 
-    console.log('🚀 Backend started via start.bat');
-  } else {
-    // In dev on Linux, run server.js directly
-    const backendPath = path.join(__dirname, '../../backend/server.js');
-    backendProcess = spawn('node', [backendPath], {
-      cwd: path.join(__dirname, '../../backend'),
-      shell: true,
-      detached: false,
-      stdio: 'inherit',
-    });
+  const backendCWD = isDev
+    ? path.join(__dirname, '../../backend')
+    : path.join(__dirname, '..', 'backend');
 
-    console.log('🚀 Backend server started on Linux/macOS (dev mode).');
-  }
+  backendProcess = spawn(process.execPath, [backendPath], {
+    cwd: backendCWD,
+    detached: false,
+    shell: true,
+    stdio: 'inherit',
+  });
+
+  console.log(`🚀 Backend server started (dev: ${isDev})`);
 }
 
 function stopBackend() {
@@ -61,13 +64,11 @@ function stopBackend() {
   }
 }
 
-// ✅ App ready
 app.whenReady().then(() => {
   startBackend();
   createWindow();
 });
 
-// ✅ Clean up
 app.on('window-all-closed', () => {
   stopBackend();
   if (process.platform !== 'darwin') app.quit();
