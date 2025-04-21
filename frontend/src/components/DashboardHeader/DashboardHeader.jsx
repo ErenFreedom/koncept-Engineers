@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Bell, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import EditProfileModal from "../EditProfileModal/EditProfileModal"; // ✅ Import modal
+import EditProfileModal from "../EditProfileModal/EditProfile"; // ✅ Import modal
 import "./DashboardHeader.css";
 
 const DashboardHeader = () => {
