@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const { updateAdminProfile } = require("../controllers/updateAdminProfile");
-const { verifyAdminPassword } = require("../controllers/verifyAdminPassword");
+const { verifyAdminPassword } = require("../controllers/updateAdminProfile");
 
 
 router.put("/admin/profile/edit/:adminId", updateAdminProfile);
