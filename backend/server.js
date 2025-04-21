@@ -48,7 +48,7 @@ app.use("/api/sensors", activateSensorRoutes);
 app.use("/api/sensors", listSensorsRoutes);
 app.use("/api/sensor-data", sensorDataRoutes);
 app.use("/api", displayRoutes);
-app.use("./api", getAdminRoutes);
+app.use("/api", getAdminRoutes);
 
 // Test database connection
 (async () => {
