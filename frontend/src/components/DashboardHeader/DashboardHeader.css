@@ -109,6 +109,7 @@
 /* Modal Box */
 .modal-content {
   background: white;
+  color: #1e293b;
   padding: 30px 40px;
   border-radius: 14px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
