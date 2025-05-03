@@ -47,8 +47,8 @@ const Dashboard = () => {
         lastName: decoded.lastName,
       });
 
-      fetchSensorData(token); // Initial fetch
-      const interval = setInterval(() => fetchSensorData(token), 3000); // Poll every 3s
+      fetchSensorData(token); 
+      const interval = setInterval(() => fetchSensorData(token), 3000); 
       return () => clearInterval(interval);
 
     } catch (error) {

@@ -5,9 +5,9 @@ const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TO
 
 const sendOtpSms = async (phoneNumber, otp) => {
     try {
-        // Ensure phone number is in correct format
+       
         if (!phoneNumber.startsWith("+")) {
-            phoneNumber = `+${phoneNumber.replace(/\D/g, "")}`; // Remove non-numeric characters and prepend +
+            phoneNumber = `+${phoneNumber.replace(/\D/g, "")}`; 
         }
 
         const message = await client.messages.create({

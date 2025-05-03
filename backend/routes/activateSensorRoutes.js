@@ -3,10 +3,10 @@ const { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensor
 
 const router = express.Router();
 
-router.get("/active", getAllActiveSensors);  // Get all Sensors
-router.post("/activate", activateSensor);   // ✅ Activate a Sensor
-router.post("/deactivate", deactivateSensor); // ✅ Deactivate a Sensor
-router.post("/remove", removeActiveSensor); // ✅ Remove a Sensor from Active Sensors
+router.get("/active", getAllActiveSensors);  
+router.post("/activate", activateSensor);   
+router.post("/deactivate", deactivateSensor); 
+router.post("/remove", removeActiveSensor); 
 router.get("/managed", getAllManagedSensors);
 router.post("/reactivate", reactivateSensor);   
 

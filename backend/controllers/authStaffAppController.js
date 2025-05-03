@@ -6,10 +6,10 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
 require("dotenv").config();
 
-// ✅ Parse Token Config for Connector App
+
 const TOKEN_CONFIG_APP = JSON.parse(process.env.TOKEN_CONFIG_APP || "{}");
 const ACCESS_TOKEN_EXPIRY = TOKEN_CONFIG_APP.accessTokenExpiry || "6h";
-const REFRESH_TOKEN_EXPIRY = "10y"; // Staff sessions persist for 10 years
+const REFRESH_TOKEN_EXPIRY = "10y"; 
 
 const COOKIE_OPTIONS = {
     httpOnly: true,  
@@ -17,16 +17,16 @@ const COOKIE_OPTIONS = {
     sameSite: "strict",
 };
 
-/** ✅ Send OTP for Staff App Login (Sent to Admin) */
+
 const sendStaffAppLoginOtp = async (req, res) => {
     try {
-        const { staffIdentifier, adminIdentifier } = req.body; // Staff email/phone + Admin email/phone
+        const { staffIdentifier, adminIdentifier } = req.body; 
 
         if (!staffIdentifier || !adminIdentifier) {
             return res.status(400).json({ message: "Staff and Admin identifiers are required" });
         }
 
-        // ✅ Ensure that the admin exists
+       
         const [[admin]] = await db.execute(
             `SELECT id, email, phone_number FROM Admin WHERE email = ? OR phone_number = ?`,
             [adminIdentifier, adminIdentifier]
@@ -36,10 +36,10 @@ const sendStaffAppLoginOtp = async (req, res) => {
             return res.status(404).json({ message: "Admin not found" });
         }
 
-        // ✅ Generate OTP
+        
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // ✅ Send OTP to Admin via Email or SMS
+       
         let otpSent = { success: false };
         if (adminIdentifier.includes("@")) {
             otpSent = await sendOtpToEmail(adminIdentifier, `Staff member (${staffIdentifier}) is requesting to log in. OTP: ${otp}`);
@@ -51,7 +51,7 @@ const sendStaffAppLoginOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in `AppLoginOtp`
+        
         await db.execute(
             `INSERT INTO AppLoginOtp (identifier, otp, created_at, expires_at)
              VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
@@ -67,7 +67,7 @@ const sendStaffAppLoginOtp = async (req, res) => {
     }
 };
 
-/** ✅ Verify OTP & Authenticate Staff (OTP sent to Admin) */
+
 const verifyStaffAppLoginOtp = async (req, res) => {
     try {
         const { staffIdentifier, adminIdentifier, otp, rememberMe } = req.body;
@@ -76,7 +76,7 @@ const verifyStaffAppLoginOtp = async (req, res) => {
             return res.status(400).json({ message: "Staff and Admin identifiers with OTP are required" });
         }
 
-        // ✅ Validate OTP (checks OTP from adminIdentifier)
+       
         const [otpResults] = await db.execute(
             `SELECT * FROM AppLoginOtp WHERE identifier = ? AND otp = ? AND expires_at > UTC_TIMESTAMP();`,
             [adminIdentifier, otp]
@@ -86,7 +86,7 @@ const verifyStaffAppLoginOtp = async (req, res) => {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        // ✅ Ensure Staff Exists & is Linked to Admin
+        
         const [[staff]] = await db.execute(
             `SELECT s.id, s.first_name, s.phone_number, s.email, s.company_id, 
                     s.admin_id, s.admin_email, s.position, s.years_in_company
@@ -101,7 +101,7 @@ const verifyStaffAppLoginOtp = async (req, res) => {
             return res.status(404).json({ message: "Staff not found or not linked to Admin" });
         }
 
-        // ✅ Generate JWT Access & Refresh Tokens
+        
         const accessToken = jwt.sign(
             { 
                 staffId: staff.id,
@@ -124,13 +124,13 @@ const verifyStaffAppLoginOtp = async (req, res) => {
             { expiresIn: REFRESH_TOKEN_EXPIRY }
         );
 
-        // ✅ Set Refresh Token in Secure HTTP-Only Cookie
+        
         res.cookie("refreshToken", refreshToken, {
             ...COOKIE_OPTIONS,
-            maxAge: rememberMe ? 10 * 365 * 24 * 60 * 60 * 1000 : null, // 10 years if "Remember Me" is checked
+            maxAge: rememberMe ? 10 * 365 * 24 * 60 * 60 * 1000 : null, 
         });
 
-        // ✅ Delete OTP after successful login
+        
         await db.execute(`DELETE FROM AppLoginOtp WHERE identifier = ?`, [adminIdentifier]);
 
         res.status(200).json({ 
@@ -155,13 +155,13 @@ const verifyStaffAppLoginOtp = async (req, res) => {
     }
 };
 
-/** ✅ Refresh Access Token */
+
 const refreshStaffAppToken = async (req, res) => {
     try {
         const { refreshToken } = req.cookies;
         if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
 
-        // ✅ Verify Refresh Token
+       
         jwt.verify(refreshToken, process.env.JWT_SECRET_APP, async (err, decoded) => {
             if (err) return res.status(403).json({ message: "Forbidden" });
 
@@ -199,7 +199,7 @@ const refreshStaffAppToken = async (req, res) => {
     }
 };
 
-/** ✅ Logout Staff from Connector App */
+
 const logoutStaffApp = async (req, res) => {
     res.clearCookie("refreshToken", COOKIE_OPTIONS);
     res.status(200).json({ message: "Logged out successfully" });

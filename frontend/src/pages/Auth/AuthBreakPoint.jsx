@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import AuthHeader from "../../components/AuthPage/AuthHeader"; // Importing the AuthHeader
-import HomeFooter from "../../components/HomePage/HomeFooter"; // Importing the footer
-import "./Auth.css"; // Importing Auth-specific CSS
+import { useNavigate } from "react-router-dom"; 
+import AuthHeader from "../../components/AuthPage/AuthHeader"; 
+import HomeFooter from "../../components/HomePage/HomeFooter"; 
+import "./Auth.css"; 
 
 const AuthBreakPoint = () => {
   const [selectedOption, setSelectedOption] = useState(null);
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate(); 
 
   const handleCheckboxChange = (option) => {
     setSelectedOption(option);
@@ -14,9 +14,9 @@ const AuthBreakPoint = () => {
 
   const handleNextClick = () => {
     if (selectedOption === "admin") {
-      navigate("/AuthAdmin"); // Navigate to Admin login page
+      navigate("/AuthAdmin"); 
     } else if (selectedOption === "staff") {
-      navigate("/AuthStaff"); // Navigate to Staff login page
+      navigate("/AuthStaff"); 
     }
   };
 
@@ -49,8 +49,8 @@ const AuthBreakPoint = () => {
         </div>
         <button
           className="auth-button"
-          disabled={!selectedOption} // Disable button if no checkbox is selected
-          onClick={handleNextClick} // Handle navigation on click
+          disabled={!selectedOption} 
+          onClick={handleNextClick} 
         >
           Next
         </button>

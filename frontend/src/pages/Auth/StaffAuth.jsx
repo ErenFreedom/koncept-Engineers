@@ -1,12 +1,12 @@
 import React from "react";
-import AuthHeader from "../../components/AuthPage/AuthHeader"; // Importing the Auth Header
-import HomeFooter from "../../components/HomePage/HomeFooter"; // Importing the footer
-import "./Auth.css"; // Importing Auth-specific CSS
+import AuthHeader from "../../components/AuthPage/AuthHeader"; 
+import HomeFooter from "../../components/HomePage/HomeFooter"; 
+import "./Auth.css"; 
 
 const StaffAuth = () => {
   return (
     <div>
-      <AuthHeader /> {/* Header */}
+      <AuthHeader /> 
       <div className="auth-body">
         <h1 className="auth-heading">Staff Login</h1>
         <div className="form-container">
@@ -46,7 +46,7 @@ const StaffAuth = () => {
         </div>
         <button className="auth-button">Login</button>
         <div className="forgot-password-container">
-          {/* Button styled as a link */}
+          
           <button
             className="forgot-password-link"
             onClick={() =>
@@ -57,7 +57,7 @@ const StaffAuth = () => {
           </button>
         </div>
       </div>
-      <HomeFooter /> {/* Footer */}
+      <HomeFooter /> 
     </div>
   );
 };

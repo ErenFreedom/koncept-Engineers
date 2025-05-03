@@ -1,26 +1,26 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors'); // Import CORS
-const db = require('./db/connector'); // Adjust path as per your folder structure
+const cors = require('cors'); 
+const db = require('./db/connector'); 
 
-// Load environment variables from .env file
+
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ✅ Enable CORS for all routes
+
 app.use(cors({
-    origin: "*", // Allow all origins
+    origin: "*", 
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: "Content-Type,Authorization"
 }));
 
-// Middleware to parse JSON requests
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Import routes
+
 const adminRoutes = require("./routes/adminRoutes");
 const staffRoutes = require("./routes/staffRoutes");
 const adminAuthRoutes = require("./routes/authAdminRoutes");
@@ -36,7 +36,7 @@ const displayRoutes = require("./routes/displayRoutes");
 const getAdminRoutes = require("./routes/getAdminRoutes")
 const editProfileRoutes = require("./routes/editProfileRoutes");
 
-// Use Routes
+
 app.use("/api/admin", adminRoutes);
 app.use("/api/staff", staffRoutes);
 app.use("/api/admin/auth", adminAuthRoutes);
@@ -53,18 +53,18 @@ app.use("/api", getAdminRoutes);
 app.use("/api", editProfileRoutes);
 
 
-// Test database connection
+
 (async () => {
     try {
-        await db.query('SELECT 1'); // Simple query to check DB connection
+        await db.query('SELECT 1'); 
         console.log('✅ Connected to the database successfully!');
     } catch (error) {
         console.error('❌ Database connection failed:', error.message);
-        process.exit(1); // Exit the process if DB connection fails
+        process.exit(1); 
     }
 })();
 
-// Root endpoint
+
 app.get('/', (req, res) => {
     res.status(200).json({ message: 'Server is running!' });
 });

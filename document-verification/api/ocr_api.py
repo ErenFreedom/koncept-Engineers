@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 import os
 import sys
 
-# Ensure we can import from 'services'
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from services.ocr_engine import extract_text
@@ -24,11 +24,11 @@ def upload_file():
     filepath = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(filepath)
 
-    # Extract text using OCR
+    
     extracted_text = extract_text(filepath)
-    print("\n=== Extracted Text ===\n", extracted_text, "\n======================")  # Debugging
+    print("\n=== Extracted Text ===\n", extracted_text, "\n======================")  
 
-    # Extract Aadhaar, PAN, GST
+    
     aadhaar = extract_aadhaar(extracted_text)
     pan = extract_pan(extracted_text)
     gst = extract_gst(extracted_text)

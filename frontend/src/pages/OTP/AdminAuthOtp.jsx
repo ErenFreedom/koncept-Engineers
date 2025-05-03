@@ -11,7 +11,7 @@ const AdminAuthOtp = () => {
   const [timer, setTimer] = useState(120);
   const [isResendActive, setIsResendActive] = useState(false);
   const navigate = useNavigate();
-  const storedIdentifier = localStorage.getItem("identifier"); // Get stored identifier
+  const storedIdentifier = localStorage.getItem("identifier"); 
 
   useEffect(() => {
     if (timer > 0) {
@@ -20,7 +20,7 @@ const AdminAuthOtp = () => {
       }, 1000);
       return () => clearInterval(countdown);
     } else {
-      setIsResendActive(true); // Enable resend OTP
+      setIsResendActive(true); 
     }
   }, [timer]);
 
@@ -53,12 +53,12 @@ const AdminAuthOtp = () => {
       console.log("✅ OTP Verified Successfully:", response.data);
       toast.success("Login Successful!");
 
-      // ✅ Store token & decode adminId
+      
       localStorage.setItem("adminToken", response.data.accessToken);
       const decodedToken = jwtDecode(response.data.accessToken);
       localStorage.setItem("adminId", decodedToken.adminId);
 
-      // ✅ Navigate to the dashboard using the extracted `adminId`
+      
       navigate(`/Dashboard/${decodedToken.adminId}`);
     } catch (error) {
       console.error("❌ OTP verification failed:", error.response?.data || error.message);

@@ -1,7 +1,7 @@
 const db = require("../db/connector");
 const bcrypt = require("bcrypt");
 
-/** ✅ Store or Update Desigo CC Credentials */
+
 const storeDesigoCredentials = async (req, res) => {
     try {
         const { admin_identifier, username, password } = req.body;
@@ -10,10 +10,10 @@ const storeDesigoCredentials = async (req, res) => {
             return res.status(400).json({ message: "Admin identifier, username, and password are required" });
         }
 
-        // ✅ Hash the password before storing
+       
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ Insert or Update Credentials
+        
         const query = `
             INSERT INTO DesigoCC_Credentials (admin_identifier, username, password_encrypted, created_at)
             VALUES (?, ?, ?, NOW())

@@ -1,17 +1,17 @@
 import React from "react";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
+import { useFormData } from "../../context/FormDataContext"; 
 
 const Step3 = ({ handleNext, step, totalSteps }) => {
-  const { formData, setFormData } = useFormData(); // ✅ Use global context for form data
+  const { formData, setFormData } = useFormData(); 
 
   const handleFileUpload = (e, key) => {
-    // ✅ Store only file names, not actual files
+    
     const fileNames = Array.from(e.target.files).map((file) => file.name);
     setFormData((prev) => ({
       ...prev,
-      [key]: fileNames, // ✅ Save only file metadata
+      [key]: fileNames, 
     }));
   };
 
@@ -19,12 +19,12 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
     <div className="form-container">
       <h2 className="form-heading">Contact & Company Details</h2>
 
-      {/* ✅ Phone Number Field */}
+      
       <label className="form-label">
         Phone Number
         <PhoneInput
-          country={"in"} // Default country set to India
-          value={formData.phone_number} // ✅ Use `phone_number` (same as backend expects)
+          country={"in"} 
+          value={formData.phone_number} 
           onChange={(value) => {
             if (!value.startsWith("+")) {
               value = `+${value}`;
@@ -41,7 +41,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Landline Field */}
+      
       <label className="form-label">
         Landline (Optional)
         <input
@@ -53,7 +53,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Company Name */}
+      
       <label className="form-label">
         Company/Organisation Name
         <input
@@ -66,7 +66,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Company Email (NEWLY ADDED) */}
+      
       <label className="form-label">
         Company Email
         <input
@@ -79,7 +79,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Upload PAN */}
+      
       <label className="form-label">
         Upload Company's PAN Card
         <input type="file" className="form-input" multiple onChange={(e) => handleFileUpload(e, "companyPan")} />
@@ -92,7 +92,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         </ul>
       )}
 
-      {/* ✅ Upload GST */}
+      
       <label className="form-label">
         Upload Company's GST
         <input type="file" className="form-input" multiple onChange={(e) => handleFileUpload(e, "companyGst")} />
@@ -105,7 +105,7 @@ const Step3 = ({ handleNext, step, totalSteps }) => {
         </ul>
       )}
 
-      {/* ✅ Next Button */}
+      
       <button className="next-button" onClick={handleNext}>
         Step {step} out of {totalSteps}
       </button>

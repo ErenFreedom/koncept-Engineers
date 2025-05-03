@@ -2,27 +2,27 @@ const db = require("../db/connector");
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
-/** ✅ Middleware: Extract Admin & Company ID from JWT */
+
 const getAdminDetailsFromToken = (req) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer Token
+        const token = req.headers.authorization?.split(" ")[1]; 
         if (!token) return null;
 
-        // ✅ Use JWT_SECRET_APP instead of JWT_SECRET
-        return jwt.verify(token, process.env.JWT_SECRET_APP); // Decode JWT with the correct secret
+      
+        return jwt.verify(token, process.env.JWT_SECRET_APP); 
     } catch (error) {
         console.error("❌ Error decoding JWT:", error.message);
         return null;
     }
 };
 
+//The core logic resides here, 3 days for debugging can't believe lol
 
-/** ✅ Add a Sensor to the Correct `SensorBank_X` Table */
 const addSensor = async (req, res) => {
     try {
         const { sensorName, description, objectId, propertyName, dataType } = req.body;
 
-        // 🔹 Decode JWT to get `companyId`
+        
         const adminDetails = getAdminDetailsFromToken(req);
         if (!adminDetails) {
             return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
@@ -32,7 +32,7 @@ const addSensor = async (req, res) => {
         const sensorTable = `SensorBank_${companyId}`;
         const apiTokenTable = `ApiToken_${companyId}`;
 
-        // ✅ Ensure `SensorBank_X` table exists
+       
         await db.execute(`
             CREATE TABLE IF NOT EXISTS ${sensorTable} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -47,14 +47,14 @@ const addSensor = async (req, res) => {
             )
         `);
 
-        // ✅ Insert Sensor into `SensorBank_X`
+        
         await db.execute(
             `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type, is_active)
              VALUES (?, ?, ?, ?, ?, 0)`,
             [sensorName, description, objectId, propertyName, dataType]
         );
 
-        // ✅ Insert API Token into `ApiToken_X`
+        
         await db.execute(`
             CREATE TABLE IF NOT EXISTS ${apiTokenTable} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -71,10 +71,10 @@ const addSensor = async (req, res) => {
     }
 };
 
-/** ✅ Get All Sensors for a Company */
+
 const getAllSensors = async (req, res) => {
     try {
-        // 🔹 Decode JWT to get `companyId`
+        
         const adminDetails = getAdminDetailsFromToken(req);
         if (!adminDetails) {
             return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
@@ -83,7 +83,7 @@ const getAllSensors = async (req, res) => {
         const { companyId } = adminDetails;
         const sensorTable = `SensorBank_${companyId}`;
 
-        // ✅ Fetch all sensors
+       
         const [sensors] = await db.execute(`SELECT * FROM ${sensorTable}`);
 
         res.status(200).json({ sensors });
@@ -94,7 +94,7 @@ const getAllSensors = async (req, res) => {
     }
 };
 
-/** ✅ Delete a Sensor */
+
 const deleteSensor = async (req, res) => {
     try {
       const { id } = req.params;
@@ -108,7 +108,7 @@ const deleteSensor = async (req, res) => {
       const sensorTable = `SensorBank_${companyId}`;
       const activeTable = `Sensor_${companyId}`;
   
-      // ❌ If sensor is even present in active table (regardless of is_active), disallow deletion
+     
       const [activeRows] = await db.execute(
         `SELECT * FROM ${activeTable} WHERE bank_id = ?`,
         [id]
@@ -118,7 +118,7 @@ const deleteSensor = async (req, res) => {
         return res.status(400).json({ message: "Sensor must be removed from active sensors first." });
       }
   
-      // ✅ Now safe to delete from SensorBank
+      
       await db.execute(`DELETE FROM ${sensorTable} WHERE id = ?`, [id]);
   
       res.status(200).json({ message: "Sensor deleted successfully from SensorBank." });

@@ -20,21 +20,21 @@ const Step1 = ({ formData, setFormData, handleNext, step, totalSteps }) => {
     option: (base, { isFocused, isSelected }) => ({
       ...base,
       backgroundColor: isSelected ? "#ffd700" : isFocused ? "#f6f6f6" : "#ffffff",
-      color: "#000000", // Ensures black text
+      color: "#000000", 
       fontSize: "1rem",
       padding: "10px",
     }),
     singleValue: (base) => ({
       ...base,
-      color: "#000000", // Black text for selected value
+      color: "#000000", 
     }),
     menu: (base) => ({
       ...base,
-      backgroundColor: "#ffffff", // White background
+      backgroundColor: "#ffffff", 
     }),
     placeholder: (base) => ({
       ...base,
-      color: "#888888", // Grey placeholder text
+      color: "#888888", 
     }),
   };
 

@@ -1,4 +1,4 @@
-/* Outer wrapper */
+
 .profile-page {
   display: flex;
   flex-direction: column;
@@ -9,7 +9,7 @@
   padding: 20px;
 }
 
-/* Main heading */
+
 .profile-heading-main {
   font-size: 2rem;
   font-weight: 600;
@@ -17,7 +17,7 @@
   color: white;
 }
 
-/* Layout for dropdowns */
+
 .dropdown-container {
   display: flex;
   justify-content: center;
@@ -25,12 +25,12 @@
   flex-wrap: wrap;
 }
 
-/* Individual dropdown */
+
 .dropdown-section {
   text-align: center;
 }
 
-/* Button styling */
+
 .dropdown-toggle {
   background-color: #1e293b;
   color: white;
@@ -48,7 +48,7 @@
   background-color: #334155;
 }
 
-/* Card content */
+
 .dropdown-content {
   background-color: white;
   padding: 20px 25px;
@@ -73,7 +73,7 @@
   text-decoration: underline;
 }
 
-/* Loading state */
+
 .profile-loading {
   text-align: center;
   margin-top: 100px;

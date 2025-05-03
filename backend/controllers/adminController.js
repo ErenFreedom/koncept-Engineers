@@ -3,7 +3,7 @@ const bcrypt = require("bcrypt");
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 const sendOtpSms = require("../utils/sendOtpSms");
 
-// **✅ Send OTP for Admin Registration**
+
 const sendRegistrationOtp = async (req, res) => {
     try {
         const { email, phone_number, otp_method } = req.body;
@@ -15,7 +15,7 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(400).json({ message: "OTP method (email/phone) is required" });
         }
 
-        // ✅ Check if Admin Already Exists
+       
         const [[adminRow]] = await db.execute(
             `SELECT id FROM Admin WHERE email = ? OR phone_number = ?`, 
             [email, phone_number]
@@ -26,7 +26,7 @@ const sendRegistrationOtp = async (req, res) => {
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-        // ✅ Send OTP to Email or Phone
+       
         let otpSent = { success: false };
         if (otp_method === "email") {
             otpSent = await sendOtpToEmail(email, `Your OTP for registration: ${otp}`);
@@ -38,7 +38,7 @@ const sendRegistrationOtp = async (req, res) => {
             return res.status(500).json({ message: "Failed to send OTP", error: otpSent.error });
         }
 
-        // ✅ Store OTP in MySQL
+        
         const otpQuery = `
             INSERT INTO RegisterOtp (email, phone_number, otp, created_at, expires_at)
             VALUES (?, ?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
@@ -55,7 +55,7 @@ const sendRegistrationOtp = async (req, res) => {
     }
 };
 
-// **✅ Verify OTP & Register Admin**
+
 const registerAdmin = async (req, res) => {
     let connection;
     try {
@@ -66,18 +66,18 @@ const registerAdmin = async (req, res) => {
             company_pincode, otp
         } = req.body;
 
-        // ✅ Extract file uploads from req.files
+        
         const aadhar = req.files?.aadhar ? req.files.aadhar[0].location : null;
         const pan = req.files?.pan ? req.files.pan[0].location : null;
         const gst = req.files?.gst ? req.files.gst[0].location : null;
 
-        console.log("🔍 Incoming Data:", req.body); // ✅ Debugging log
+        console.log("🔍 Incoming Data:", req.body); 
 
         if (!email || !phone_number || !otp) {
             return res.status(400).json({ message: "Email, phone number, and OTP are required" });
         }
 
-        // ✅ Verify OTP before proceeding
+        
         const otpQuery = `
             SELECT * FROM RegisterOtp 
             WHERE (email = ? OR phone_number = ?) 
@@ -91,14 +91,14 @@ const registerAdmin = async (req, res) => {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        // ✅ OTP is valid, proceed with registration
+       
         connection = await db.getConnection();
         await connection.beginTransaction();
 
-        // ✅ Hash password securely
+        
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // ✅ Call the stored procedure with all 21 arguments
+        
         const procedureCall = `
             CALL RegisterAdminAndCompany(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
@@ -106,15 +106,15 @@ const registerAdmin = async (req, res) => {
         await connection.execute(procedureCall, [
             first_name, middle_name || null, last_name, date_of_birth, nationality || null,
             address1 || null, address2 || null, pincode || null, phone_number, email, landline || null, 
-            hashedPassword, aadhar || null, // ✅ Aadhar, PAN, GST URLs for storage
+            hashedPassword, aadhar || null, 
             company_name, company_email, company_alt_email || null, company_address1, company_address2, 
-            company_pincode, pan || null, gst || null  // ✅ Ensure all required parameters are passed
+            company_pincode, pan || null, gst || null  
         ]);
 
-        // ✅ Delete OTP after successful registration
+        
         await db.execute(`DELETE FROM RegisterOtp WHERE email = ? OR phone_number = ?`, [email, phone_number]);
 
-        // ✅ Commit Transaction
+       
         await connection.commit();
         console.log(`✅ Admin & Company registered successfully.`);
 

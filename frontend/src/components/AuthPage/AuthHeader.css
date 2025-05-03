@@ -1,75 +1,75 @@
-/* Auth Header Styling */
+
 .auth-header {
     width: 100%;
     height: 80px;
-    background-color: #000000; /* Black background */
+    background-color: #000000;
     display: flex;
-    align-items: center; /* Center content vertically */
-    justify-content: space-between; /* Logo on the left, nav in the center, buttons on the right */
-    padding: 0 20px; /* Adds padding to the left and right */
-    border-bottom: 1px solid #333333; /* Optional border */
-    position: relative; /* Needed for centering the navigation */
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 1px solid #333333;
+    position: relative;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   
-  /* Logo container */
+ 
   .auth-logo {
     display: flex;
     align-items: center;
   }
   
-  /* Logo image */
+ 
   .logo-image {
-    height: 50px; /* Adjust the height of the logo */
-    width: auto; /* Maintain aspect ratio */
+    height: 50px;
+    width: auto;
   }
   
-  /* Navigation container */
+ 
   .header-nav {
-    position: absolute; /* Allow centering relative to the header */
-    left: 50%; /* Start from the horizontal center */
-    transform: translateX(-50%); /* Offset to center */
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
     display: flex;
-    gap: 48px; /* Space between the navigation links */
+    gap: 48px;
   }
   
-  /* Navigation links */
+ 
   .nav-link {
-    color: #ffffff; /* White text */
-    text-decoration: none; /* Remove underline */
-    font-size: 24px; /* Font size */
-    font-weight: bold; /* Thick text */
-    transition: color 0.3s ease; /* Smooth color transition */
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 24px;
+    font-weight: bold;
+    transition: color 0.3s ease;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   }
   
-  /* Hover effect for navigation links */
+ 
   .nav-link:hover {
-    color: #ffd700; /* Golden yellow color on hover */
+    color: #ffd700;
   }
   
-  /* Buttons container */
+ 
   .header-buttons {
     display: flex;
-    gap: 35px; /* Space between the buttons */
+    gap: 35px;
     align-items: center;
-    margin-right: 40px; /* Add margin from the right edge of the screen */
+    margin-right: 40px;
   }
   
-  /* Button styling */
+ 
   .button-81 {
     align-items: center;
-    background-color: #ffffff; /* White background */
+    background-color: #ffffff;
     border-radius: 12px;
     box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, 0.1) 0 6px 20px;
     box-sizing: border-box;
-    color: #121212; /* Black text */
+    color: #121212;
     cursor: pointer;
     display: inline-flex;
     flex: 1 1 auto;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     font-size: 1.2rem;
-    font-weight: 700; /* Bold text */
+    font-weight: 700;
     justify-content: center;
     line-height: 1;
     margin: 0;
@@ -84,10 +84,10 @@
     touch-action: manipulation;
   }
   
-  /* Button hover effect */
+ 
   .button-81:hover {
-    background-color: #ffd700; /* Golden yellow background */
-    color: #ffffff; /* White text on hover */
-    box-shadow: rgba(255, 215, 0, 0.4) 0px 0px 10px; /* Subtle yellow glow */
+    background-color: #ffd700;
+    color: #ffffff;
+    box-shadow: rgba(255, 215, 0, 0.4) 0px 0px 10px;
   }
   

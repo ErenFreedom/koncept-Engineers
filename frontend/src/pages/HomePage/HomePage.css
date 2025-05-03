@@ -1,4 +1,4 @@
-/* Apply global styles for the entire page */
+
 body {
   margin: 0;
   padding: 0;
@@ -10,14 +10,14 @@ body {
 }
 
 
-/* The main homepage container */
+
 .homepage {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
 }
 
-/* Body section of the homepage */
+
 .home-body {
   flex: 1;
   display: flex;
@@ -28,7 +28,7 @@ body {
   background-color: #000000;
 }
 
-/* Slideshow container */
+
 .slideshow-container {
   display: flex;
   justify-content: space-between;
@@ -36,7 +36,7 @@ body {
   margin-bottom: 100px;
 }
 
-/* Slideshow */
+
 .slideshow {
   width: 700px;
   height: 400px;
@@ -48,7 +48,7 @@ body {
   margin-top: 200px;
 }
 
-/* Slideshow images */
+
 .slide {
   width: 100%;
   height: 100%;
@@ -58,12 +58,12 @@ body {
   transition: opacity 1s ease-in-out;
 }
 
-/* Active slide */
+
 .slide.active {
   opacity: 1;
 }
 
-/* Text container for slideshow */
+
 .slide-text {
   width: 90%;
   height: 100%;
@@ -87,12 +87,12 @@ body {
   line-height: 1.5;
 }
 
-/* Active text */
+
 .slide-text.active {
   opacity: 1;
 }
 
-/* Video Section */
+
 .home-video-section {
   display: flex;
   flex-direction: column;
@@ -101,7 +101,7 @@ body {
   padding: 50px 0;
 }
 
-/* Center the video */
+
 .home-video-section iframe {
   width: 80%;
   height: 400px;
@@ -109,12 +109,12 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }
 
-/* Text container for video section */
+
 .video-text-container {
-  margin-top: 20px; /* Space above the video text */
+  margin-top: 20px;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Center text */
+  align-items: center;
 }
 
 .video-text {
@@ -127,7 +127,7 @@ body {
   transition: opacity 1s ease-in-out;
 }
 
-/* Active video text */
+
 .video-text.active {
   opacity: 1;
 }

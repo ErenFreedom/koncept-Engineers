@@ -7,12 +7,12 @@ import { useNavigate } from "react-router-dom";
 import "./Auth.css";
 
 const AdminAuth = () => {
-  const [identifier, setIdentifier] = useState(""); // Email or phone
-  const [password, setPassword] = useState(""); // Password field
-  const [otpSent, setOtpSent] = useState(false); // Track OTP status
+  const [identifier, setIdentifier] = useState(""); 
+  const [password, setPassword] = useState(""); 
+  const [otpSent, setOtpSent] = useState(false); 
   const navigate = useNavigate();
 
-  // ✅ Send OTP
+  
   const handleSendOtp = async (e) => {
     e.preventDefault();
 
@@ -36,7 +36,7 @@ const AdminAuth = () => {
 
       localStorage.setItem("identifier", identifier.trim());
       setOtpSent(true);
-      navigate("/AdminAuthOtp"); // ✅ Fixed Route Name
+      navigate("/AdminAuthOtp"); 
     } catch (error) {
       console.error("❌ OTP sending failed:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "OTP sending failed");

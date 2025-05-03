@@ -1,10 +1,10 @@
 import React from "react";
 import Select from "react-select";
 import CountryList from "react-select-country-list";
-import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
+import { useFormData } from "../../context/FormDataContext"; 
 
 const Step2 = ({ handleNext, step, totalSteps }) => {
-  const { formData, setFormData } = useFormData(); // ✅ Use global state
+  const { formData, setFormData } = useFormData(); 
   const countryOptions = CountryList().getData();
 
   const customStyles = {
@@ -26,7 +26,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
     <div className="form-container">
       <h2 className="form-heading">Personal Information</h2>
 
-      {/* ✅ Nationality */}
+      
       <label className="form-label">
         Nationality
         <Select
@@ -40,7 +40,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Email */}
+      
       <label className="form-label">
         Email
         <input
@@ -53,7 +53,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Address */}
+      
       <label className="form-label">
         Address 1
         <input
@@ -87,7 +87,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ File Upload */}
+      
       <label className="form-label">
         Upload Aadhar/PAN/Passport
         <input type="file" className="form-input" multiple onChange={handleFileUpload} />
@@ -100,7 +100,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
         </ul>
       )}
 
-      {/* ✅ Next Button */}
+      
       <button className="next-button" onClick={handleNext}>
         Step {step} out of {totalSteps}
       </button>

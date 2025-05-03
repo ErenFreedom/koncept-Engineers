@@ -8,7 +8,7 @@ const getAdminProfile = async (req, res) => {
             return res.status(400).json({ message: "Admin ID is required" });
         }
 
-        // ✅ Fetch Admin and Company details in a JOIN
+        
         const [results] = await db.execute(
             `SELECT 
                 a.id AS admin_id,

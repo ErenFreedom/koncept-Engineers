@@ -4,7 +4,7 @@ require("dotenv").config();
 const sns = new AWS.SNS({
     accessKeyId: process.env.AWS_SNS_ACCESS_KEY_ID,
     secretAccessKey: process.env.AWS_SNS_SECRET_ACCESS_KEY,
-    region: "us-east-1" // Change if using a different region
+    region: "us-east-1" 
 });
 
 const sendOtpToPhone = async (phoneNumber, otp) => {

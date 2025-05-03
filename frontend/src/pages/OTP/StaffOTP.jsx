@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import AuthHeader from "../../components/AuthPage/AuthHeader"; // Importing the Auth Header
-import HomeFooter from "../../components/HomePage/HomeFooter"; // Importing the Footer
-import "./Otp.css"; // Importing OTP-specific CSS
+import AuthHeader from "../../components/AuthPage/AuthHeader"; 
+import HomeFooter from "../../components/HomePage/HomeFooter"; 
+import "./Otp.css"; 
 
 const StaffOtp = () => {
-  const [timer, setTimer] = useState(120); // Timer state (2 minutes = 120 seconds)
-  const [otp, setOtp] = useState(Array(6).fill("")); // OTP state for 6 digits
+  const [timer, setTimer] = useState(120); 
+  const [otp, setOtp] = useState(Array(6).fill("")); 
 
   useEffect(() => {
-    // Countdown logic
+   
     if (timer > 0) {
       const countdown = setInterval(() => {
         setTimer((prev) => prev - 1);
@@ -18,7 +18,7 @@ const StaffOtp = () => {
   }, [timer]);
 
   const handleInputChange = (index, value) => {
-    if (isNaN(value)) return; // Ensure only numbers are entered
+    if (isNaN(value)) return; 
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
@@ -31,13 +31,13 @@ const StaffOtp = () => {
   };
 
   const handleResend = () => {
-    setTimer(120); // Reset the timer to 2 minutes
+    setTimer(120); 
     alert("OTP Resent!");
   };
 
   return (
     <div>
-      <AuthHeader /> {/* Header */}
+      <AuthHeader /> 
       <div className="otp-body">
         <h1 className="otp-heading">Staff OTP Verification</h1>
         <p className="otp-instructions">Enter the OTP sent to your registered email.</p>
@@ -67,7 +67,7 @@ const StaffOtp = () => {
           )}
         </p>
       </div>
-      <HomeFooter /> {/* Footer */}
+      <HomeFooter /> 
     </div>
   );
 };

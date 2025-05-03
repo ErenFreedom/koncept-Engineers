@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
-import "./AuthHeader.css"; // Import AuthHeader-specific CSS
+import { Link } from "react-router-dom"; 
+import "./AuthHeader.css"; 
 
 const AuthHeader = () => {
   return (
@@ -14,7 +14,7 @@ const AuthHeader = () => {
         <a href="#vision" className="nav-link">Our Vision</a>
       </nav>
       <div className="header-buttons">
-        {/* Only Signup button */}
+        
         <Link to="/SignUp" className="button-81">Signup</Link>
       </div>
     </header>

@@ -8,12 +8,12 @@ import "react-toastify/dist/ReactToastify.css";
 import "./Otp.css";
 
 const AdminOtp = () => {
-  const [otp, setOtp] = useState(Array(6).fill("")); // 6-digit OTP
-  const [timer, setTimer] = useState(120); // 2-minute countdown
+  const [otp, setOtp] = useState(Array(6).fill("")); 
+  const [timer, setTimer] = useState(120); 
   const navigate = useNavigate();
   const { formData, setFormData } = useFormData();
 
-  // ✅ Ensure `formData` is properly loaded before checking for missing fields
+  
   useEffect(() => {
     if (!formData || !formData.email || !formData.phone_number) {
       toast.error("Invalid session! Please restart registration.");
@@ -21,7 +21,7 @@ const AdminOtp = () => {
     }
   }, [formData, navigate]);
 
-  // ✅ OTP Countdown Timer
+  
   useEffect(() => {
     if (timer > 0) {
       const countdown = setInterval(() => {
@@ -31,20 +31,20 @@ const AdminOtp = () => {
     }
   }, [timer]);
 
-  // ✅ Handle OTP Input
+  
   const handleInputChange = (index, value) => {
     if (!/^\d?$/.test(value)) return;
     const newOtp = [...otp];
     newOtp[index] = value;
     setOtp(newOtp);
 
-    // Auto-focus next input
+    
     if (value && index < otp.length - 1) {
       document.getElementById(`otp-input-${index + 1}`).focus();
     }
   };
 
-  // ✅ Handle OTP Resend
+  
   const resendOtp = async () => {
     try {
       await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`, {
@@ -53,13 +53,13 @@ const AdminOtp = () => {
       });
 
       toast.success("OTP Resent Successfully!");
-      setTimer(120); // Reset 2-minute timer
+      setTimer(120);
     } catch (error) {
       toast.error("Failed to resend OTP. Try again.");
     }
   };
 
-  // ✅ Register Admin After OTP Verification
+  
   const registerAdmin = async () => {
     try {
       const finalOtp = otp.join("");
@@ -67,7 +67,7 @@ const AdminOtp = () => {
         return toast.error("Enter a valid 6-digit OTP.");
       }
 
-      // ✅ Create form data object
+     
       const formDataToSend = new FormData();
       Object.keys(formData).forEach((key) => {
         if (formData[key]) {
@@ -75,17 +75,17 @@ const AdminOtp = () => {
         }
       });
 
-      // ✅ Append OTP to request
+      
       formDataToSend.append("otp", finalOtp);
 
-      // ✅ Append Files (Aadhar, PAN, GST)
+      
       ["aadhar", "pan", "gst"].forEach((fileKey) => {
         if (formData[fileKey]) {
           formDataToSend.append(fileKey, formData[fileKey]);
         }
       });
 
-      // ✅ Send Registration Request
+      
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/register`,
         formDataToSend,
@@ -94,7 +94,7 @@ const AdminOtp = () => {
 
       toast.success("🎉 Registration Successful! Redirecting to login...");
 
-      // ✅ CLEAR Local Storage & Form Data after successful registration
+      
       localStorage.removeItem("formData");
       setFormData({});
 
@@ -130,7 +130,7 @@ const AdminOtp = () => {
 
         <button className="otp-button" onClick={registerAdmin}>Verify OTP & Register ✅</button>
 
-        {/* ✅ Resend OTP Timer */}
+        
         <p className="resend-otp">
           {timer > 0 ? (
             `Resend OTP in ${Math.floor(timer / 60)}:${timer % 60 < 10 ? "0" : ""}${timer % 60}`

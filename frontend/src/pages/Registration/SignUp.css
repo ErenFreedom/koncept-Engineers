@@ -1,67 +1,67 @@
-/* Admin body styling */
+
 .admin-body {
   display: flex;
-  flex-direction: column; /* Stack content vertically */
-  align-items: center; /* Center horizontally */
-  justify-content: flex-start; /* Start at the top */
-  height: calc(100vh - 160px); /* Full height minus header and footer */
-  padding-top: 100px; /* Gap from the header */
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: calc(100vh - 160px);
+  padding-top: 100px;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  color: #ffffff; /* White text */
-  text-align: center; /* Center text */
-  box-sizing: border-box; /* Include padding in height calculations */
+  color: #ffffff;
+  text-align: center;
+  box-sizing: border-box;
 }
 
-/* Question text styling */
+
 .admin-question {
-  font-size: 2.5rem; /* Large font size */
-  font-weight: bold; /* Bold font */
-  margin: 0; /* Remove default margin */
-  line-height: 1.4; /* Adjust line spacing */
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin: 0;
+  line-height: 1.4;
   text-align: center;
   margin-top: 50px;
 }
 
-/* Checkbox container styling */
+
 .checkbox-container {
   display: flex;
-  flex-direction: column; /* Stack checkboxes vertically */
-  gap: 30px; /* Vertical spacing between checkboxes */
-  margin-top: 30px; /* Space below the question */
+  flex-direction: column;
+  gap: 30px;
+  margin-top: 30px;
 }
 
-/* Label for each checkbox */
+
 .checkbox-label {
   display: flex;
   align-items: center;
-  font-size: 1.5rem; /* Larger font size for labels */
-  font-weight: 500; /* Medium weight */
-  color: #ffffff; /* White text */
-  cursor: pointer; /* Pointer cursor on hover */
-  gap: 15px; /* Space between checkbox and text */
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #ffffff;
+  cursor: pointer;
+  gap: 15px;
 }
 
-/* Checkbox input styling */
+
 .checkbox-input {
-  width: 25px; /* Checkbox size */
+  width: 25px;
   height: 25px;
   margin: 0;
-  border-radius: 50%; /* Make the checkbox round */
-  accent-color: #ffffff; /* Default checkbox color */
-  cursor: pointer; /* Pointer cursor */
-  transition: all 0.3s ease; /* Smooth transition */
+  border-radius: 50%;
+  accent-color: #ffffff;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* Checkbox hover and checked effect */
+
 .checkbox-input:hover {
-  accent-color: #ffd700; /* Golden hover effect */
+  accent-color: #ffd700;
 }
 
 .checkbox-input:checked {
-  accent-color: #ffd700; /* Golden checked color */
+  accent-color: #ffd700;
 }
 
-/* Button styling */
+
 .button-47 {
   align-items: center;
   background: #FFFFFF;
@@ -74,7 +74,7 @@
   font-size: 1rem;
   font-weight: 700;
   justify-content: center;
-  padding: 1rem 6.5rem; /* Increased padding for wider button */
+  padding: 1rem 6.5rem;
   text-decoration: none;
   width: auto;
   border-radius: 8px;
@@ -82,19 +82,19 @@
   user-select: none;
   -webkit-user-select: none;
   touch-action: manipulation;
-  margin-top: 30px; /* Space above the button */
+  margin-top: 30px;
 }
 
-/* Hover effect for Button 47 */
+
 .button-47:hover {
   background: #1e293b;
   color: #fff;
 }
 
-/* Disabled Button Styling */
+
 .button-47:disabled {
-  background: #cccccc; /* Grey background */
-  color: #666666; /* Grey text */
+  background: #cccccc;
+  color: #666666;
   cursor: not-allowed;
   box-shadow: none;
 }

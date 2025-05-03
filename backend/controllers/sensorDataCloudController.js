@@ -1,16 +1,16 @@
 const db = require("../db/connector");
 const jwt = require("jsonwebtoken");
 
-/** ✅ Extract Company ID from Token */
+
 const getCompanyIdFromToken = (req) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer Token
+        const token = req.headers.authorization?.split(" ")[1]; 
         if (!token) {
             console.error("❌ No token provided.");
             return null;
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_APP); // Decode JWT
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_APP); 
         console.log("🔍 Extracted Company ID from Token:", decoded.companyId);
 
         return decoded.companyId;
@@ -20,12 +20,12 @@ const getCompanyIdFromToken = (req) => {
     }
 };
 
-/** ✅ Check if Sensor Data Table Exists */
+
 const checkIfSensorTableExists = async (tableName) => {
     try {
         console.log(`🔍 Checking if table ${tableName} exists...`);
 
-        // ✅ Use template literal directly in SQL query
+        
         const [results] = await db.execute(`SHOW TABLES LIKE '${tableName}'`);
 
         if (results.length > 0) {
@@ -41,12 +41,12 @@ const checkIfSensorTableExists = async (tableName) => {
     }
 };
 
-/** ✅ Insert Sensor Data into Cloud DB */
+
 const insertSensorData = async (req, res) => {
     try {
         console.log("🚀 Received request to insert sensor data...");
 
-        // ✅ Extract company ID from token
+        
         const companyId = getCompanyIdFromToken(req);
         if (!companyId) {
             console.error("❌ ERROR: Unauthorized request - Invalid Token");
@@ -63,11 +63,11 @@ const insertSensorData = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID and batch data are required." });
         }
 
-        // ✅ Define `tableName`
+        
         const tableName = `SensorData_${companyId}_${sensorId}`;
         console.log(`🔍 Verifying table existence: ${tableName}`);
 
-        // ✅ Check if the table exists
+        
         const tableExists = await checkIfSensorTableExists(tableName);
         if (!tableExists) {
             console.error(`❌ ERROR: Table ${tableName} does not exist. Cannot insert.`);
@@ -75,13 +75,13 @@ const insertSensorData = async (req, res) => {
         }
         console.log(`✅ Table ${tableName} exists. Proceeding with insertion...`);
 
-        // ✅ Convert timestamps properly for MySQL
+        
         const values = batch.map(({ sensor_id, value, quality, quality_good, timestamp }) => [
             sensor_id,
             value,
             quality,
             quality_good,
-            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") // MySQL DATETIME format
+            new Date(timestamp).toISOString().slice(0, 19).replace("T", " ") 
         ]);
 
         if (values.length === 0) {
@@ -89,14 +89,14 @@ const insertSensorData = async (req, res) => {
             return res.status(400).json({ message: "No valid sensor data to insert." });
         }
 
-        // ✅ Construct SQL query dynamically
+        
         const placeholders = values.map(() => `(?, ?, ?, ?, ?)`).join(", ");
         const insertQuery = `INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp) VALUES ${placeholders}`;
 
         console.log(`📝 SQL Query Prepared: ${insertQuery}`);
         console.log(`📋 Data to Insert:`, JSON.stringify(values.flat(), null, 2));
 
-        // ✅ Execute Query
+        
         await db.execute(insertQuery, values.flat());
 
         console.log(`✅ SUCCESS: Inserted ${batch.length} records into ${tableName}`);
@@ -108,5 +108,5 @@ const insertSensorData = async (req, res) => {
     }
 };
 
-/** ✅ Export Functions */
+
 module.exports = { insertSensorData };

@@ -1,15 +1,15 @@
-/* Main container styling */
+
 .dashboard-container {
   display: flex;
-  flex-direction: column; /* Stack elements vertically */
+  flex-direction: column;
   min-height: 100vh;
-  background-color: #000000; /* Black background */
-  color: #ffffff; /* White text */
+  background-color: #000000;
+  color: #ffffff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   text-align: center;
 }
 
-/* Welcome text just below header */
+
 .dashboard-heading {
   margin-top: 40px;
   text-align: center;
@@ -22,12 +22,12 @@
   color: #ffffff;
 }
 
-/* Sensor Grid Section */
+
 .sensor-grid-container {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 200px; /* more spacing between cards */
-  padding: 40px 80px; /* generous side padding */
+  gap: 200px;
+  padding: 40px 80px;
   justify-content: center;
   align-items: start;
   max-width: 1600px;
@@ -35,7 +35,7 @@
 }
 
 
-/* Individual Sensor Cards */
+
 .sensor-card {
   background-color: #ffffff;
   color: #000000;
@@ -49,7 +49,7 @@
   transform: translateY(-5px);
 }
 
-/* Card Header with green dot */
+
 .sensor-header {
   display: flex;
   align-items: center;
@@ -57,7 +57,7 @@
   margin-bottom: 10px;
 }
 
-/* Green pulsating dot */
+
 .green-dot {
   width: 12px;
   height: 12px;

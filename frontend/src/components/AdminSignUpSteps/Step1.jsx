@@ -1,14 +1,14 @@
 import React from "react";
-import { useFormData } from "../../context/FormDataContext"; // ✅ Import global state
+import { useFormData } from "../../context/FormDataContext"; 
 
 const Step1 = ({ handleNext, step, totalSteps }) => {
-  const { formData, setFormData } = useFormData(); // ✅ Use global state
+  const { formData, setFormData } = useFormData(); 
 
   return (
     <div className="form-container">
       <h2 className="form-heading">Personal Information</h2>
 
-      {/* ✅ First Name */}
+      
       <label className="form-label">
         First Name
         <input
@@ -21,7 +21,7 @@ const Step1 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Middle Name (Optional) */}
+      
       <label className="form-label">
         Middle Name (optional)
         <input
@@ -33,7 +33,7 @@ const Step1 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Last Name */}
+      
       <label className="form-label">
         Last Name
         <input
@@ -46,7 +46,7 @@ const Step1 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Date of Birth */}
+      
       <label className="form-label">
         Date of Birth
         <input
@@ -58,7 +58,7 @@ const Step1 = ({ handleNext, step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ Next Button */}
+      
       <button className="next-button" onClick={handleNext}>
         Step {step} out of {totalSteps}
       </button>

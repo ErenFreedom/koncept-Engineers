@@ -1,14 +1,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// Create the context
+
 const FormDataContext = createContext();
 
-// Custom Hook to use the context
+
 export const useFormData = () => useContext(FormDataContext);
 
-// Provider Component
+
 export const FormDataProvider = ({ children }) => {
-  // ✅ Load saved data from LocalStorage safely
+  
   const savedData = localStorage.getItem("formData");
   const initialData = savedData ? JSON.parse(savedData) : {
     first_name: "",
@@ -36,7 +36,7 @@ export const FormDataProvider = ({ children }) => {
 
   const [formData, setFormData] = useState(initialData);
 
-  // ✅ Save to LocalStorage whenever formData changes
+  
   useEffect(() => {
     if (formData) {
       localStorage.setItem("formData", JSON.stringify(formData));

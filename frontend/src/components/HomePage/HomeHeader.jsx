@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom"; // Import Link from react-router-dom
+import { Link } from "react-router-dom"; 
 import "./Home.css";
 
 const HomeHeader = () => {
@@ -14,7 +14,7 @@ const HomeHeader = () => {
         <a href="#vision" className="nav-link">Our Vision</a>
       </nav>
       <div className="header-buttons">
-        {/* Replace the Signup button with a Link */}
+        
         <Link to="/SignUp" className="button-81">Signup</Link>
         <Link to="/Auth" className="button-81">Login</Link>
       </div>

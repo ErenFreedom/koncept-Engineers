@@ -7,7 +7,7 @@ def verify_aadhaar_qr(image_path):
     if "No QR code found." in qr_data:
         return {"status": "Failed", "reason": "No QR code detected."}
     
-    # Aadhaar-specific validation
+    
     for data in qr_data:
         if "Aadhaar" in data or "UIDAI" in data:
             return {"status": "Success", "details": data}
@@ -21,7 +21,7 @@ def verify_pan_qr(image_path):
     if "No QR code found." in qr_data:
         return {"status": "Failed", "reason": "No QR code detected."}
     
-    # PAN-specific validation
+    
     for data in qr_data:
         if "Permanent Account Number" in data or "Income Tax Department" in data:
             return {"status": "Success", "details": data}
@@ -35,7 +35,7 @@ def verify_gst_qr(image_path):
     if "No QR code found." in qr_data:
         return {"status": "Failed", "reason": "No QR code detected."}
     
-    # GST-specific validation
+    
     for data in qr_data:
         if "GSTIN" in data or "Goods and Services Tax" in data:
             return {"status": "Success", "details": data}

@@ -16,7 +16,7 @@ export const sendAdminOtp = (identifier, password) => async (dispatch) => {
     dispatch({ type: ADMIN_LOGIN_REQUEST });
 
     const requestData = { identifier, password };
-    console.log("📩 Sending Request to Backend:", requestData); // ✅ Debug Log
+    console.log("📩 Sending Request to Backend:", requestData); 
 
     const response = await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/admin/send-otp`,
@@ -26,7 +26,7 @@ export const sendAdminOtp = (identifier, password) => async (dispatch) => {
       }
     );
 
-    console.log("✅ OTP Sent Response:", response.data); // ✅ Debug Log
+    console.log("✅ OTP Sent Response:", response.data); 
 
     dispatch({ type: ADMIN_LOGIN_OTP_SENT });
     toast.success(`OTP sent to ${identifier}`);
@@ -42,34 +42,34 @@ export const sendAdminOtp = (identifier, password) => async (dispatch) => {
 
 
 
-// ✅ Verify OTP and Authenticate Admin
+
 export const verifyAdminOtp = (identifier, otp) => async (dispatch) => {
   try {
     dispatch({ type: ADMIN_LOGIN_VERIFY_OTP_REQUEST });
 
     const { data } = await axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/admin/verify-otp`,
-      { identifier, otp, rememberMe: true }, // ✅ Ensure `rememberMe` is included
+      { identifier, otp, rememberMe: true }, 
       { headers: { "Content-Type": "application/json" } }
     );
 
     dispatch({ type: ADMIN_LOGIN_SUCCESS, payload: data });
 
-    // ✅ Store token & decoded adminId
+    
     localStorage.setItem("adminToken", JSON.stringify(data.accessToken));
 
     const decodedToken = jwtDecode(data.accessToken);
-    localStorage.setItem("adminId", decodedToken.adminId); // ✅ Store adminId
+    localStorage.setItem("adminId", decodedToken.adminId); 
 
     toast.success("Login Successful!");
-    window.location.href = `/Dashboard/${decodedToken.adminId}`; // ✅ Redirect
+    window.location.href = `/Dashboard/${decodedToken.adminId}`; 
   } catch (error) {
     dispatch({ type: ADMIN_LOGIN_FAIL, payload: error.response?.data?.message || "OTP verification failed" });
     toast.error(error.response?.data?.message || "OTP verification failed");
   }
 };
 
-// ✅ Admin Logout Action
+
 export const logoutAdmin = () => (dispatch) => {
   localStorage.removeItem("adminToken");
   dispatch({ type: ADMIN_LOGOUT });

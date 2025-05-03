@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./redux/store"; // Import Redux Store & Persistor
+import { store, persistor } from "./redux/store"; 
 import HomePage from "./pages/HomePage/HomePage";
 import BreakPoint from "./pages/Registration/BreakPoint";
 import Admin from "./pages/Registration/Admin";
@@ -19,13 +19,13 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import ViewProfile from "./components/ToViewInfo/ViewProfile";
 import EditProfile from "./components/EditProfileModal/EditProfile";
 
-import { FormDataProvider } from "./context/FormDataContext"; // ✅ Import FormData Context Provider
+import { FormDataProvider } from "./context/FormDataContext"; 
 
 const App = () => {
   return (
-    <Provider store={store}> {/* ✅ Wrap App with Redux Store */}
-      <PersistGate loading={null} persistor={persistor}> {/* ✅ Persist Redux State */}
-        <FormDataProvider> {/* ✅ Wrap entire app inside FormDataProvider */}
+    <Provider store={store}> 
+      <PersistGate loading={null} persistor={persistor}> 
+        <FormDataProvider> 
           <Router>
             <ToastContainer position="top-right" autoClose={3000} />
             <Routes>

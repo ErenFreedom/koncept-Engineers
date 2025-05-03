@@ -11,7 +11,7 @@ const Step5 = ({ step, totalSteps }) => {
   const { formData, setFormData } = useFormData();
   const [otpMethod, setOtpMethod] = useState("");
 
-  // ✅ Send OTP request and redirect to AdminOtp page
+  
   const sendOtp = async () => {
     if (!otpMethod) {
       toast.error("Please select Email or Phone for OTP.");
@@ -72,7 +72,7 @@ const Step5 = ({ step, totalSteps }) => {
         />
       </label>
 
-      {/* ✅ OTP Verification Section */}
+      
       <h3 className="otp-heading">Verify Your Account</h3>
       <p className="otp-instructions">Choose where to receive your OTP.</p>
 

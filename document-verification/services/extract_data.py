@@ -29,7 +29,7 @@ def extract_gst(text):
     match = re.search(pattern, text)
     return match.group(0) if match else "GST Not Found"
 
-# Example Test
+
 if __name__ == "__main__":
     sample_text = """
     Income Tax Department PAN Card

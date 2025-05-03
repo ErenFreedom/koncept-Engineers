@@ -1,16 +1,16 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # Enable CORS
+from flask_cors import CORS  
 import boto3
 import re
 
 app = Flask(__name__)
-CORS(app)  # Enable CORS for API Access
+CORS(app)  
 
-# Initialize Textract Client
+
 textract = boto3.client("textract", region_name="us-east-1")
 
 
-# Aadhaar Validation using Verhoeff Algorithm
+
 def validate_aadhaar_checksum(aadhaar_number):
     verhoeff_table_d = (
         (0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
@@ -48,17 +48,17 @@ def validate_aadhaar_checksum(aadhaar_number):
     return checksum == 0
 
 
-# PAN Validation
+
 def validate_pan(pan):
     return bool(re.match(r"^[A-Z]{5}[0-9]{4}[A-Z]$", pan))
 
 
-# GST Validation
+
 def validate_gst(gst):
     return bool(re.match(r"^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$", gst))
 
 
-# Extract Text from S3 using AWS Textract
+
 def extract_text_from_s3(bucket, document):
     response = textract.analyze_document(
         Document={"S3Object": {"Bucket": bucket, "Name": document}},
@@ -71,7 +71,7 @@ def extract_text_from_s3(bucket, document):
     return extracted_text
 
 
-# API Route: Validate Documents
+
 @app.route('/validate-docs', methods=['POST'])
 def validate_documents():
     data = request.json
@@ -83,7 +83,7 @@ def validate_documents():
     for doc in documents:
         extracted_text = extract_text_from_s3(bucket, doc)
         
-        # Aadhaar Validation
+        
         if "aadhaar" in doc.lower():
             match = re.search(r"\b\d{4}\s\d{4}\s\d{4}\b", extracted_text)
             if match:
@@ -93,13 +93,13 @@ def validate_documents():
             else:
                 results.append({"Document": doc, "Type": "Aadhaar", "Number": "Not Found", "Valid": False})
 
-        # PAN Validation
+        
         elif "pan" in doc.lower():
             match = re.search(r"\b[A-Z]{5}[0-9]{4}[A-Z]{1}\b", extracted_text)
             is_valid = validate_pan(match.group()) if match else False
             results.append({"Document": doc, "Type": "PAN", "Number": match.group() if match else "Not Found", "Valid": is_valid})
 
-        # GST Validation
+        
         elif "gst" in doc.lower():
             match = re.search(r"\b\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}\b", extracted_text)
             is_valid = validate_gst(match.group()) if match else False

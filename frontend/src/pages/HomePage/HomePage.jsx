@@ -36,7 +36,7 @@ const HomePage = () => {
     "Transforming Businesses into Digital Pioneers",
   ];
 
-  // Slideshow interval
+  
   useEffect(() => {
     const slideshowInterval = setInterval(() => {
       setSlideshowIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -44,7 +44,7 @@ const HomePage = () => {
     return () => clearInterval(slideshowInterval);
   }, [images.length]);
 
-  // Video text interval
+  
   useEffect(() => {
     const videoTextInterval = setInterval(() => {
       setVideoTextIndex((prevIndex) => (prevIndex + 1) % videoTexts.length);
@@ -79,7 +79,7 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-      {/* Video Section */}
+      
       <div className="home-video-section">
         <HomeVideo />
         <div className="video-text-container">

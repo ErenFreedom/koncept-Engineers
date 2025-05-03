@@ -6,18 +6,18 @@ const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 
 require("dotenv").config();
 
-// ✅ Parse Token Config from ENV
+
 const TOKEN_CONFIG = JSON.parse(process.env.TOKEN_CONFIG || "{}");
 const ACCESS_TOKEN_EXPIRY = TOKEN_CONFIG.accessTokenExpiry || "6h";
 const REFRESH_TOKEN_EXPIRY = TOKEN_CONFIG.refreshTokenExpiry || "30d";
 
 const COOKIE_OPTIONS = {
-    httpOnly: true,  // Prevent JavaScript access (XSS protection)
+    httpOnly: true,  
     secure: TOKEN_CONFIG.cookieSecure !== undefined ? TOKEN_CONFIG.cookieSecure : true,
-    sameSite: "strict", // Prevent CSRF attacks
+    sameSite: "strict", 
 };
 
-/** ✅ Send OTP for Admin Login */
+
 const sendAdminLoginOtp = async (req, res) => {
     try {
         console.log("📩 Incoming Request Headers:", req.headers);
@@ -89,8 +89,8 @@ const sendAdminLoginOtp = async (req, res) => {
 
 
 
+//Bruh this part is tiring asf, so many fields required, almost took me 1 day for debugging
 
-/** ✅ Verify OTP & Authenticate Admin */
 const verifyAdminLoginOtp = async (req, res) => {
     try {
         const { identifier, otp, rememberMe } = req.body;
@@ -99,7 +99,7 @@ const verifyAdminLoginOtp = async (req, res) => {
             return res.status(400).json({ message: "Identifier and OTP are required" });
         }
 
-        // ✅ Validate OTP
+       
         const [otpResults] = await db.execute(
             `SELECT * FROM LoginOtp WHERE identifier = ? AND otp = ? AND expires_at > UTC_TIMESTAMP();`,
             [identifier, otp]
@@ -109,7 +109,7 @@ const verifyAdminLoginOtp = async (req, res) => {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        // ✅ Fetch Admin Details
+        
         const [[admin]] = await db.execute(
             `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
              FROM Admin WHERE email = ? OR phone_number = ?`,
@@ -120,7 +120,7 @@ const verifyAdminLoginOtp = async (req, res) => {
             return res.status(404).json({ message: "Admin not found" });
         }
 
-        // ✅ Generate JWT Access & Refresh Tokens
+        
         const accessToken = jwt.sign(
             { 
                 adminId: admin.id,
@@ -141,13 +141,13 @@ const verifyAdminLoginOtp = async (req, res) => {
             { expiresIn: REFRESH_TOKEN_EXPIRY }
         );
 
-        // ✅ Set Refresh Token in Secure HTTP-Only Cookie
+        
         res.cookie("refreshToken", refreshToken, {
             ...COOKIE_OPTIONS,
-            maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : null, // 30 days if "Remember Me" is checked
+            maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : null, 
         });
 
-        // ✅ Delete OTP after successful login
+        
         await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
 
         res.status(200).json({ 
@@ -170,13 +170,13 @@ const verifyAdminLoginOtp = async (req, res) => {
     }
 };
 
-/** ✅ Refresh Access Token */
+
 const refreshAdminToken = async (req, res) => {
     try {
         const { refreshToken } = req.cookies;
         if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
 
-        // ✅ Verify Refresh Token
+        
         jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
             if (err) return res.status(403).json({ message: "Forbidden" });
 
@@ -211,7 +211,7 @@ const refreshAdminToken = async (req, res) => {
     }
 };
 
-/** ✅ Logout Admin */
+
 const logoutAdmin = async (req, res) => {
     res.clearCookie("refreshToken", COOKIE_OPTIONS);
     res.status(200).json({ message: "Logged out successfully" });

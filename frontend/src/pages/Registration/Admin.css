@@ -1,10 +1,10 @@
-/* Center the form inside the page */
+
 .admin-signup-body {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh; /* Full height */
+    height: 100vh;
     padding: 20px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #ffffff;
@@ -12,7 +12,7 @@
     box-sizing: border-box;
 }
 
-/* Form Container Styling - Change Background to Black */
+
 .form-container {
     display: flex;
     flex-direction: column;
@@ -20,35 +20,35 @@
     gap: 20px;
     width: 100%;
     max-width: 450px;
-    background: #000000; /* Changed to pure black */
-    color: #ffffff; /* Ensures text remains white */
+    background: #000000;
+    color: #ffffff;
     padding: 30px;
     border-radius: 12px;
-    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2); /* Subtle shadow */
+    box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.2);
 }
 
-/* Form Label Styling */
+
 .form-label {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     font-size: 1rem;
-    color: #ffffff; /* White text */
+    color: #ffffff;
     font-weight: 500;
     width: 100%;
 }
 
-/* Input Field Styling - Ensure High Contrast */
+
 .form-input {
     margin-top: 5px;
     padding: 10px;
     font-size: 1rem;
     border-radius: 8px;
-    border: 1px solid #ffffff; /* White border */
+    border: 1px solid #ffffff;
     outline: none;
     width: 100%;
-    background-color: #000000; /* Black background */
-    color: #ffffff; /* White text */
+    background-color: #000000;
+    color: #ffffff;
     box-sizing: border-box;
 }
 
@@ -57,16 +57,16 @@
     box-shadow: 0 0 5px #ffd700;
 }
 
-/* File Input Styling */
+
 input[type="file"] {
     padding: 8px;
-    background-color: #000000; /* Black background */
+    background-color: #000000;
     border-radius: 6px;
-    color: #ffffff; /* White text */
+    color: #ffffff;
     border: 1px solid #ffffff;
 }
 
-/* Next Button Styling */
+
 .next-button {
     margin-top: 20px;
     align-items: center;
@@ -95,7 +95,7 @@ input[type="file"] {
     color: #174ea6;
 }
 
-/* OTP Section Styling */
+
 .otp-heading {
     font-size: 1.5rem;
     font-weight: bold;
@@ -109,7 +109,7 @@ input[type="file"] {
     margin-bottom: 15px;
 }
 
-/* OTP Checkbox Container */
+
 .otp-checkbox-container {
     display: flex;
     flex-direction: column;
@@ -119,7 +119,7 @@ input[type="file"] {
     margin-bottom: 20px;
 }
 
-/* OTP Checkbox Label */
+
 .otp-checkbox-label {
     display: flex;
     align-items: center;
@@ -129,7 +129,7 @@ input[type="file"] {
     cursor: pointer;
 }
 
-/* OTP Checkbox Input */
+
 .otp-checkbox-input {
     margin-right: 10px;
     width: 18px;

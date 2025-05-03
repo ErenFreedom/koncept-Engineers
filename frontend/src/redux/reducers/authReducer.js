@@ -7,7 +7,7 @@ import {
   ADMIN_LOGOUT,
 } from "../actions/authActions";
 
-// ✅ Initial State
+
 const initialState = {
   admin: null,
   loading: false,
@@ -15,7 +15,7 @@ const initialState = {
   error: null,
 };
 
-// ✅ Auth Reducer
+
 export const authReducer = (state = initialState, action) => {
   switch (action.type) {
     case ADMIN_LOGIN_REQUEST:

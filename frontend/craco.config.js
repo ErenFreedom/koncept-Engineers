@@ -17,5 +17,5 @@ module.exports = {
       return webpackConfig;
     },
   },
-  plugins: [], // Ensure this is an empty array if no plugins are needed
+  plugins: [], 
 };

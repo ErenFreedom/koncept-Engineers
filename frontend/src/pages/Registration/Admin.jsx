@@ -4,12 +4,12 @@ import Step1 from "../../components/AdminSignUpSteps/Step1";
 import Step2 from "../../components/AdminSignUpSteps/Step2";
 import Step3 from "../../components/AdminSignUpSteps/Step3";
 import Step4 from "../../components/AdminSignUpSteps/Step4";
-import Step5 from "../../components/AdminSignUpSteps/Step5"; // ❌ Removed Step6
+import Step5 from "../../components/AdminSignUpSteps/Step5"; 
 import "./Admin.css";
 
 const Admin = () => {
   const [step, setStep] = useState(1);
-  const totalSteps = 5; // ✅ Updated total steps
+  const totalSteps = 5; 
 
   return (
     <div className="admin-signup-container">
@@ -19,7 +19,7 @@ const Admin = () => {
         {step === 2 && <Step2 handleNext={() => setStep(3)} step={step} totalSteps={totalSteps} />}
         {step === 3 && <Step3 handleNext={() => setStep(4)} step={step} totalSteps={totalSteps} />}
         {step === 4 && <Step4 handleNext={() => setStep(5)} step={step} totalSteps={totalSteps} />}
-        {step === 5 && <Step5 />} {/* ✅ Step 5 directly redirects to AdminOtp */}
+        {step === 5 && <Step5 />} 
       </div>
     </div>
   );

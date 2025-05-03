@@ -1,6 +1,6 @@
 import re
 
-# Aadhaar Validation using Verhoeff
+
 def validate_aadhaar_checksum(aadhaar_number):
     verhoeff_table_d = (
         (0, 1, 2, 3, 4, 5, 6, 7, 8, 9),
@@ -40,17 +40,17 @@ def validate_aadhaar_checksum(aadhaar_number):
     return checksum == 0
 
 
-# PAN Validation
+
 def validate_pan(pan):
     return bool(re.match(r"^[A-Z]{5}[0-9]{4}[A-Z]$", pan))
 
 
-# GST Validation
+
 def validate_gst(gst):
     return bool(re.match(r"^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$", gst))
 
 
-# Testing
+
 aadhaar = "770792120014"
 pan = "ABCDE1234F"
 gst = "22ABCDE1234F1Z5"

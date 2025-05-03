@@ -1,12 +1,12 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import SignUpHeader from "../../components/SignUpPage/SignUpHeader"; // Importing the header
-import HomeFooter from "../../components/HomePage/HomeFooter"; // Importing the footer
+import { useNavigate } from "react-router-dom"; 
+import SignUpHeader from "../../components/SignUpPage/SignUpHeader"; 
+import HomeFooter from "../../components/HomePage/HomeFooter"; 
 import "./SignUp.css"; // Importing shared CSS
 
 const BreakPoint = () => {
   const [selectedOption, setSelectedOption] = useState(null);
-  const navigate = useNavigate(); // Hook for navigation
+  const navigate = useNavigate(); 
 
   const handleCheckboxChange = (option) => {
     setSelectedOption(option);
@@ -14,15 +14,15 @@ const BreakPoint = () => {
 
   const handleNextClick = () => {
     if (selectedOption === "admin") {
-      navigate("/Admin"); // Navigate to Admin signup page
+      navigate("/Admin"); 
     } else if (selectedOption === "staff") {
-      navigate("/Staff"); // Navigate to Staff signup page
+      navigate("/Staff"); 
     }
   };
 
   return (
     <div>
-      <SignUpHeader /> {/* Header */}
+      <SignUpHeader /> 
       <div className="admin-body">
         <h1 className="admin-question">
           Are you registering as an Admin or Staff for the organisation?
@@ -49,13 +49,13 @@ const BreakPoint = () => {
         </div>
         <button
           className="button-47"
-          disabled={!selectedOption} // Disable button if no checkbox is selected
-          onClick={handleNextClick} // Handle navigation on click
+          disabled={!selectedOption} 
+          onClick={handleNextClick} 
         >
           Next
         </button>
       </div>
-      <HomeFooter /> {/* Footer */}
+      <HomeFooter /> 
     </div>
   );
 };

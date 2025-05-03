@@ -1,17 +1,17 @@
 const db = require("../db/connector");
 const jwt = require("jsonwebtoken");
 
-/** ✅ Extract Admin Details from Token */
+
 const getAdminDetailsFromToken = (req) => {
     try {
-        const token = req.headers.authorization?.split(" ")[1]; // Extract Bearer Token
+        const token = req.headers.authorization?.split(" ")[1]; 
         if (!token) return null;
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_APP); // Decode JWT
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_APP); 
 
         console.log("🔍 Extracted Admin Details from Token:", decoded);
 
-        // Ensure companyId exists in either format
+        
         const companyId = decoded.companyId || decoded.company_id;
 
         if (!companyId) {
@@ -19,14 +19,14 @@ const getAdminDetailsFromToken = (req) => {
             return null;
         }
 
-        return { companyId, adminId: decoded.adminId }; // Return companyId and adminId
+        return { companyId, adminId: decoded.adminId }; 
     } catch (error) {
         console.error("❌ Error decoding JWT:", error.message);
         return null;
     }
 };
 
-/** ✅ Activate Sensor */
+
 const activateSensor = async (req, res) => {
     try {
         const { sensorId } = req.body;
@@ -35,7 +35,7 @@ const activateSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID is required" });
         }
 
-        // ✅ Validate Token & Get Admin ID
+        
         const adminDetails = getAdminDetailsFromToken(req);
         if (!adminDetails) {
             return res.status(401).json({ message: "Unauthorized: Invalid token" });
@@ -47,7 +47,7 @@ const activateSensor = async (req, res) => {
         const sensorTable = `Sensor_${companyId}`;
         const sensorBankTable = `SensorBank_${companyId}`;
 
-        // ✅ Verify Sensor Exists in Sensor Bank
+        
         const [sensorExists] = await db.execute(
             `SELECT * FROM ${sensorBankTable} WHERE id = ?`,
             [sensorId]
@@ -57,7 +57,7 @@ const activateSensor = async (req, res) => {
             return res.status(404).json({ message: "Sensor not found in Sensor Bank" });
         }
 
-        // ✅ Check if already activated
+        
         const [alreadyActive] = await db.execute(
             `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
             [sensorId]
@@ -67,7 +67,7 @@ const activateSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor is already activated" });
         }
 
-        // ✅ Insert into Active Sensors Table
+        
         await db.execute(
             `INSERT INTO ${sensorTable} (bank_id, is_active) VALUES (?, 1)`,
             [sensorId]
@@ -75,7 +75,7 @@ const activateSensor = async (req, res) => {
 
         console.log(`✅ Sensor ${sensorId} activated for Company ${companyId}`);
 
-        // ✅ Create Sensor Data Table
+        
         const sensorDataTable = `SensorData_${companyId}_${sensorId}`;
         const createTableQuery = `
             CREATE TABLE IF NOT EXISTS ${sensorDataTable} (
@@ -101,7 +101,7 @@ const activateSensor = async (req, res) => {
 };
 
 
-/** ✅ Deactivate Sensor (Update `is_active` field) */
+
 const deactivateSensor = async (req, res) => {
     try {
         const { sensorId } = req.body;
@@ -110,7 +110,7 @@ const deactivateSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor ID is required" });
         }
 
-        // ✅ Validate Token & Get Admin ID
+        
         const adminDetails = getAdminDetailsFromToken(req);
         if (!adminDetails) {
             return res.status(401).json({ message: "Unauthorized: Invalid token" });
@@ -119,7 +119,7 @@ const deactivateSensor = async (req, res) => {
 
         console.log(`🔍 Deactivating Sensor ${sensorId} for Company ${companyId}`);
 
-        // ✅ Check if Sensor is Active
+        
         const [sensor] = await db.execute(
             `SELECT * FROM Sensor_${companyId} WHERE bank_id = ?`, 
             [sensorId]
@@ -129,7 +129,7 @@ const deactivateSensor = async (req, res) => {
             return res.status(404).json({ message: "Sensor is not active" });
         }
 
-        // ✅ Set `is_active` to false
+        
         await db.execute(
             `UPDATE Sensor_${companyId} SET is_active = 0 WHERE bank_id = ?`, 
             [sensorId]
@@ -143,7 +143,7 @@ const deactivateSensor = async (req, res) => {
     }
 };
 
-/** ✅ Remove Sensor from Active Sensors */
+
 const removeActiveSensor = async (req, res) => {
     try {
         const { sensorId } = req.body;
@@ -176,14 +176,14 @@ const removeActiveSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor must be deactivated before removal" });
         }
 
-        // ✅ Delete sensor row
+        
         await db.execute(
             `DELETE FROM ${sensorTable} WHERE bank_id = ?`,
             [sensorId]
         );
         console.log(`✅ Sensor ${sensorId} deleted from ${sensorTable}`);
 
-        // ✅ Drop sensor data table
+        
         try {
             await db.execute(`DROP TABLE IF EXISTS ${sensorDataTable}`);
             console.log(`🗑 Table ${sensorDataTable} dropped successfully.`);
@@ -237,7 +237,7 @@ const getAllManagedSensors = async (req, res) => {
       const { companyId } = adminDetails;
       const sensorTable = `Sensor_${companyId}`;
   
-      // ✅ Fetch all managed sensors with active/inactive flag
+      
       const [sensors] = await db.execute(`SELECT * FROM ${sensorTable}`);
   
       res.status(200).json({ sensors });
@@ -247,7 +247,7 @@ const getAllManagedSensors = async (req, res) => {
     }
   };
 
-  /** ✅ Reactivate a previously deactivated Sensor */
+  
 const reactivateSensor = async (req, res) => {
     try {
         const { sensorId } = req.body;
@@ -266,7 +266,7 @@ const reactivateSensor = async (req, res) => {
 
         console.log(`🔄 Reactivating Sensor ${sensorId} for Company ${companyId}`);
 
-        // ✅ Check if the sensor exists and is currently inactive
+        
         const [sensor] = await db.execute(
             `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
             [sensorId]
@@ -280,7 +280,7 @@ const reactivateSensor = async (req, res) => {
             return res.status(400).json({ message: "Sensor is already active" });
         }
 
-        // ✅ Reactivate sensor
+       
         await db.execute(
             `UPDATE ${sensorTable} SET is_active = 1 WHERE bank_id = ?`,
             [sensorId]
@@ -296,5 +296,5 @@ const reactivateSensor = async (req, res) => {
 };
 
 
-/** ✅ Export All Functions */
+
 module.exports = { activateSensor, deactivateSensor, removeActiveSensor, getAllActiveSensors,getAllManagedSensors, reactivateSensor };

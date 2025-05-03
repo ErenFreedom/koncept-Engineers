@@ -37,18 +37,18 @@ const updateAdminProfile = async (req, res) => {
   const { adminId } = req.params;
   const {
     password,
-    // Admin Fields
+    
     first_name, middle_name, last_name,
     date_of_birth, nationality, address1, address2,
     pincode, phone_number, email, alt_email, landline,
 
-    // Company Fields
+    
     company_name, company_email, company_alt_email,
     company_address1, company_address2, company_pincode
   } = req.body;
 
   try {
-    // ✅ 1. Fetch admin and password_hash
+    
     const [[admin]] = await db.execute(
       `SELECT password_hash, company_id FROM Admin WHERE id = ?`,
       [adminId]
@@ -58,13 +58,13 @@ const updateAdminProfile = async (req, res) => {
       return res.status(404).json({ message: "Admin not found" });
     }
 
-    // ✅ 2. Check password
+    
     const passwordMatch = await bcrypt.compare(password, admin.password_hash);
     if (!passwordMatch) {
       return res.status(401).json({ message: "Incorrect password" });
     }
 
-    // ✅ 3. Update Admin info
+    
     await db.execute(
       `UPDATE Admin SET 
           first_name = ?, middle_name = ?, last_name = ?, date_of_birth = ?, nationality = ?, 
@@ -79,7 +79,7 @@ const updateAdminProfile = async (req, res) => {
       ]
     );
 
-    // ✅ 4. Update Company info
+   
     await db.execute(
       `UPDATE Company SET 
           name = ?, email = ?, alt_email = ?, address1 = ?, address2 = ?, pincode = ?
@@ -91,7 +91,7 @@ const updateAdminProfile = async (req, res) => {
       ]
     );
 
-    // ✅ 5. Return updated Admin profile (optional but helpful for frontend sync)
+    
     const [[updatedAdmin]] = await db.execute(
       `SELECT * FROM Admin WHERE id = ?`,
       [adminId]

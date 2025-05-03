@@ -6,7 +6,7 @@ const dotenv = require("dotenv");
 
 dotenv.config();
 
-// **AWS S3 Client Configuration**
+
 const s3 = new S3Client({
     region: process.env.AWS_REGION || "us-east-1",
     credentials: {
@@ -17,13 +17,13 @@ const s3 = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME || "koncept-engineers-bucket";
 
-// **Multer Configuration (Memory Storage)**
+
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 }, // ✅ 10 MB limit
+    limits: { fileSize: 10 * 1024 * 1024 }, 
 });
 
-// **Function to Generate Unique File Path**
+
 const generateFilePath = (phone_number, file) => {
     if (!file || !file.originalname) throw new Error("Invalid file data received.");
     if (!phone_number) throw new Error("Phone number is required for unique directory.");
@@ -33,7 +33,7 @@ const generateFilePath = (phone_number, file) => {
     return `documents/${phone_number}/${baseName}-${Date.now()}${ext}`;
 };
 
-// **Function to Upload File to S3**
+
 const uploadFile = async (file, phone_number) => {
     try {
         if (!file || !file.buffer) throw new Error("File buffer is missing.");
@@ -46,13 +46,13 @@ const uploadFile = async (file, phone_number) => {
             params: {
                 Bucket: BUCKET_NAME,
                 Key: filePath,
-                Body: Buffer.from(file.buffer), // ✅ Ensures correct Buffer format
+                Body: Buffer.from(file.buffer), 
                 ContentType: file.mimetype
             }
         });
 
         const response = await upload.done();
-        return { location: response.Location, key: filePath }; // ✅ Return both S3 URL and path
+        return { location: response.Location, key: filePath }; 
     } catch (error) {
         console.error("❌ S3 Upload Error:", error);
         throw new Error("Failed to upload file to S3.");
