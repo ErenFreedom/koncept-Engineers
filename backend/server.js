@@ -35,6 +35,7 @@ const sensorDataRoutes = require("./routes/sensorDataCloudRoutes");
 const displayRoutes = require("./routes/displayRoutes");
 const getAdminRoutes = require("./routes/getAdminRoutes")
 const editProfileRoutes = require("./routes/editProfileRoutes");
+const syncDbRoutes = require("./routes/syncDbRoutes");
 
 
 app.use("/api/admin", adminRoutes);
@@ -51,6 +52,7 @@ app.use("/api/sensor-data", sensorDataRoutes);
 app.use("/api", displayRoutes);
 app.use("/api", getAdminRoutes);
 app.use("/api", editProfileRoutes);
+app.use("/api/cloud", syncDbRoutes);
 
 
 
