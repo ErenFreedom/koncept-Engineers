@@ -15,7 +15,7 @@ const getCompanyIdFromToken = (req) => {
   }
 };
 
-/** ✅ Return sensor bank + active sensors */
+/** ✅ Return sensor bank + active sensors + sensor data */
 const syncLocalDbFromCloud = async (req, res) => {
   try {
     const companyId = getCompanyIdFromToken(req);
@@ -27,12 +27,22 @@ const syncLocalDbFromCloud = async (req, res) => {
     const [sensorBankRows] = await db.execute(`SELECT * FROM ${sensorBankTable}`);
     const [activeSensorRows] = await db.execute(`SELECT * FROM ${sensorActiveTable} WHERE is_active = 1`);
 
-    const sensorDataTableNames = activeSensorRows.map(row => `SensorData_${companyId}_${row.bank_id}`);
+    const sensorData = {};
+    for (const sensor of activeSensorRows) {
+      const tableName = `SensorData_${companyId}_${sensor.bank_id}`;
+      try {
+        const [rows] = await db.execute(`SELECT * FROM ${tableName}`);
+        sensorData[tableName] = rows;
+      } catch (e) {
+        console.warn(`⚠️ Skipped missing table: ${tableName}`);
+      }
+    }
 
     return res.status(200).json({
       sensorBank: sensorBankRows,
       activeSensors: activeSensorRows,
-      sensorDataTables: sensorDataTableNames
+      sensorDataTables: Object.keys(sensorData),
+      sensorData // ✅ actual data per table
     });
   } catch (err) {
     console.error("❌ Cloud DB Sync Error:", err.message);
