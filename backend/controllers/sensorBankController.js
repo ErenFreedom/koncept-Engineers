@@ -22,7 +22,6 @@ const addSensor = async (req, res) => {
     try {
         const { sensorName, description, objectId, propertyName, dataType } = req.body;
 
-        
         const adminDetails = getAdminDetailsFromToken(req);
         if (!adminDetails) {
             return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
@@ -30,9 +29,12 @@ const addSensor = async (req, res) => {
 
         const { companyId } = adminDetails;
         const sensorTable = `SensorBank_${companyId}`;
-        const apiTokenTable = `ApiToken_${companyId}`;
+        const apiTable = `SensorAPI_${companyId}`;
 
-       
+        // Construct the API endpoint (replace hostname if needed)
+        const apiEndpoint = `https://Climatix:443/WSI/api/values/${objectId}.${propertyName}`;
+
+        // Ensure both tables exist
         await db.execute(`
             CREATE TABLE IF NOT EXISTS ${sensorTable} (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -47,21 +49,30 @@ const addSensor = async (req, res) => {
             )
         `);
 
-        
-        await db.execute(
+        await db.execute(`
+            CREATE TABLE IF NOT EXISTS ${apiTable} (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                sensor_id INT NOT NULL,
+                api_endpoint TEXT NOT NULL,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (sensor_id) REFERENCES Sensor_${companyId}(bank_id) ON DELETE CASCADE
+            )
+        `);
+
+        // Insert into SensorBank and retrieve ID
+        const [result] = await db.execute(
             `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type, is_active)
              VALUES (?, ?, ?, ?, ?, 0)`,
             [sensorName, description, objectId, propertyName, dataType]
         );
 
-        
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS ${apiTokenTable} (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                token TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        `);
+        const insertedSensorId = result.insertId;
+
+        // Insert into SensorAPI table
+        await db.execute(
+            `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
+            [insertedSensorId, apiEndpoint]
+        );
 
         res.status(200).json({ message: `Sensor added successfully to ${sensorTable}` });
 
@@ -70,6 +81,7 @@ const addSensor = async (req, res) => {
         res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
+
 
 
 const getAllSensors = async (req, res) => {
@@ -97,37 +109,42 @@ const getAllSensors = async (req, res) => {
 
 const deleteSensor = async (req, res) => {
     try {
-      const { id } = req.params;
-  
-      const adminDetails = getAdminDetailsFromToken(req);
-      if (!adminDetails) {
-        return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
-      }
-  
-      const { companyId } = adminDetails;
-      const sensorTable = `SensorBank_${companyId}`;
-      const activeTable = `Sensor_${companyId}`;
-  
-     
-      const [activeRows] = await db.execute(
-        `SELECT * FROM ${activeTable} WHERE bank_id = ?`,
-        [id]
-      );
-  
-      if (activeRows.length > 0) {
-        return res.status(400).json({ message: "Sensor must be removed from active sensors first." });
-      }
-  
-      
-      await db.execute(`DELETE FROM ${sensorTable} WHERE id = ?`, [id]);
-  
-      res.status(200).json({ message: "Sensor deleted successfully from SensorBank." });
+        const { id } = req.params;
+
+        const adminDetails = getAdminDetailsFromToken(req);
+        if (!adminDetails) {
+            return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
+        }
+
+        const { companyId } = adminDetails;
+        const sensorTable = `SensorBank_${companyId}`;
+        const activeTable = `Sensor_${companyId}`;
+        const apiTable = `SensorAPI_${companyId}`;
+
+        // Check if sensor is active
+        const [activeRows] = await db.execute(
+            `SELECT * FROM ${activeTable} WHERE bank_id = ?`,
+            [id]
+        );
+
+        if (activeRows.length > 0) {
+            return res.status(400).json({ message: "Sensor must be removed from active sensors first." });
+        }
+
+        // Delete from SensorAPI table first (to avoid foreign key errors)
+        await db.execute(`DELETE FROM ${apiTable} WHERE sensor_id = ?`, [id]);
+
+        // Then delete from SensorBank
+        await db.execute(`DELETE FROM ${sensorTable} WHERE id = ?`, [id]);
+
+        res.status(200).json({ message: "Sensor and its API mapping deleted successfully." });
+
     } catch (error) {
-      console.error("❌ Error deleting sensor:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
+        console.error("❌ Error deleting sensor:", error);
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-  };
-  
+};
+
   
 
 module.exports = { addSensor, getAllSensors, deleteSensor };
