@@ -26,7 +26,7 @@ const addSensor = async (req, res) => {
         objectId,
         propertyName,
         dataType,
-        sensorApi // ✅ Now received from connector app backend
+        apiEndpoint // ✅ Now received from connector app backend
       } = req.body;
   
       const adminDetails = getAdminDetailsFromToken(req);
@@ -75,7 +75,7 @@ const addSensor = async (req, res) => {
       // ✅ Insert into SensorAPI using the actual API sent from the app
       await db.execute(
         `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
-        [insertedSensorId, sensorApi]
+        [insertedSensorId, apiEndpoint]
       );
   
       res.status(200).json({
