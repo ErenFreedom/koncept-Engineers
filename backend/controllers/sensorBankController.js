@@ -59,9 +59,10 @@ const addSensor = async (req, res) => {
           sensor_id INT NOT NULL,
           api_endpoint TEXT NOT NULL,
           created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (sensor_id) REFERENCES Sensor_${companyId}(bank_id) ON DELETE CASCADE
+          FOREIGN KEY (sensor_id) REFERENCES ${sensorTable}(id) ON DELETE CASCADE
         )
       `);
+      
   
       // ✅ Insert into SensorBank
       const [result] = await db.execute(
