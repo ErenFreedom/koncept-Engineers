@@ -20,68 +20,75 @@ const getAdminDetailsFromToken = (req) => {
 
 const addSensor = async (req, res) => {
     try {
-        const { sensorName, description, objectId, propertyName, dataType } = req.body;
-
-        const adminDetails = getAdminDetailsFromToken(req);
-        if (!adminDetails) {
-            return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
-        }
-
-        const { companyId } = adminDetails;
-        const sensorTable = `SensorBank_${companyId}`;
-        const apiTable = `SensorAPI_${companyId}`;
-
-        // Construct the API endpoint (replace hostname if needed)
-        const apiEndpoint = `https://Climatix:443/WSI/api/values/${objectId}.${propertyName}`;
-
-        // Ensure both tables exist
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS ${sensorTable} (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                name VARCHAR(255) NOT NULL,
-                description TEXT,
-                object_id VARCHAR(255) NOT NULL UNIQUE,
-                property_name VARCHAR(255) NOT NULL,
-                data_type VARCHAR(50) NOT NULL,
-                is_active TINYINT(1) DEFAULT 0,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-            )
-        `);
-
-        await db.execute(`
-            CREATE TABLE IF NOT EXISTS ${apiTable} (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                sensor_id INT NOT NULL,
-                api_endpoint TEXT NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (sensor_id) REFERENCES Sensor_${companyId}(bank_id) ON DELETE CASCADE
-            )
-        `);
-
-        // Insert into SensorBank and retrieve ID
-        const [result] = await db.execute(
-            `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type, is_active)
-             VALUES (?, ?, ?, ?, ?, 0)`,
-            [sensorName, description, objectId, propertyName, dataType]
-        );
-
-        const insertedSensorId = result.insertId;
-
-        // Insert into SensorAPI table
-        await db.execute(
-            `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
-            [insertedSensorId, apiEndpoint]
-        );
-
-        res.status(200).json({ message: `Sensor added successfully to ${sensorTable}` });
-
+      const {
+        sensorName,
+        description,
+        objectId,
+        propertyName,
+        dataType,
+        sensorApi // ✅ Now received from connector app backend
+      } = req.body;
+  
+      const adminDetails = getAdminDetailsFromToken(req);
+      if (!adminDetails) {
+        return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
+      }
+  
+      const { companyId } = adminDetails;
+      const sensorTable = `SensorBank_${companyId}`;
+      const apiTable = `SensorAPI_${companyId}`;
+  
+      // ✅ Ensure tables exist
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS ${sensorTable} (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          description TEXT,
+          object_id VARCHAR(255) NOT NULL UNIQUE,
+          property_name VARCHAR(255) NOT NULL,
+          data_type VARCHAR(50) NOT NULL,
+          is_active TINYINT(1) DEFAULT 0,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        )
+      `);
+  
+      await db.execute(`
+        CREATE TABLE IF NOT EXISTS ${apiTable} (
+          id INT AUTO_INCREMENT PRIMARY KEY,
+          sensor_id INT NOT NULL,
+          api_endpoint TEXT NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (sensor_id) REFERENCES Sensor_${companyId}(bank_id) ON DELETE CASCADE
+        )
+      `);
+  
+      // ✅ Insert into SensorBank
+      const [result] = await db.execute(
+        `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type, is_active)
+         VALUES (?, ?, ?, ?, ?, 0)`,
+        [sensorName, description, objectId, propertyName, dataType]
+      );
+  
+      const insertedSensorId = result.insertId;
+  
+      // ✅ Insert into SensorAPI using the actual API sent from the app
+      await db.execute(
+        `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
+        [insertedSensorId, sensorApi]
+      );
+  
+      res.status(200).json({
+        message: `Sensor + API added successfully to ${sensorTable}`,
+        sensorId: insertedSensorId
+      });
+  
     } catch (error) {
-        console.error("❌ Error adding sensor:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      console.error("❌ Error adding sensor:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-};
-
+  };
+  
 
 
 const getAllSensors = async (req, res) => {
