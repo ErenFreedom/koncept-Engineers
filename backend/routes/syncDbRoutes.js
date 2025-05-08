@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const { syncFromCloud } = require("../controllers/syncDbController");
+const { syncLocalDbFromCloud } = require("../controllers/syncDbController");
 
-router.get("/sync/local-db", syncFromCloud);
+router.get("/sync/local-db", syncLocalDbFromCloud);
 
 module.exports = router;
