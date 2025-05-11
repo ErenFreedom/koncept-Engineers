@@ -15,7 +15,7 @@ const getCompanyIdFromToken = (req) => {
   }
 };
 
-/** ✅ Return sensor bank + active sensors + sensor data + sensor API endpoints (without created_at) */
+/** ✅ Return sensor bank + active sensors + sensor data + sensor API endpoints (includes created_at) */
 const syncLocalDbFromCloud = async (req, res) => {
   try {
     const companyId = getCompanyIdFromToken(req);
@@ -33,10 +33,8 @@ const syncLocalDbFromCloud = async (req, res) => {
     // ✅ Get Active Sensors
     const [activeSensorRows] = await db.execute(`SELECT * FROM ${sensorActiveTable} WHERE is_active = 1`);
 
-    // ✅ Get Sensor API endpoints (omit created_at)
-    const [sensorApiRows] = await db.execute(
-      `SELECT id, sensor_id, api_endpoint FROM ${sensorApiTable}`
-    );
+    // ✅ Get Sensor API endpoints (now includes created_at)
+    const [sensorApiRows] = await db.execute(`SELECT * FROM ${sensorApiTable}`);
 
     // ✅ Get Sensor Data for active sensors
     const sensorData = {};
