@@ -1,6 +1,5 @@
 const db = require("../db/connector");
 const jwt = require("jsonwebtoken");
-const { createSensorDataTable } = require("../db/sensorDB"); // ✅ already defined in your local setup
 
 /** ✅ Extract companyId from token */
 const getCompanyIdFromToken = (req) => {
@@ -16,7 +15,7 @@ const getCompanyIdFromToken = (req) => {
   }
 };
 
-/** ✅ Sync cloud to local: create SensorData tables only (no data insert) */
+/** ✅ Sync route: Return sensor bank, active sensors, sensor APIs, and expected SensorData table names only */
 const syncLocalDbFromCloud = async (req, res) => {
   try {
     const companyId = getCompanyIdFromToken(req);
@@ -34,27 +33,21 @@ const syncLocalDbFromCloud = async (req, res) => {
     // ✅ Get Active Sensors
     const [activeSensorRows] = await db.execute(`SELECT * FROM ${sensorActiveTable} WHERE is_active = 1`);
 
-    // ✅ Get Sensor API endpoints
+    // ✅ Get Sensor API endpoints (includes created_at)
     const [sensorApiRows] = await db.execute(`SELECT * FROM ${sensorApiTable}`);
 
-    // ✅ Create empty SensorData_<companyId>_<sensorId> tables locally
-    const createdTables = [];
-    for (const sensor of activeSensorRows) {
-      const sensorId = sensor.bank_id;
-      try {
-        await createSensorDataTable(companyId, sensorId);
-        createdTables.push(`SensorData_${companyId}_${sensorId}`);
-      } catch (e) {
-        console.warn(`⚠️ Could not create table SensorData_${companyId}_${sensorId}:`, e.message);
-      }
-    }
+    // ✅ Build expected SensorData table names only (do NOT fetch data)
+    const sensorDataTables = activeSensorRows.map(sensor =>
+      `SensorData_${companyId}_${sensor.bank_id}`
+    );
 
+    // ✅ Final response (no actual sensor data rows)
     return res.status(200).json({
-      message: "Local DB synced: tables created, no data inserted",
       sensorBank: sensorBankRows,
       activeSensors: activeSensorRows,
       sensorApis: sensorApiRows,
-      createdTables
+      sensorDataTables,
+      sensorData: {} // Empty because we're skipping row fetch
     });
 
   } catch (err) {
