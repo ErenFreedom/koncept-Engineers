@@ -173,44 +173,55 @@ const verifyAdminLoginOtp = async (req, res) => {
 
 const refreshAdminToken = async (req, res) => {
     try {
-        const { refreshToken } = req.cookies;
-        if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
-
-        
-        jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
-            if (err) return res.status(403).json({ message: "Forbidden" });
-
-            const [[admin]] = await db.execute(
-                `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
-                 FROM Admin WHERE id = ?`,
-                [decoded.adminId]
-            );
-
-            if (!admin) return res.status(404).json({ message: "Admin not found" });
-
-            const newAccessToken = jwt.sign(
-                { 
-                    adminId: admin.id,
-                    firstName: admin.first_name,
-                    lastName: admin.last_name,
-                    phoneNumber: admin.phone_number,
-                    email: admin.email,
-                    companyId: admin.company_id,
-                    nationality: admin.nationality
-                },
-                process.env.JWT_SECRET,
-                { expiresIn: ACCESS_TOKEN_EXPIRY }
-            );
-
-            res.status(200).json({ accessToken: newAccessToken });
+      const { refreshToken } = req.cookies;
+      if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
+  
+      jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
+        if (err) return res.status(403).json({ message: "Forbidden" });
+  
+        const [[admin]] = await db.execute(
+          `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
+           FROM Admin WHERE id = ?`,
+          [decoded.adminId]
+        );
+  
+        if (!admin) return res.status(404).json({ message: "Admin not found" });
+  
+        const newAccessToken = jwt.sign(
+          {
+            adminId: admin.id,
+            firstName: admin.first_name,
+            lastName: admin.last_name,
+            phoneNumber: admin.phone_number,
+            email: admin.email,
+            companyId: admin.company_id,
+            nationality: admin.nationality
+          },
+          process.env.JWT_SECRET,
+          { expiresIn: ACCESS_TOKEN_EXPIRY }
+        );
+  
+        // ✅ Send both access token and admin info
+        res.status(200).json({
+          accessToken: newAccessToken,
+          admin: {
+            id: admin.id,
+            firstName: admin.first_name,
+            lastName: admin.last_name,
+            phoneNumber: admin.phone_number,
+            email: admin.email,
+            companyId: admin.company_id,
+            nationality: admin.nationality
+          }
         });
-
+      });
+  
     } catch (error) {
-        console.error("❌ Error refreshing token:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+      console.error("❌ Error refreshing token:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
-};
-
+  };
+  
 const resendAdminLoginOtp = async (req, res) => {
     try {
       const { identifier } = req.body;
