@@ -13,7 +13,7 @@ const REFRESH_TOKEN_EXPIRY = TOKEN_CONFIG.refreshTokenExpiry || "30d";
 
 const COOKIE_OPTIONS = {
     httpOnly: true,  
-    secure: TOKEN_CONFIG.cookieSecure !== undefined ? TOKEN_CONFIG.cookieSecure : true,
+    secure: false,
     sameSite: "strict", 
 };
 
@@ -144,8 +144,11 @@ const verifyAdminLoginOtp = async (req, res) => {
         
         res.cookie("refreshToken", refreshToken, {
             ...COOKIE_OPTIONS,
-            maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : null, 
-        });
+            maxAge: rememberMe
+              ? 30 * 24 * 60 * 60 * 1000 
+              : 6 * 60 * 60 * 1000       
+          });
+          
 
         
         await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
