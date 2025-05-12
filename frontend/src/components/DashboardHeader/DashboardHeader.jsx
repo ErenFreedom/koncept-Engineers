@@ -25,10 +25,22 @@ const DashboardHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
+        {},
+        { withCredentials: true } 
+      );
+    } catch (err) {
+      console.warn("Logout request failed (but continuing):", err);
+    }
+  
     logout(); 
     navigate("/Auth");
   };
+  
+
 
   const verifyPasswordAndNavigate = async () => {
     if (!accessToken || !admin?.id) {
