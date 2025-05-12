@@ -58,7 +58,7 @@ const AdminAuthOtp = () => {
       console.log("🔍 Verifying OTP for:", storedIdentifier);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/auth/verify-otp`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/verify-otp`,
         { identifier: storedIdentifier, otp: finalOtp, rememberMe: true },
         {
           headers: { "Content-Type": "application/json" },

@@ -25,7 +25,7 @@ const AdminAuth = () => {
       console.log("📩 Sending Request to Backend:", { identifier, password });
 
       const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/admin/auth/send-otp`,
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/send-otp`,
         { identifier: identifier.trim(), password: password.trim() },
         { headers: { "Content-Type": "application/json" } }
       );
