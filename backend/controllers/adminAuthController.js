@@ -211,10 +211,61 @@ const refreshAdminToken = async (req, res) => {
     }
 };
 
+const resendAdminLoginOtp = async (req, res) => {
+    try {
+      const { identifier } = req.body;
+  
+      if (!identifier) {
+        return res.status(400).json({ message: "Identifier (email or phone) is required" });
+      }
+  
+      
+      const [adminResults] = await db.execute(
+        `SELECT id FROM Admin WHERE email = ? OR phone_number = ?`,
+        [identifier, identifier]
+      );
+  
+      if (adminResults.length === 0) {
+        return res.status(404).json({ message: "Admin not found" });
+      }
+  
+      const otp = Math.floor(100000 + Math.random() * 900000).toString();
+      console.log("🔁 Generated Resend OTP:", otp);
+  
+      let otpSent = { success: false };
+      if (identifier.includes("@")) {
+        console.log("📧 Resending OTP via Email:", identifier);
+        otpSent = await sendOtpToEmail(identifier, otp);
+      } else {
+        console.log("📱 Resending OTP via SMS:", identifier);
+        otpSent = await sendOtpSms(identifier, otp);
+      }
+  
+      if (!otpSent.success) {
+        return res.status(500).json({ message: "Failed to resend OTP", error: otpSent.error });
+      }
+  
+      await db.execute(
+        `INSERT INTO LoginOtp (identifier, otp, created_at, expires_at)
+         VALUES (?, ?, NOW(), DATE_ADD(NOW(), INTERVAL 10 MINUTE))
+         ON DUPLICATE KEY UPDATE otp = ?, created_at = NOW(), expires_at = DATE_ADD(NOW(), INTERVAL 10 MINUTE);`,
+        [identifier, otp, otp]
+      );
+  
+      console.log("✅ Resend OTP Successfully Stored for:", identifier);
+      res.status(200).json({ message: "OTP resent successfully" });
+  
+    } catch (error) {
+      console.error("❌ Error in resendAdminLoginOtp:", error);
+      res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+  };
+  
+
 
 const logoutAdmin = async (req, res) => {
     res.clearCookie("refreshToken", COOKIE_OPTIONS);
     res.status(200).json({ message: "Logged out successfully" });
 };
 
-module.exports = { sendAdminLoginOtp, verifyAdminLoginOtp, refreshAdminToken, logoutAdmin };
+module.exports = { sendAdminLoginOtp, verifyAdminLoginOtp, refreshAdminToken,resendAdminLoginOtp, logoutAdmin };

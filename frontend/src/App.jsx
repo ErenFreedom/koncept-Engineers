@@ -20,31 +20,33 @@ import ViewProfile from "./components/ToViewInfo/ViewProfile";
 import EditProfile from "./components/EditProfileModal/EditProfile";
 
 import { FormDataProvider } from "./context/FormDataContext"; 
+import { AuthProvider } from "./context/AuthContext"; // ✅ import AuthContext
 
 const App = () => {
   return (
     <Provider store={store}> 
       <PersistGate loading={null} persistor={persistor}> 
         <FormDataProvider> 
-          <Router>
-            <ToastContainer position="top-right" autoClose={3000} />
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/SignUp" element={<BreakPoint />} />
-              <Route path="/Admin" element={<Admin />} />
-              <Route path="/Staff" element={<Staff />} />
-              <Route path="/Auth" element={<AuthBreakPoint />} />
-              <Route path="/AuthAdmin" element={<AuthAdmin />} />
-              <Route path="/AuthStaff" element={<AuthStaff />} />
-              <Route path="/AdminOtp" element={<AdminOtp />} />
-              <Route path="/StaffOtp" element={<StaffOtp />} />
-              <Route path="/AdminAuthOtp" element={<AdminAuthOtp />} />
-              <Route path="/Dashboard/:id" element={<Dashboard />} />
-              <Route path="/admin/view-profile" element={<ViewProfile />} />
-              <Route path="/admin/edit-profile/:id" element={<EditProfile />} />
-
-            </Routes>
-          </Router>
+          <AuthProvider> {/* ✅ Wrap AuthProvider here */}
+            <Router>
+              <ToastContainer position="top-right" autoClose={3000} />
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/SignUp" element={<BreakPoint />} />
+                <Route path="/Admin" element={<Admin />} />
+                <Route path="/Staff" element={<Staff />} />
+                <Route path="/Auth" element={<AuthBreakPoint />} />
+                <Route path="/AuthAdmin" element={<AuthAdmin />} />
+                <Route path="/AuthStaff" element={<AuthStaff />} />
+                <Route path="/AdminOtp" element={<AdminOtp />} />
+                <Route path="/StaffOtp" element={<StaffOtp />} />
+                <Route path="/AdminAuthOtp" element={<AdminAuthOtp />} />
+                <Route path="/Dashboard/:id" element={<Dashboard />} />
+                <Route path="/admin/view-profile" element={<ViewProfile />} />
+                <Route path="/admin/edit-profile/:id" element={<EditProfile />} />
+              </Routes>
+            </Router>
+          </AuthProvider>
         </FormDataProvider>
       </PersistGate>
     </Provider>

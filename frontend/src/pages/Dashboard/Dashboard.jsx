@@ -1,22 +1,25 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import { toast } from "react-toastify";
 import axios from "axios";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 import "./Dashboard.css";
+import { useAuth } from "../../context/AuthContext"; // ✅ import context
 
 const Dashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [admin, setAdmin] = useState(null);
+  const { admin, accessToken, logout } = useAuth(); // ✅ use context
   const [sensors, setSensors] = useState([]);
 
-  const fetchSensorData = async (token) => {
+  const fetchSensorData = async () => {
     try {
-      const res = await axios.get("http://ec2-98-84-241-148.compute-1.amazonaws.com:3001/api/dashboard/sensors", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        "http://ec2-98-84-241-148.compute-1.amazonaws.com:3001/api/dashboard/sensors",
+        {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        }
+      );
       setSensors(res.data.sensors || []);
     } catch (err) {
       console.error("❌ Failed to fetch sensors:", err.response?.data || err.message);
@@ -24,39 +27,25 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-
-    if (!token) {
+    // ✅ Redirect if no admin or token in context
+    if (!admin || !accessToken) {
       toast.error("Session expired. Please log in again.");
       navigate("/AuthAdmin");
       return;
     }
 
-    try {
-      const decoded = jwtDecode(token);
-      if (decoded.adminId.toString() !== id.toString()) {
-        toast.error("Unauthorized access!");
-        localStorage.removeItem("adminToken");
-        navigate("/AuthAdmin");
-        return;
-      }
-
-      setAdmin({
-        id: decoded.adminId,
-        firstName: decoded.firstName,
-        lastName: decoded.lastName,
-      });
-
-      fetchSensorData(token); 
-      const interval = setInterval(() => fetchSensorData(token), 3000); 
-      return () => clearInterval(interval);
-
-    } catch (error) {
-      toast.error("Invalid session. Please log in again.");
-      localStorage.removeItem("adminToken");
+    // ✅ Validate route param against actual admin ID
+    if (admin.id.toString() !== id.toString()) {
+      toast.error("Unauthorized access!");
+      logout(); // clear context state
       navigate("/AuthAdmin");
+      return;
     }
-  }, [id, navigate]);
+
+    fetchSensorData();
+    const interval = setInterval(fetchSensorData, 3000);
+    return () => clearInterval(interval);
+  }, [admin, accessToken, id, navigate, logout]);
 
   if (!admin) return <p>Loading Dashboard...</p>;
 
@@ -79,7 +68,6 @@ const Dashboard = () => {
               <p><strong>Quality:</strong> {sensor.quality ?? "N/A"}</p>
               <p><strong>Good?</strong> {sensor.quality_good === 1 ? "Yes" : "No"}</p>
               <p><strong>Timestamp:</strong> {sensor.timestamp ?? "N/A"}</p>
-
             </div>
           ))
         ) : (

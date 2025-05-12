@@ -3,8 +3,8 @@ import { Bell, User } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { jwtDecode } from "jwt-decode";
 import "./DashboardHeader.css";
+import { useAuth } from "../../context/AuthContext"; // ✅ import context
 
 const DashboardHeader = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -12,6 +12,8 @@ const DashboardHeader = () => {
   const [password, setPassword] = useState("");
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+
+  const { admin, accessToken, logout } = useAuth(); // ✅ get from context
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -24,33 +26,36 @@ const DashboardHeader = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("adminToken");
-    localStorage.removeItem("identifier");
+    logout(); // ✅ clears context
     navigate("/Auth");
   };
 
   const verifyPasswordAndNavigate = async () => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) {
-      toast.error("Missing token. Please login again.");
+    if (!accessToken || !admin?.id) {
+      toast.error("Missing credentials. Please login again.");
       navigate("/Auth");
       return;
     }
 
-    const decoded = jwtDecode(token);
-    const adminId = decoded.adminId;
-
     try {
-      const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/verify-password`, {
-        adminId,
-        password,
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/verify-password`,
+        {
+          adminId: admin.id,
+          password,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (response.data.success) {
         toast.success("✅ Verified successfully!");
         setShowModal(false);
         setPassword("");
-        navigate(`/admin/edit-profile/${adminId}`);
+        navigate(`/admin/edit-profile/${admin.id}`);
       } else {
         toast.error("❌ Incorrect password.");
       }

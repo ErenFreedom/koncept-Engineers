@@ -12,7 +12,6 @@ const AdminAuth = () => {
   const [otpSent, setOtpSent] = useState(false); 
   const navigate = useNavigate();
 
-  
   const handleSendOtp = async (e) => {
     e.preventDefault();
 
@@ -34,15 +33,14 @@ const AdminAuth = () => {
       console.log("✅ OTP Sent Response:", response.data);
       toast.success(`OTP sent to ${identifier}`);
 
-      localStorage.setItem("identifier", identifier.trim());
       setOtpSent(true);
-      navigate("/AdminAuthOtp"); 
+      // ✅ Pass identifier via route state
+      navigate("/AdminAuthOtp", { state: { identifier: identifier.trim() } });
     } catch (error) {
       console.error("❌ OTP sending failed:", error.response?.data || error.message);
       toast.error(error.response?.data?.message || "OTP sending failed");
     }
   };
-
 
   return (
     <div>

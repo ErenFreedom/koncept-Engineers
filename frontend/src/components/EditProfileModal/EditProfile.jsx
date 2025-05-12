@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import "./EditProfile.css";
 import { useParams, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext"; // ✅ import context
 
 const EditProfile = () => {
   const { id: adminId } = useParams();
@@ -13,20 +13,29 @@ const EditProfile = () => {
   const [form, setForm] = useState({});
   const navigate = useNavigate();
 
+  const { admin, accessToken, logout } = useAuth(); // ✅ access from context
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const token = localStorage.getItem("adminToken");
-        if (!token) return navigate("/Auth");
+        if (!accessToken || !admin?.id) {
+          toast.error("Session expired. Please login again.");
+          logout();
+          return navigate("/Auth");
+        }
 
-        const decoded = jwtDecode(token);
-        if (decoded.adminId.toString() !== adminId) {
+        if (admin.id.toString() !== adminId.toString()) {
           toast.error("Unauthorized access.");
-          return navigate("/dashboard/" + decoded.adminId);
+          return navigate(`/dashboard/${admin.id}`);
         }
 
         const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${adminId}`
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${adminId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
         );
 
         setProfile(response.data.profile);
@@ -38,7 +47,7 @@ const EditProfile = () => {
     };
 
     fetchProfile();
-  }, [adminId, navigate]);
+  }, [adminId, admin, accessToken, logout, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -52,7 +61,12 @@ const EditProfile = () => {
     try {
       await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/edit/${adminId}`,
-        { ...form, password }
+        { ...form, password },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
       );
       toast.success("✅ Profile updated successfully.");
     } catch (err) {

@@ -1,31 +1,45 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ViewProfile.css";
-import { jwtDecode } from "jwt-decode";
+import { toast } from "react-toastify";
+import { useAuth } from "../../context/AuthContext"; // ✅ context import
+import { useNavigate } from "react-router-dom";
 
 const ViewProfile = () => {
   const [profile, setProfile] = useState(null);
   const [showAdmin, setShowAdmin] = useState(false);
   const [showCompany, setShowCompany] = useState(false);
 
+  const { admin, accessToken, logout } = useAuth(); // ✅ context hook
+  const navigate = useNavigate();
+
   useEffect(() => {
-    const token = localStorage.getItem("adminToken");
-    if (!token) return;
-
-    const decoded = jwtDecode(token);
-    const adminId = decoded.adminId;
-
     const fetchProfile = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${adminId}`);
+        if (!admin?.id || !accessToken) {
+          toast.error("Session expired. Please login again.");
+          logout();
+          return navigate("/Auth");
+        }
+
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/profile/${admin.id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+
         setProfile(response.data.profile);
       } catch (error) {
         console.error("❌ Error fetching profile:", error);
+        toast.error("Failed to fetch profile.");
       }
     };
 
     fetchProfile();
-  }, []);
+  }, [admin, accessToken, logout, navigate]);
 
   if (!profile) return <div className="profile-loading">Loading profile...</div>;
 
