@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from "react";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [admin, setAdmin] = useState(null); // admin object (decoded JWT or from backend)
+  const [admin, setAdmin] = useState(null); 
   const [accessToken, setAccessToken] = useState(null);
 
   const login = (token, adminData) => {

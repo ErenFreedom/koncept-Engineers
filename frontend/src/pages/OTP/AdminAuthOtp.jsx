@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import { useNavigate, useLocation } from "react-router-dom";
 import AuthHeader from "../../components/AuthPage/AuthHeader";
 import { jwtDecode } from "jwt-decode";
-import { useAuth } from "../../context/AuthContext"; // ✅ using context
+import { useAuth } from "../../context/AuthContext"; 
 import "./Otp.css";
 
 const AdminAuthOtp = () => {
@@ -66,7 +66,7 @@ const AdminAuthOtp = () => {
       console.log("✅ OTP Verified Successfully:", response.data);
       toast.success("Login Successful!");
 
-      // ✅ Store in context, not localStorage
+     
       login(response.data.accessToken, response.data.admin);
       const decodedToken = jwtDecode(response.data.accessToken);
 

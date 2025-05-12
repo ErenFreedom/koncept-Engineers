@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "./DashboardHeader.css";
-import { useAuth } from "../../context/AuthContext"; // ✅ import context
+import { useAuth } from "../../context/AuthContext"; 
 
 const DashboardHeader = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -13,7 +13,7 @@ const DashboardHeader = () => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  const { admin, accessToken, logout } = useAuth(); // ✅ get from context
+  const { admin, accessToken, logout } = useAuth(); 
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -26,7 +26,7 @@ const DashboardHeader = () => {
   }, []);
 
   const handleLogout = () => {
-    logout(); // ✅ clears context
+    logout(); 
     navigate("/Auth");
   };
 
@@ -97,7 +97,7 @@ const DashboardHeader = () => {
         </div>
       </header>
 
-      {/* ✅ Password Prompt Modal */}
+      
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">

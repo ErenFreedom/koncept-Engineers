@@ -3,7 +3,7 @@ import "./EditProfile.css";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/AuthContext"; // ✅ import context
+import { useAuth } from "../../context/AuthContext"; 
 
 const EditProfile = () => {
   const { id: adminId } = useParams();
@@ -13,7 +13,7 @@ const EditProfile = () => {
   const [form, setForm] = useState({});
   const navigate = useNavigate();
 
-  const { admin, accessToken, logout } = useAuth(); // ✅ access from context
+  const { admin, accessToken, logout } = useAuth(); 
 
   useEffect(() => {
     const fetchProfile = async () => {

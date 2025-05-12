@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "./ViewProfile.css";
 import { toast } from "react-toastify";
-import { useAuth } from "../../context/AuthContext"; // ✅ context import
+import { useAuth } from "../../context/AuthContext"; 
 import { useNavigate } from "react-router-dom";
 
 const ViewProfile = () => {
@@ -10,7 +10,7 @@ const ViewProfile = () => {
   const [showAdmin, setShowAdmin] = useState(false);
   const [showCompany, setShowCompany] = useState(false);
 
-  const { admin, accessToken, logout } = useAuth(); // ✅ context hook
+  const { admin, accessToken, logout } = useAuth(); 
   const navigate = useNavigate();
 
   useEffect(() => {

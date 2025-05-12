@@ -4,12 +4,12 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 import "./Dashboard.css";
-import { useAuth } from "../../context/AuthContext"; // ✅ import context
+import { useAuth } from "../../context/AuthContext"; 
 
 const Dashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { admin, accessToken, logout } = useAuth(); // ✅ use context
+  const { admin, accessToken, logout } = useAuth(); 
   const [sensors, setSensors] = useState([]);
 
   const fetchSensorData = async () => {
@@ -27,17 +27,17 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    // ✅ Redirect if no admin or token in context
+    
     if (!admin || !accessToken) {
       toast.error("Session expired. Please log in again.");
       navigate("/AuthAdmin");
       return;
     }
 
-    // ✅ Validate route param against actual admin ID
+    
     if (admin.id.toString() !== id.toString()) {
       toast.error("Unauthorized access!");
-      logout(); // clear context state
+      logout(); 
       navigate("/AuthAdmin");
       return;
     }
