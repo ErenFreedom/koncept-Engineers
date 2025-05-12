@@ -14,7 +14,7 @@ const REFRESH_TOKEN_EXPIRY = TOKEN_CONFIG.refreshTokenExpiry || "30d";
 const COOKIE_OPTIONS = {
     httpOnly: true,  
     secure: false,
-    sameSite: "strict", 
+    sameSite: "lax", 
 };
 
 
