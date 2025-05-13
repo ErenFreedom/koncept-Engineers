@@ -183,9 +183,7 @@ const verifyAdminLoginOtp = async (req, res) => {
 
 
 
-const redisClient = require("../redisClient");
-const jwt = require("jsonwebtoken");
-const db = require("../db/connector");
+
 
 const refreshAdminToken = async (req, res) => {
   try {
