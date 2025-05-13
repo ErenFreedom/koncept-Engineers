@@ -27,18 +27,24 @@ const DashboardHeader = () => {
 
   const handleLogout = async () => {
     try {
-      await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
-        { adminId: admin?.id }, 
-        { withCredentials: true }
-      );
+      const sessionId = localStorage.getItem("sessionId");
+      if (!sessionId || !admin?.id) {
+        console.warn("Missing sessionId or adminId during logout");
+      } else {
+        await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
+          { adminId: admin.id, sessionId }, 
+          { withCredentials: true }
+        );
+      }
     } catch (err) {
       console.warn("Logout request failed (but continuing):", err);
     }
   
-    logout();
+    logout(); 
     navigate("/Auth");
   };
+  
   
   
 

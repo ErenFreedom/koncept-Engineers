@@ -140,16 +140,15 @@ const verifyAdminLoginOtp = async (req, res) => {
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
 
-    
     res.cookie("refreshToken", refreshToken, {
       ...COOKIE_OPTIONS,
       maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 6 * 60 * 60 * 1000
     });
 
-    
-    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; 
+    const sessionId = uuidv4();
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
     await redisClient.set(
-      `admin:${admin.id}`,
+      `admin:${admin.id}:${sessionId}`,
       JSON.stringify({
         refreshToken,
         loginTime: Date.now(),
@@ -157,15 +156,15 @@ const verifyAdminLoginOtp = async (req, res) => {
         ipAddress: req.ip,
         userAgent: req.headers["user-agent"]
       }),
-      { EX: 30 * 24 * 60 * 60 } 
+      { EX: 30 * 24 * 60 * 60 }
     );
 
-    
     await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
 
     res.status(200).json({
       message: "Login successful",
       accessToken,
+      sessionId, // ✅ Send session ID to client
       admin: {
         id: admin.id,
         firstName: admin.first_name,
@@ -176,7 +175,6 @@ const verifyAdminLoginOtp = async (req, res) => {
         nationality: admin.nationality
       }
     });
-
   } catch (error) {
     console.error("❌ Error verifying OTP:", error);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
@@ -184,6 +182,10 @@ const verifyAdminLoginOtp = async (req, res) => {
 };
 
 
+
+const redisClient = require("../redisClient");
+const jwt = require("jsonwebtoken");
+const db = require("../db/connector");
 
 const refreshAdminToken = async (req, res) => {
   try {
@@ -195,22 +197,30 @@ const refreshAdminToken = async (req, res) => {
       if (err)
         return res.status(403).json({ message: "Forbidden (invalid token)" });
 
-      const sessionKey = `admin:${decoded.adminId}`;
-      const redisSession = await redisClient.get(sessionKey);
+      const adminId = decoded.adminId;
+      const sessionKeys = await redisClient.keys(`admin:${adminId}:*`);
 
-      if (!redisSession) {
-        return res.status(401).json({ message: "Session expired" });
+      let validSession = null;
+
+      for (const key of sessionKeys) {
+        const session = await redisClient.get(key);
+        if (!session) continue;
+
+        const parsed = JSON.parse(session);
+        if (parsed.refreshToken === refreshToken) {
+          validSession = parsed;
+          break;
+        }
       }
 
-      const parsed = JSON.parse(redisSession);
-      if (parsed.refreshToken !== refreshToken) {
-        return res.status(403).json({ message: "Session invalidated" });
+      if (!validSession) {
+        return res.status(401).json({ message: "Session expired or invalidated" });
       }
 
       const [[admin]] = await db.execute(
         `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
          FROM Admin WHERE id = ?`,
-        [decoded.adminId]
+        [adminId]
       );
 
       if (!admin)
@@ -248,6 +258,7 @@ const refreshAdminToken = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
   
 const resendAdminLoginOtp = async (req, res) => {
     try {
@@ -303,11 +314,14 @@ const resendAdminLoginOtp = async (req, res) => {
 
   const logoutAdmin = async (req, res) => {
     try {
-      const { adminId } = req.body;
+      const { adminId, sessionId } = req.body;
   
-      if (adminId) {
-        await redisClient.del(`admin:${adminId}`);
+      if (!adminId || !sessionId) {
+        return res.status(400).json({ message: "adminId and sessionId are required" });
       }
+  
+      const redisKey = `admin:${adminId}:${sessionId}`;
+      await redisClient.del(redisKey);
   
       res.clearCookie("refreshToken", COOKIE_OPTIONS);
       res.status(200).json({ message: "Logged out successfully" });
@@ -316,5 +330,6 @@ const resendAdminLoginOtp = async (req, res) => {
       res.status(500).json({ message: "Logout failed", error: err.message });
     }
   };
+  
 
 module.exports = { sendAdminLoginOtp, verifyAdminLoginOtp, refreshAdminToken,resendAdminLoginOtp, logoutAdmin };

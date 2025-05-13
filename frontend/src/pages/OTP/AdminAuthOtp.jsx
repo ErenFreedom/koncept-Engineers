@@ -71,7 +71,8 @@ const AdminAuthOtp = () => {
       toast.success("Login Successful!");
 
      
-      login(response.data.accessToken, response.data.admin);
+      login(response.data.accessToken, response.data.admin, response.data.sessionId);
+
       const decodedToken = jwtDecode(response.data.accessToken);
 
       navigate(`/Dashboard/${decodedToken.adminId}`);

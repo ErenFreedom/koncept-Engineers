@@ -13,24 +13,39 @@ export const AuthProvider = ({ children }) => {
     return localStorage.getItem("accessToken") || null;
   });
 
-  const login = (token, adminData) => {
+  const login = (token, adminData, sessionId) => {
     setAccessToken(token);
     setAdmin(adminData);
     localStorage.setItem("accessToken", token);
     localStorage.setItem("admin", JSON.stringify(adminData));
+    localStorage.setItem("sessionId", sessionId); 
   };
+  
 
-  const logout = () => {
-    setAccessToken(null);
-    setAdmin(null);
+  const logout = async () => {
+    const admin = JSON.parse(localStorage.getItem("admin"));
+    const sessionId = localStorage.getItem("sessionId");
+  
+    try {
+      if (admin && sessionId) {
+        await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
+          { adminId: admin.id, sessionId },
+          { withCredentials: true }
+        );
+      }
+    } catch (err) {
+      console.warn("Logout request failed:", err);
+    }
+  
+    
     localStorage.removeItem("accessToken");
     localStorage.removeItem("admin");
-    axios.post(
-      `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
-      {},
-      { withCredentials: true }
-    );
+    localStorage.removeItem("sessionId");
+    setAccessToken(null);
+    setAdmin(null);
   };
+  
 
   useEffect(() => {
     const refreshToken = async () => {
