@@ -3,6 +3,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { sendOtpSms } = require("../utils/sendOtpSms");
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
+const redisClient = require("../redisClient");
 
 require("dotenv").config();
 
@@ -93,138 +94,160 @@ const sendAdminLoginOtp = async (req, res) => {
 //Bruh this part is tiring asf, so many fields required, almost took me 1 day for debugging
 
 const verifyAdminLoginOtp = async (req, res) => {
-    try {
-        const { identifier, otp, rememberMe } = req.body;
+  try {
+    const { identifier, otp, rememberMe } = req.body;
 
-        if (!identifier || !otp) {
-            return res.status(400).json({ message: "Identifier and OTP are required" });
-        }
-
-       
-        const [otpResults] = await db.execute(
-            `SELECT * FROM LoginOtp WHERE identifier = ? AND otp = ? AND expires_at > UTC_TIMESTAMP();`,
-            [identifier, otp]
-        );
-
-        if (otpResults.length === 0) {
-            return res.status(400).json({ message: "Invalid or expired OTP" });
-        }
-
-        
-        const [[admin]] = await db.execute(
-            `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
-             FROM Admin WHERE email = ? OR phone_number = ?`,
-            [identifier, identifier]
-        );
-
-        if (!admin) {
-            return res.status(404).json({ message: "Admin not found" });
-        }
-
-        
-        const accessToken = jwt.sign(
-            { 
-                adminId: admin.id,
-                firstName: admin.first_name,
-                lastName: admin.last_name,
-                phoneNumber: admin.phone_number,
-                email: admin.email,
-                companyId: admin.company_id,
-                nationality: admin.nationality
-            },
-            process.env.JWT_SECRET,
-            { expiresIn: ACCESS_TOKEN_EXPIRY }
-        );
-
-        const refreshToken = jwt.sign(
-            { adminId: admin.id },
-            process.env.JWT_SECRET,
-            { expiresIn: REFRESH_TOKEN_EXPIRY }
-        );
-
-        
-        res.cookie("refreshToken", refreshToken, {
-            ...COOKIE_OPTIONS,
-            maxAge: rememberMe
-              ? 30 * 24 * 60 * 60 * 1000 
-              : 6 * 60 * 60 * 1000       
-          });
-          
-
-        
-        await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
-
-        res.status(200).json({ 
-            message: "Login successful", 
-            accessToken,
-            admin: {
-                id: admin.id,
-                firstName: admin.first_name,
-                lastName: admin.last_name,
-                phoneNumber: admin.phone_number,
-                email: admin.email,
-                companyId: admin.company_id,
-                nationality: admin.nationality
-            }
-        });
-
-    } catch (error) {
-        console.error("❌ Error verifying OTP:", error);
-        res.status(500).json({ message: "Internal Server Error", error: error.message });
+    if (!identifier || !otp) {
+      return res.status(400).json({ message: "Identifier and OTP are required" });
     }
+
+    const [otpResults] = await db.execute(
+      `SELECT * FROM LoginOtp WHERE identifier = ? AND otp = ? AND expires_at > UTC_TIMESTAMP();`,
+      [identifier, otp]
+    );
+
+    if (otpResults.length === 0) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    const [[admin]] = await db.execute(
+      `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
+       FROM Admin WHERE email = ? OR phone_number = ?`,
+      [identifier, identifier]
+    );
+
+    if (!admin) {
+      return res.status(404).json({ message: "Admin not found" });
+    }
+
+    const accessToken = jwt.sign(
+      {
+        adminId: admin.id,
+        firstName: admin.first_name,
+        lastName: admin.last_name,
+        phoneNumber: admin.phone_number,
+        email: admin.email,
+        companyId: admin.company_id,
+        nationality: admin.nationality
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: ACCESS_TOKEN_EXPIRY }
+    );
+
+    const refreshToken = jwt.sign(
+      { adminId: admin.id },
+      process.env.JWT_SECRET,
+      { expiresIn: REFRESH_TOKEN_EXPIRY }
+    );
+
+    
+    res.cookie("refreshToken", refreshToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 6 * 60 * 60 * 1000
+    });
+
+    
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; 
+    await redisClient.set(
+      `admin:${admin.id}`,
+      JSON.stringify({
+        refreshToken,
+        loginTime: Date.now(),
+        expiresAt,
+        ipAddress: req.ip,
+        userAgent: req.headers["user-agent"]
+      }),
+      { EX: 30 * 24 * 60 * 60 } 
+    );
+
+    
+    await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
+
+    res.status(200).json({
+      message: "Login successful",
+      accessToken,
+      admin: {
+        id: admin.id,
+        firstName: admin.first_name,
+        lastName: admin.last_name,
+        phoneNumber: admin.phone_number,
+        email: admin.email,
+        companyId: admin.company_id,
+        nationality: admin.nationality
+      }
+    });
+
+  } catch (error) {
+    console.error("❌ Error verifying OTP:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
 };
 
 
+
 const refreshAdminToken = async (req, res) => {
-    try {
-      const { refreshToken } = req.cookies;
-      if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
-  
-      jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
-        if (err) return res.status(403).json({ message: "Forbidden" });
-  
-        const [[admin]] = await db.execute(
-          `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
-           FROM Admin WHERE id = ?`,
-          [decoded.adminId]
-        );
-  
-        if (!admin) return res.status(404).json({ message: "Admin not found" });
-  
-        const newAccessToken = jwt.sign(
-          {
-            adminId: admin.id,
-            firstName: admin.first_name,
-            lastName: admin.last_name,
-            phoneNumber: admin.phone_number,
-            email: admin.email,
-            companyId: admin.company_id,
-            nationality: admin.nationality
-          },
-          process.env.JWT_SECRET,
-          { expiresIn: ACCESS_TOKEN_EXPIRY }
-        );
-  
-        // ✅ Send both access token and admin info
-        res.status(200).json({
-          accessToken: newAccessToken,
-          admin: {
-            id: admin.id,
-            firstName: admin.first_name,
-            lastName: admin.last_name,
-            phoneNumber: admin.phone_number,
-            email: admin.email,
-            companyId: admin.company_id,
-            nationality: admin.nationality
-          }
-        });
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken)
+      return res.status(401).json({ message: "Unauthorized" });
+
+    jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
+      if (err)
+        return res.status(403).json({ message: "Forbidden (invalid token)" });
+
+      const sessionKey = `admin:${decoded.adminId}`;
+      const redisSession = await redisClient.get(sessionKey);
+
+      if (!redisSession) {
+        return res.status(401).json({ message: "Session expired" });
+      }
+
+      const parsed = JSON.parse(redisSession);
+      if (parsed.refreshToken !== refreshToken) {
+        return res.status(403).json({ message: "Session invalidated" });
+      }
+
+      const [[admin]] = await db.execute(
+        `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
+         FROM Admin WHERE id = ?`,
+        [decoded.adminId]
+      );
+
+      if (!admin)
+        return res.status(404).json({ message: "Admin not found" });
+
+      const newAccessToken = jwt.sign(
+        {
+          adminId: admin.id,
+          firstName: admin.first_name,
+          lastName: admin.last_name,
+          phoneNumber: admin.phone_number,
+          email: admin.email,
+          companyId: admin.company_id,
+          nationality: admin.nationality,
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: ACCESS_TOKEN_EXPIRY }
+      );
+
+      res.status(200).json({
+        accessToken: newAccessToken,
+        admin: {
+          id: admin.id,
+          firstName: admin.first_name,
+          lastName: admin.last_name,
+          phoneNumber: admin.phone_number,
+          email: admin.email,
+          companyId: admin.company_id,
+          nationality: admin.nationality,
+        },
       });
-  
-    } catch (error) {
-      console.error("❌ Error refreshing token:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
-    }
-  };
+    });
+  } catch (error) {
+    console.error("❌ Error refreshing token:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
   
 const resendAdminLoginOtp = async (req, res) => {
     try {
@@ -278,9 +301,20 @@ const resendAdminLoginOtp = async (req, res) => {
   
 
 
-const logoutAdmin = async (req, res) => {
-    res.clearCookie("refreshToken", COOKIE_OPTIONS);
-    res.status(200).json({ message: "Logged out successfully" });
-};
+  const logoutAdmin = async (req, res) => {
+    try {
+      const { adminId } = req.body;
+  
+      if (adminId) {
+        await redisClient.del(`admin:${adminId}`);
+      }
+  
+      res.clearCookie("refreshToken", COOKIE_OPTIONS);
+      res.status(200).json({ message: "Logged out successfully" });
+    } catch (err) {
+      console.error("❌ Logout failed:", err);
+      res.status(500).json({ message: "Logout failed", error: err.message });
+    }
+  };
 
 module.exports = { sendAdminLoginOtp, verifyAdminLoginOtp, refreshAdminToken,resendAdminLoginOtp, logoutAdmin };

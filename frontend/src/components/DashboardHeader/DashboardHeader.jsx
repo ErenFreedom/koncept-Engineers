@@ -29,16 +29,17 @@ const DashboardHeader = () => {
     try {
       await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
-        {},
-        { withCredentials: true } 
+        { adminId: admin?.id }, 
+        { withCredentials: true }
       );
     } catch (err) {
       console.warn("Logout request failed (but continuing):", err);
     }
   
-    logout(); 
+    logout();
     navigate("/Auth");
   };
+  
   
 
 
