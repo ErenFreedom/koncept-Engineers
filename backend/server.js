@@ -2,8 +2,6 @@ const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors'); 
 const db = require('./db/connector'); 
-const cookieParser = require('cookie-parser');
-
 
 
 dotenv.config();
@@ -13,18 +11,14 @@ const PORT = process.env.PORT || 3001;
 
 
 app.use(cors({
-    origin: "http://ec2-98-84-241-148.compute-1.amazonaws.com", 
-    credentials: true, 
+    origin: "*", 
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
     allowedHeaders: "Content-Type,Authorization"
-  }));
-  
+}));
 
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
-
 
 
 const adminRoutes = require("./routes/adminRoutes");
