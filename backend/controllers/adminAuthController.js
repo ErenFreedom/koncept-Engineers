@@ -4,6 +4,8 @@ const jwt = require("jsonwebtoken");
 const { sendOtpSms } = require("../utils/sendOtpSms");
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 const redisClient = require("../redisClient");
+const { v4: uuidv4 } = require("uuid");
+
 
 require("dotenv").config();
 
