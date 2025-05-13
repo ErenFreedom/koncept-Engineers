@@ -25,6 +25,29 @@ const getAdminDetailsFromToken = (req) => {
 };
 
 
+const getCloudAdminDetailsFromToken = (req) => {
+    try {
+      const token = req.headers.authorization?.split(" ")[1];
+      if (!token) return null;
+  
+      const decoded = jwt.verify(token, process.env.JWT_SECRET); // ✅ Use cloud secret
+      console.log("🔐 Cloud Admin JWT Decoded:", decoded);
+  
+      const companyId = decoded.companyId || decoded.company_id;
+      const adminId = decoded.adminId;
+  
+      if (!companyId || !adminId) {
+        console.error("❌ Token missing companyId or adminId:", decoded);
+        return null;
+      }
+  
+      return { companyId, adminId };
+    } catch (error) {
+      console.error("❌ Error decoding cloud JWT:", error.message);
+      return null;
+    }
+  };
+
 const listSensors = async (req, res) => {
     try {
        
@@ -55,7 +78,7 @@ const listSensors = async (req, res) => {
 
 const listFullSensorInfo = async (req, res) => {
     try {
-      const details = getAdminDetailsFromToken(req);
+      const details = getCloudAdminDetailsFromToken(req); // ⬅️ Use cloud auth
       if (!details) return res.status(401).json({ message: "Unauthorized" });
   
       const { companyId } = details;
