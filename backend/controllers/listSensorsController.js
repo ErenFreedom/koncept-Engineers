@@ -56,7 +56,7 @@ const listSensors = async (req, res) => {
 
 const listFullSensorInfo = async (req, res) => {
     try {
-      const { companyId } = req.admin; // ✅ Coming from verifyCloudToken middleware
+      const { companyId } = req.admin; // ✅ Injected by middleware
   
       const bankTable = `SensorBank_${companyId}`;
       const activeTable = `Sensor_${companyId}`;
