@@ -8,7 +8,7 @@ const verifyCloudToken = (req, res, next) => {
     }
 
     const token = authHeader.split(" ")[1];
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); // ✅ use CLOUD token, not app
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
 
     if (!decoded || !decoded.adminId || !decoded.companyId) {
       return res.status(403).json({ message: "Invalid token payload" });
