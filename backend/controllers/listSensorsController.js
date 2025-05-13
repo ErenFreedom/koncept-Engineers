@@ -53,4 +53,60 @@ const listSensors = async (req, res) => {
 };
 
 
-module.exports = { listSensors };
+const listFullSensorInfo = async (req, res) => {
+    try {
+      const details = getAdminDetailsFromToken(req);
+      if (!details) return res.status(401).json({ message: "Unauthorized" });
+  
+      const { companyId } = details;
+  
+      const bankTable = `SensorBank_${companyId}`;
+      const activeTable = `Sensor_${companyId}`;
+      const apiTable = `SensorAPI_${companyId}`;
+  
+      const [rows] = await db.query(`
+        SELECT 
+          sb.id AS bank_id,
+          sb.name,
+          sb.description,
+          sb.object_id,
+          sb.property_name,
+          sb.data_type,
+          sa.api_endpoint,
+          s.id AS local_sensor_id
+        FROM ${bankTable} sb
+        JOIN ${activeTable} s ON sb.id = s.bank_id
+        LEFT JOIN ${apiTable} sa ON sa.sensor_id = sb.id
+        WHERE s.is_active = 1
+      `);
+  
+      const enriched = await Promise.all(rows.map(async (sensor) => {
+        const dataTable = `SensorData_${companyId}_${sensor.bank_id}`;
+        try {
+          const [dataRows] = await db.query(`
+            SELECT value, quality, quality_good, timestamp
+            FROM ${dataTable}
+            ORDER BY timestamp DESC
+            LIMIT 1
+          `);
+          return {
+            ...sensor,
+            latestData: dataRows[0] || null,
+          };
+        } catch (err) {
+          console.warn(`⚠️ No data table for sensor ${sensor.bank_id}:`, err.message);
+          return {
+            ...sensor,
+            latestData: null,
+          };
+        }
+      }));
+  
+      res.status(200).json({ sensors: enriched });
+    } catch (err) {
+      console.error("❌ Failed to fetch full sensor info:", err.message);
+      res.status(500).json({ message: "Internal server error", error: err.message });
+    }
+  };
+
+module.exports = { listSensors , listFullSensorInfo};
