@@ -4,18 +4,27 @@ import axios from "axios";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [admin, setAdmin] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
-  const [loading, setLoading] = useState(true); // ✅ for session check
+  const [admin, setAdmin] = useState(() => {
+    const saved = localStorage.getItem("admin");
+    return saved ? JSON.parse(saved) : null;
+  });
+
+  const [accessToken, setAccessToken] = useState(() => {
+    return localStorage.getItem("accessToken") || null;
+  });
 
   const login = (token, adminData) => {
     setAccessToken(token);
     setAdmin(adminData);
+    localStorage.setItem("accessToken", token);
+    localStorage.setItem("admin", JSON.stringify(adminData));
   };
 
   const logout = () => {
     setAccessToken(null);
     setAdmin(null);
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("admin");
     axios.post(
       `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
       {},
@@ -31,16 +40,14 @@ export const AuthProvider = ({ children }) => {
           {},
           { withCredentials: true }
         );
-
         const { accessToken, admin } = res.data;
         setAccessToken(accessToken);
         setAdmin(admin);
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("admin", JSON.stringify(admin));
       } catch (err) {
         console.warn("🔒 Auto-login failed:", err.response?.data || err.message);
-        setAccessToken(null);
-        setAdmin(null);
-      } finally {
-        setLoading(false); // ✅ done checking token
+        logout(); 
       }
     };
 
@@ -48,7 +55,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ admin, accessToken, login, logout, loading }}>
+    <AuthContext.Provider value={{ admin, accessToken, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
