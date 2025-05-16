@@ -43,6 +43,7 @@ const getAdminRoutes = require("./routes/getAdminRoutes")
 const editProfileRoutes = require("./routes/editProfileRoutes");
 const syncDbRoutes = require("./routes/syncDbRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
+const floorRoomRoutes = require("./routes/floorRoomRoutes");
 
 
 app.use("/api/admin", adminRoutes);
@@ -61,6 +62,7 @@ app.use("/api", getAdminRoutes);
 app.use("/api", editProfileRoutes);
 app.use("/api/cloud", syncDbRoutes);
 app.use("/api", sessionRoutes);
+app.use("/api", floorRoomRoutes);
 
 
 
