@@ -1,60 +1,79 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getFloors, addFloor } from "../../api/floor"; 
+import { addRoom } from "../../api/room"; 
 import "./HierarchySidebar.css";
 
 const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
+  const [floors, setFloors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [activeFloorId, setActiveFloorId] = useState(null); 
 
-  const sites = [
-    {
-      id: 1,
-      name: "Site Alpha",
-      floors: [
-        {
-          id: 1,
-          name: "Floor 1",
-          rooms: ["Room 101", "Room 102"],
-        },
-        {
-          id: 2,
-          name: "Floor 2",
-          rooms: ["Room 201", "Room 202"],
-        },
-      ],
-    },
-    {
-      id: 2,
-      name: "Site Beta",
-      floors: [
-        {
-          id: 1,
-          name: "Main Floor",
-          rooms: ["Room A", "Room B"],
-        },
-      ],
-    },
-  ];
+  const token = localStorage.getItem("accessToken");
+
+  
+  useEffect(() => {
+    if (!token) return;
+    const fetchFloors = async () => {
+      try {
+        setLoading(true);
+        const fetched = await getFloors(token);
+        setFloors(fetched || []);
+      } catch (err) {
+        console.error("Failed to load floors:", err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFloors();
+  }, [token]);
 
   const toggleSite = (siteId) => {
     const isExpanding = expandedSite !== siteId;
     setExpandedSite(isExpanding ? siteId : null);
+    if (onSiteSelect) onSiteSelect(isExpanding ? siteId : null);
+  };
 
-    if (onSiteSelect) {
-      onSiteSelect(isExpanding ? siteId : null);
+  const toggleFloor = (floorId) => {
+    const key = `1-${floorId}`;
+    const isExpanding = !expandedFloor[key];
+    setExpandedFloor((prev) => ({ ...prev, [key]: isExpanding }));
+
+    if (isExpanding) {
+      setActiveFloorId(floorId);
+      if (onFloorExpand) onFloorExpand(floorId);
+    } else {
+      setActiveFloorId(null);
     }
   };
 
-  const toggleFloor = (siteId, floorId) => {
-    const key = `${siteId}-${floorId}`;
-    const isExpanding = !expandedFloor[key];
+  const handleAddFloor = async () => {
+    const name = prompt("Enter floor name:");
+    if (!name) return;
 
-    setExpandedFloor((prev) => ({
-      ...prev,
-      [key]: isExpanding,
-    }));
+    try {
+      await addFloor(name, token);
+      const updated = await getFloors(token);
+      setFloors(updated || []);
+    } catch (err) {
+      console.error("Failed to add floor:", err.message);
+      alert("❌ Could not add floor");
+    }
+  };
 
-    if (onFloorExpand && isExpanding) {
-      onFloorExpand(floorId); // trigger zoom
+  const handleAddRoom = async () => {
+    const name = prompt("Enter room name:");
+    if (!name || !activeFloorId) return;
+
+    try {
+      await addRoom(activeFloorId, name, token);
+      alert(`Room "${name}" added to Floor ${activeFloorId}`);
+      // TODO: Reload rooms if displaying them
+    } catch (err) {
+      console.error("Failed to add room:", err.message);
+      alert("❌ Could not add room");
     }
   };
 
@@ -62,40 +81,43 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
     <div className="hierarchy-sidebar">
       <h3 className="sidebar-heading">Building</h3>
 
-      {sites.map((site) => (
-        <div key={site.id} className="site-block">
-          <div className="site-name" onClick={() => toggleSite(site.id)}>
-            ▸ {site.name}
-            <button className="add-btn" title="Add Floor">＋</button>
-          </div>
+      <div className="site-block">
+        <div className="site-name" onClick={() => toggleSite(1)}>
+          ▸ Site Alpha
+          <button className="add-btn" title="Add Floor" onClick={handleAddFloor}>＋</button>
+        </div>
 
-          {expandedSite === site.id && (
-            <div className="floor-list">
-              {site.floors.map((floor) => (
+        {expandedSite === 1 && (
+          <div className="floor-list">
+            {loading ? (
+              <p>Loading floors...</p>
+            ) : (
+              floors.map((floor) => (
                 <div key={floor.id} className="floor-block">
-                  <div
-                    className="floor-name"
-                    onClick={() => toggleFloor(site.id, floor.id)}
-                  >
+                  <div className="floor-name" onClick={() => toggleFloor(floor.id)}>
                     ↳ {floor.name}
-                    <button className="add-btn" title="Add Room">＋</button>
+                    <button
+                      className="add-btn"
+                      title="Add Room"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAddRoom();
+                      }}
+                    >
+                      ＋
+                    </button>
                   </div>
-
-                  {expandedFloor[`${site.id}-${floor.id}`] && (
+                  {expandedFloor[`1-${floor.id}`] && (
                     <ul className="room-list">
-                      {floor.rooms.map((room, idx) => (
-                        <li key={idx} className="room-name">
-                          • {room}
-                        </li>
-                      ))}
+                      <li className="room-name">No rooms yet</li>
                     </ul>
                   )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
