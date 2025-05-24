@@ -1,33 +1,45 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, useGLTF } from "@react-three/drei";
+import { OrbitControls, useGLTF, Html } from "@react-three/drei";
 import * as THREE from "three";
 import "./BlueprintViewer.css";
 
 const BuildingModel = () => {
-  const { scene } = useGLTF("/building.glb");
+  const gltf = useGLTF("/building.glb");
 
-  scene.traverse((child) => {
+  // Optional: center the model
+  const model = gltf.scene;
+  model.traverse((child) => {
     if (child.isMesh) {
       child.castShadow = true;
       child.receiveShadow = true;
-      child.material.side = THREE.DoubleSide; // Ensures no one-sided blackouts
+      child.material.side = THREE.DoubleSide;
     }
   });
 
-  return <primitive object={scene} scale={0.02} />;
+  // Apply transform to center + scale
+  return (
+    <group position={[0, -1.5, 0]} rotation={[0, Math.PI, 0]} scale={0.007}>
+      <primitive object={model} />
+    </group>
+  );
 };
 
 const BlueprintViewer = () => {
   return (
     <div className="blueprint-wrapper">
-      <Canvas camera={{ position: [0, 2, 6], fov: 50 }} shadows>
+      <Canvas camera={{ position: [0, 2, 6], fov: 50 }}>
         <ambientLight intensity={1.2} />
         <directionalLight position={[4, 6, 4]} intensity={1.5} castShadow />
-        <Suspense fallback={null}>
+        <Suspense fallback={<Html><p style={{ color: 'white' }}>Loading...</p></Html>}>
           <BuildingModel />
         </Suspense>
-        <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={2} />
+        <OrbitControls
+          enableZoom={false}
+          autoRotate
+          autoRotateSpeed={1.5}
+          target={[0, 0, 0]}
+        />
       </Canvas>
       <p className="blueprint-label">Koncept Blueprint Building</p>
     </div>
