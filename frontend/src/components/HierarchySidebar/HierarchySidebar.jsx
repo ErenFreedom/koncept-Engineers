@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./HierarchySidebar.css";
 
-const HierarchySidebar = ({ onSiteSelect }) => {
+const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
 
@@ -39,7 +39,6 @@ const HierarchySidebar = ({ onSiteSelect }) => {
     const isExpanding = expandedSite !== siteId;
     setExpandedSite(isExpanding ? siteId : null);
 
-    // Notify parent (Dashboard) about selected or deselected site
     if (onSiteSelect) {
       onSiteSelect(isExpanding ? siteId : null);
     }
@@ -47,10 +46,16 @@ const HierarchySidebar = ({ onSiteSelect }) => {
 
   const toggleFloor = (siteId, floorId) => {
     const key = `${siteId}-${floorId}`;
+    const isExpanding = !expandedFloor[key];
+
     setExpandedFloor((prev) => ({
       ...prev,
-      [key]: !prev[key],
+      [key]: isExpanding,
     }));
+
+    if (onFloorExpand && isExpanding) {
+      onFloorExpand(floorId); // trigger zoom
+    }
   };
 
   return (

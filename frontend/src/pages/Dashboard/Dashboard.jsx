@@ -13,7 +13,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const { admin, accessToken, logout } = useAuth();
 
-  const [selectedSiteId, setSelectedSiteId] = useState(null); // new state
+  const [selectedSiteId, setSelectedSiteId] = useState(null);
+  const [focusedFloor, setFocusedFloor] = useState(null); // new state for zooming
 
   useEffect(() => {
     if (!admin || !accessToken) {
@@ -36,14 +37,22 @@ const Dashboard = () => {
     <div className="dashboard-container">
       <DashboardHeader />
       <div className="dashboard-body">
-        {/* Pass callback to Sidebar */}
-        <HierarchySidebar onSiteSelect={setSelectedSiteId} />
+        <HierarchySidebar
+          onSiteSelect={setSelectedSiteId}
+          onFloorExpand={(floorId) =>
+            setFocusedFloor({ zoomDistance: 1.5, fov: 35, floor: floorId })
+          }
+        />
         <div className="dashboard-main-content">
           <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
           <p>Select a room to view sensor data 📟</p>
 
           <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
-            {selectedSiteId ? <BlueprintViewer /> : <PlaceholderView />}
+            {selectedSiteId ? (
+              <BlueprintViewer focusFloor={focusedFloor} />
+            ) : (
+              <PlaceholderView />
+            )}
           </div>
         </div>
       </div>
