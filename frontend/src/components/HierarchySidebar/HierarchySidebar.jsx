@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./HierarchySidebar.css";
 
-const HierarchySidebar = () => {
+const HierarchySidebar = ({ onSiteSelect }) => {
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
 
@@ -38,6 +38,11 @@ const HierarchySidebar = () => {
   const toggleSite = (siteId) => {
     const isExpanding = expandedSite !== siteId;
     setExpandedSite(isExpanding ? siteId : null);
+
+    // Notify parent (Dashboard) about selected or deselected site
+    if (onSiteSelect) {
+      onSiteSelect(isExpanding ? siteId : null);
+    }
   };
 
   const toggleFloor = (siteId, floorId) => {

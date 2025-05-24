@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 import HierarchySidebar from "../../components/HierarchySidebar/HierarchySidebar";
 import BlueprintViewer from "../../components/BlueprintViewer/BlueprintViewer";
+import PlaceholderView from "../../components/BlueprintViewer/PlaceholderView";
 import { useAuth } from "../../context/AuthContext";
 import "./Dashboard.css";
 
@@ -11,6 +12,8 @@ const Dashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { admin, accessToken, logout } = useAuth();
+
+  const [selectedSiteId, setSelectedSiteId] = useState(null); // new state
 
   useEffect(() => {
     if (!admin || !accessToken) {
@@ -32,15 +35,16 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <DashboardHeader />
-
       <div className="dashboard-body">
-        <HierarchySidebar />
+        {/* Pass callback to Sidebar */}
+        <HierarchySidebar onSiteSelect={setSelectedSiteId} />
         <div className="dashboard-main-content">
           <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
           <p>Select a room to view sensor data 📟</p>
 
-          {/* Model always visible */}
-          <BlueprintViewer />
+          <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
+            {selectedSiteId ? <BlueprintViewer /> : <PlaceholderView />}
+          </div>
         </div>
       </div>
     </div>
