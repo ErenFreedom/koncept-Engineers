@@ -3,11 +3,13 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import "./BlueprintViewer.css";
 
-// Load and render GLB model
+// Load building model
 const BuildingModel = () => {
-  const { scene } = useGLTF("/building.glb"); 
+  const { scene } = useGLTF("/building.glb");
+
+  // Adjust scale and position so it's centered and fits
   return (
-    <group scale={[0.8, 0.8, 0.8]} position={[0, -4, 0]}>
+    <group scale={[0.3, 0.3, 0.3]} position={[0, -1.5, 0]}>
       <primitive object={scene} />
     </group>
   );
@@ -18,9 +20,9 @@ useGLTF.preload("/building.glb");
 const BlueprintViewer = () => {
   return (
     <div className="blueprint-wrapper">
-      <Canvas camera={{ position: [0, 10, 20], fov: 40 }}>
+      <Canvas camera={{ position: [0, 3, 10], fov: 50 }}>
         <ambientLight intensity={1.2} />
-        <directionalLight position={[10, 15, 10]} intensity={1.2} />
+        <directionalLight position={[10, 15, 10]} intensity={1.5} />
         <Suspense fallback={null}>
           <BuildingModel />
         </Suspense>
