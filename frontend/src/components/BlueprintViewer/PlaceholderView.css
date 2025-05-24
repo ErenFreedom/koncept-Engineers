@@ -8,32 +8,38 @@
     align-items: center;
     justify-content: center;
     text-align: center;
+    padding: 20px;
   }
   
   .placeholder-image {
-    width: 160px;
-    height: auto;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeSlideUp 1.6s ease-out forwards;
+    height: 70%;               /* Use 70% of the container height */
+    width: auto;
+    filter: grayscale(100%) brightness(0.6); /* start greyish */
+    animation: imageGlow 4s ease-in-out forwards;
     margin-bottom: 24px;
+    transition: transform 0.3s ease;
   }
   
-  @keyframes fadeSlideUp {
-    to {
-      opacity: 0.2;
-      transform: translateY(0);
+  .placeholder-image:hover {
+    transform: scale(1.02);
+  }
+  
+  @keyframes imageGlow {
+    0% {
+      filter: grayscale(100%) brightness(0.6);
+    }
+    100% {
+      filter: grayscale(0%) brightness(1);
     }
   }
   
-  
   .placeholder-text {
-    color: #999;
+    color: #aaa;
     font-family: monospace;
     font-size: 16px;
     max-width: 400px;
-    animation: fadeInText 1s ease-out 0.5s forwards;
     opacity: 0;
+    animation: fadeInText 1.5s ease-out 1s forwards;
   }
   
   @keyframes fadeInText {
