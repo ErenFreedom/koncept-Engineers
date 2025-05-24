@@ -1,11 +1,10 @@
 import React, { useState } from "react";
 import "./HierarchySidebar.css";
 
-const HierarchySidebar = () => {
+const HierarchySidebar = ({ onToggleBuilding, onToggleFloor }) => {
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
 
-  
   const sites = [
     {
       id: 1,
@@ -37,14 +36,19 @@ const HierarchySidebar = () => {
   ];
 
   const toggleSite = (siteId) => {
-    setExpandedSite(expandedSite === siteId ? null : siteId);
+    const isExpanding = expandedSite !== siteId;
+    setExpandedSite(isExpanding ? siteId : null);
+    if (isExpanding && onToggleBuilding) onToggleBuilding();
   };
 
   const toggleFloor = (siteId, floorId) => {
+    const key = `${siteId}-${floorId}`;
+    const isExpanding = !expandedFloor[key];
     setExpandedFloor((prev) => ({
       ...prev,
-      [`${siteId}-${floorId}`]: !prev[`${siteId}-${floorId}`],
+      [key]: isExpanding,
     }));
+    if (isExpanding && onToggleFloor) onToggleFloor();
   };
 
   return (
