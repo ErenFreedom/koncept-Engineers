@@ -12,11 +12,7 @@
   
   .placeholder-image {
     width: 160px;
-    height: 200px;
-    background-image: url("/building-silhouette.png");
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
+    height: auto;
     opacity: 0;
     transform: translateY(20px);
     animation: fadeSlideUp 1.6s ease-out forwards;
@@ -29,6 +25,7 @@
       transform: translateY(0);
     }
   }
+  
   
   .placeholder-text {
     color: #999;
