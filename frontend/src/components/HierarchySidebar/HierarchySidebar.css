@@ -1,0 +1,60 @@
+.hierarchy-sidebar {
+    width: 250px;
+    background-color: #111;
+    color: #f0f0f0;
+    padding: 15px;
+    overflow-y: auto;
+    height: calc(100vh - 60px); /* assuming header is 60px */
+    border-right: 1px solid #222;
+  }
+  
+  .sidebar-heading {
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #fff;
+  }
+  
+  .site-name,
+  .floor-name {
+    padding: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1a1a1a;
+    margin-bottom: 4px;
+    border-radius: 4px;
+  }
+  
+  .site-name:hover,
+  .floor-name:hover {
+    background-color: #333;
+  }
+  
+  .room-list {
+    margin-left: 15px;
+    margin-top: 4px;
+    list-style: none;
+    padding-left: 10px;
+  }
+  
+  .room-name {
+    font-size: 14px;
+    padding: 4px 0;
+    color: #ccc;
+  }
+  
+  .add-btn {
+    background: none;
+    border: none;
+    color: #0f0;
+    font-size: 16px;
+    cursor: pointer;
+    margin-left: 6px;
+  }
+  
+  .add-btn:hover {
+    color: #5f5;
+  }
+  

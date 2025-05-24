@@ -1,50 +1,29 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import axios from "axios";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
+import HierarchySidebar from "../../components/HierarchySidebar/HierarchySidebar";
+import { useAuth } from "../../context/AuthContext";
 import "./Dashboard.css";
-import { useAuth } from "../../context/AuthContext"; 
 
 const Dashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { admin, accessToken, logout } = useAuth(); 
-  const [sensors, setSensors] = useState([]);
-
-  const fetchSensorData = async () => {
-    try {
-      const res = await axios.get(
-        "http://ec2-98-84-241-148.compute-1.amazonaws.com:3001/api/dashboard/sensors",
-        {
-          headers: { Authorization: `Bearer ${accessToken}` },
-        }
-      );
-      setSensors(res.data.sensors || []);
-    } catch (err) {
-      console.error("❌ Failed to fetch sensors:", err.response?.data || err.message);
-    }
-  };
+  const { admin, accessToken, logout } = useAuth();
 
   useEffect(() => {
-    
     if (!admin || !accessToken) {
       toast.error("Session expired. Please log in again.");
       navigate("/AuthAdmin");
       return;
     }
 
-    
     if (admin.id.toString() !== id.toString()) {
       toast.error("Unauthorized access!");
-      logout(); 
+      logout();
       navigate("/AuthAdmin");
       return;
     }
-
-    fetchSensorData();
-    const interval = setInterval(fetchSensorData, 3000);
-    return () => clearInterval(interval);
   }, [admin, accessToken, id, navigate, logout]);
 
   if (!admin) return <p>Loading Dashboard...</p>;
@@ -52,27 +31,14 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <DashboardHeader />
-      <div className="dashboard-heading">
-        <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
-      </div>
 
-      <div className="sensor-grid-container">
-        {sensors.length > 0 ? (
-          sensors.map((sensor, index) => (
-            <div className="sensor-card" key={index}>
-              <div className="sensor-header">
-                <h3>{sensor.name}</h3>
-                <span className="green-dot" title="Active"></span>
-              </div>
-              <p><strong>Value:</strong> {sensor.value ?? "N/A"}</p>
-              <p><strong>Quality:</strong> {sensor.quality ?? "N/A"}</p>
-              <p><strong>Good?</strong> {sensor.quality_good === 1 ? "Yes" : "No"}</p>
-              <p><strong>Timestamp:</strong> {sensor.timestamp ?? "N/A"}</p>
-            </div>
-          ))
-        ) : (
-          <p style={{ textAlign: "center", marginTop: "20px" }}>No active sensors found.</p>
-        )}
+      <div className="dashboard-body">
+        <HierarchySidebar />
+
+        <div className="dashboard-main-content">
+          <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
+          <p>Select a room to view sensor data 📟</p>
+        </div>
       </div>
     </div>
   );
