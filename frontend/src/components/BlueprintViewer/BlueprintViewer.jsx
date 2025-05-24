@@ -3,31 +3,27 @@ import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import "./BlueprintViewer.css";
 
-// Placeholder building model made of stacked boxes
 const PlaceholderBuilding = () => {
-  const floors = 6;
-  const boxes = [];
-  for (let i = 0; i < floors; i++) {
-    boxes.push(
-      <mesh key={i} position={[0, i * 1.1, 0]}>
-        <boxGeometry args={[2, 1, 2]} />
-        <meshStandardMaterial color={i % 2 === 0 ? "#cccccc" : "#aaaaaa"} />
-      </mesh>
-    );
-  }
-  return <group>{boxes}</group>;
+  const floors = Array.from({ length: 10 }, (_, i) => (
+    <mesh key={i} position={[0, i * 2, 0]}>
+      <boxGeometry args={[4, 2, 4]} />
+      <meshStandardMaterial color={i % 2 === 0 ? "#d0d0d0" : "#a0c4ff"} />
+    </mesh>
+  ));
+
+  return <group>{floors}</group>;
 };
 
 const BlueprintViewer = () => {
   return (
     <div className="blueprint-wrapper">
-      <Canvas camera={{ position: [0, 4, 10], fov: 50 }}>
-        <ambientLight intensity={1.2} />
-        <directionalLight position={[5, 10, 5]} intensity={1.5} />
+      <Canvas camera={{ position: [0, 12, 25], fov: 40 }}>
+        <ambientLight intensity={1.5} />
+        <directionalLight position={[10, 20, 10]} intensity={1.5} />
         <Suspense fallback={null}>
           <PlaceholderBuilding />
         </Suspense>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1.5} />
+        <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={1} />
       </Canvas>
       <p className="blueprint-label">Koncept Blueprint Building</p>
     </div>
