@@ -12,13 +12,23 @@
   }
   
   .placeholder-image {
-    height: 70%;               /* Use 70% of the container height */
+    height: 75%;
     width: auto;
-    filter: grayscale(100%) brightness(0.6); /* start greyish */
-    animation: imageGlow 4s ease-in-out forwards;
+    filter: grayscale(100%) brightness(0.6);
+    animation: imageGlow 4s ease-in-out forwards, rotateImage 30s linear infinite;
     margin-bottom: 24px;
     transition: transform 0.3s ease;
   }
+  
+  @keyframes rotateImage {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
   
   .placeholder-image:hover {
     transform: scale(1.02);
