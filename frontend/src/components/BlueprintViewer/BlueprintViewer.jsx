@@ -9,19 +9,21 @@ const BuildingModel = () => {
 };
 
 const BlueprintViewer = () => {
-  return (
-    <div className="blueprint-wrapper">
-      <Canvas camera={{ position: [0, 1.5, 4], fov: 40 }}>
-        <ambientLight intensity={0.8} />
-        <directionalLight position={[2, 5, 2]} />
-        <Suspense fallback={null}>
-          <BuildingModel />
-        </Suspense>
-        <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1} />
-      </Canvas>
-      <p className="blueprint-label">Koncept Blueprint Building</p>
-    </div>
-  );
-};
+    return (
+      <div className="blueprint-wrapper">
+        <Canvas camera={{ position: [0, 1.5, 4], fov: 40 }}>
+          <mesh>
+            <boxGeometry args={[1, 1, 1]} />
+            <meshStandardMaterial color="skyblue" />
+          </mesh>
+          <ambientLight intensity={1.5} />
+          <directionalLight position={[5, 10, 5]} />
+          <OrbitControls enableZoom={false} autoRotate autoRotateSpeed={1} />
+        </Canvas>
+        <p className="blueprint-label">Koncept Blueprint Building</p>
+      </div>
+    );
+  };
+  
 
 export default BlueprintViewer;
