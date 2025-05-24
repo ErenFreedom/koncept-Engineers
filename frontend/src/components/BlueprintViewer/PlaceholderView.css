@@ -12,13 +12,16 @@
   }
   
   .placeholder-image {
-    height: 75%;
+    height: 70%;
     width: auto;
     filter: grayscale(100%) brightness(0.6);
-    animation: imageGlow 4s ease-in-out forwards, rotateImage 30s linear infinite;
+    animation: imageGlow 4s ease-in-out forwards, tilt3D 6s ease-in-out infinite alternate;
     margin-bottom: 24px;
     transition: transform 0.3s ease;
+    transform-style: preserve-3d;
+    backface-visibility: hidden;
   }
+  
   
   @keyframes rotateImage {
     from {
@@ -26,6 +29,18 @@
     }
     to {
       transform: rotate(360deg);
+    }
+  }
+  
+  @keyframes tilt3D {
+    0% {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+    50% {
+      transform: rotateX(10deg) rotateY(-10deg);
+    }
+    100% {
+      transform: rotateX(-10deg) rotateY(10deg);
     }
   }
   
