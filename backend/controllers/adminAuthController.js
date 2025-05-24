@@ -112,9 +112,12 @@ const verifyAdminLoginOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
+    // ✅ Fetch admin + company name
     const [[admin]] = await db.execute(
-      `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
-       FROM Admin WHERE email = ? OR phone_number = ?`,
+      `SELECT a.id, a.first_name, a.last_name, a.phone_number, a.email, a.company_id, a.nationality, c.name AS company_name
+       FROM Admin a
+       JOIN Company c ON a.company_id = c.id
+       WHERE a.email = ? OR a.phone_number = ?`,
       [identifier, identifier]
     );
 
@@ -130,6 +133,7 @@ const verifyAdminLoginOtp = async (req, res) => {
         phoneNumber: admin.phone_number,
         email: admin.email,
         companyId: admin.company_id,
+        companyName: admin.company_name, // ✅ new field
         nationality: admin.nationality
       },
       process.env.JWT_SECRET,
@@ -148,7 +152,8 @@ const verifyAdminLoginOtp = async (req, res) => {
     });
 
     const sessionId = uuidv4();
-    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000; // 30 days
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+
     await redisClient.set(
       `admin:${admin.id}:${sessionId}`,
       JSON.stringify({
@@ -166,7 +171,7 @@ const verifyAdminLoginOtp = async (req, res) => {
     res.status(200).json({
       message: "Login successful",
       accessToken,
-      sessionId, // ✅ Send session ID to client
+      sessionId,
       admin: {
         id: admin.id,
         firstName: admin.first_name,
@@ -174,6 +179,7 @@ const verifyAdminLoginOtp = async (req, res) => {
         phoneNumber: admin.phone_number,
         email: admin.email,
         companyId: admin.company_id,
+        companyName: admin.company_name, // ✅ new field
         nationality: admin.nationality
       }
     });
@@ -187,15 +193,18 @@ const verifyAdminLoginOtp = async (req, res) => {
 
 
 
+
 const refreshAdminToken = async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
-    if (!refreshToken)
+    if (!refreshToken) {
       return res.status(401).json({ message: "Unauthorized" });
+    }
 
     jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
-      if (err)
+      if (err) {
         return res.status(403).json({ message: "Forbidden (invalid token)" });
+      }
 
       const adminId = decoded.adminId;
       const sessionKeys = await redisClient.keys(`admin:${adminId}:*`);
@@ -217,14 +226,18 @@ const refreshAdminToken = async (req, res) => {
         return res.status(401).json({ message: "Session expired or invalidated" });
       }
 
+      // ✅ Fetch admin with company name
       const [[admin]] = await db.execute(
-        `SELECT id, first_name, last_name, phone_number, email, company_id, nationality 
-         FROM Admin WHERE id = ?`,
+        `SELECT a.id, a.first_name, a.last_name, a.phone_number, a.email, a.company_id, a.nationality, c.name AS company_name
+         FROM Admin a
+         JOIN Company c ON a.company_id = c.id
+         WHERE a.id = ?`,
         [adminId]
       );
 
-      if (!admin)
+      if (!admin) {
         return res.status(404).json({ message: "Admin not found" });
+      }
 
       const newAccessToken = jwt.sign(
         {
@@ -234,6 +247,7 @@ const refreshAdminToken = async (req, res) => {
           phoneNumber: admin.phone_number,
           email: admin.email,
           companyId: admin.company_id,
+          companyName: admin.company_name, // ✅ included here
           nationality: admin.nationality,
         },
         process.env.JWT_SECRET,
@@ -249,6 +263,7 @@ const refreshAdminToken = async (req, res) => {
           phoneNumber: admin.phone_number,
           email: admin.email,
           companyId: admin.company_id,
+          companyName: admin.company_name, // ✅ included here
           nationality: admin.nationality,
         },
       });
@@ -258,6 +273,7 @@ const refreshAdminToken = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
   
 const resendAdminLoginOtp = async (req, res) => {

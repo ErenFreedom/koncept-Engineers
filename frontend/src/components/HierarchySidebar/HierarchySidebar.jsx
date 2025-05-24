@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { getFloors, addFloor } from "../../api/floor";
 import { addRoom } from "../../api/room";
+import { useAuth } from "../../context/AuthContext";
 import ModalInput from "../ModalInput/ModalInput";
 import "./HierarchySidebar.css";
 
 const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
+  const { admin } = useAuth();
+
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
   const [floors, setFloors] = useState([]);
@@ -78,7 +81,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
 
       <div className="site-block">
         <div className="site-name" onClick={() => toggleSite(1)}>
-          ▸ Site Alpha
+          ▸ {admin?.companyName || "Your Site"}
           <button
             className="add-btn"
             title="Add Floor"
@@ -90,6 +93,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
             ＋
           </button>
         </div>
+
 
         {expandedSite === 1 && (
           <div className="floor-list">
