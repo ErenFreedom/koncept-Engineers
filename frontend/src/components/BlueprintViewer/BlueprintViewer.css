@@ -1,7 +1,7 @@
 .blueprint-wrapper {
     width: 100%;
-    max-width: 800px;
-    height: 400px;
+    max-width: 1000px;         /* You can increase width if desired */
+    height: 70vh;              /* Make it 70% of viewport height */
     background-color: #0a0a0a;
     border-radius: 12px;
     margin: 30px auto;
