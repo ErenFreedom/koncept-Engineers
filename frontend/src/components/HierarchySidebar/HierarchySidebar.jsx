@@ -3,6 +3,7 @@ import { getFloors, addFloor } from "../../api/floor";
 import { addRoom } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import ModalInput from "../ModalInput/ModalInput";
+import { toast } from "react-toastify";
 import "./HierarchySidebar.css";
 
 const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
@@ -27,7 +28,8 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
         const fetched = await getFloors(token);
         setFloors(fetched || []);
       } catch (err) {
-        console.error("Failed to load floors:", err.message);
+        toast.error("Failed to load floors");
+        console.error("Error loading floors:", err.message);
       } finally {
         setLoading(false);
       }
@@ -60,8 +62,9 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
       await addFloor(name, token);
       const updated = await getFloors(token);
       setFloors(updated || []);
+      toast.success(`✅ Floor "${name}" added`);
     } catch (err) {
-      alert("❌ Failed to add floor");
+      toast.error("❌ Failed to add floor");
     }
   };
 
@@ -69,9 +72,9 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
     if (!activeFloorId) return;
     try {
       await addRoom(activeFloorId, name, token);
-      alert(`Room "${name}" added to Floor ${activeFloorId}`);
+      toast.success(`✅ Room "${name}" added to Floor ${activeFloorId}`);
     } catch (err) {
-      alert("❌ Failed to add room");
+      toast.error("❌ Failed to add room");
     }
   };
 
@@ -93,7 +96,6 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
             ＋
           </button>
         </div>
-
 
         {expandedSite === 1 && (
           <div className="floor-list">
