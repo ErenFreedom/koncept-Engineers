@@ -1,6 +1,6 @@
 .blueprint-wrapper {
     width: 100%;
-    height: 600px;
+    height: 500px; /* ✅ Ensure fixed height */
     background-color: #0a0a0a;
     border-radius: 12px;
     margin: 40px auto;
@@ -14,11 +14,5 @@
     width: 100% !important;
     height: 100% !important;
     border-radius: 12px;
-  }
-  
-  .blueprint-label {
-    color: #00ffff;
-    margin-top: 10px;
-    font-family: monospace;
   }
   
