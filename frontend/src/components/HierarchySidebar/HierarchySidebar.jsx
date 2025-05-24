@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { getFloors, addFloor } from "../../api/floor";
-import { addRoom } from "../../api/room";
+import { getRooms, addRoom } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import ModalInput from "../ModalInput/ModalInput";
 import { toast } from "react-toastify";
@@ -12,6 +12,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
   const [floors, setFloors] = useState([]);
+  const [roomsByFloor, setRoomsByFloor] = useState({});
   const [loading, setLoading] = useState(false);
   const [activeFloorId, setActiveFloorId] = useState(null);
 
@@ -20,22 +21,33 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
 
   const token = localStorage.getItem("accessToken");
 
-  useEffect(() => {
+  const loadFloorsAndRooms = async () => {
     if (!token) return;
-    const fetchFloors = async () => {
-      try {
-        setLoading(true);
-        const fetched = await getFloors(token);
-        setFloors(fetched || []);
-      } catch (err) {
-        toast.error("Failed to load floors");
-        console.error("Error loading floors:", err.message);
-      } finally {
-        setLoading(false);
-      }
-    };
+    try {
+      setLoading(true);
 
-    fetchFloors();
+      const fetchedFloors = await getFloors(token);
+      setFloors(fetchedFloors || []);
+
+      const fetchedRooms = await getRooms(token);
+      const grouped = {};
+
+      fetchedRooms.forEach((room) => {
+        if (!grouped[room.floor_id]) grouped[room.floor_id] = [];
+        grouped[room.floor_id].push(room);
+      });
+
+      setRoomsByFloor(grouped);
+    } catch (err) {
+      toast.error("❌ Failed to load floors or rooms");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadFloorsAndRooms();
   }, [token]);
 
   const toggleSite = (siteId) => {
@@ -60,8 +72,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
   const handleFloorSubmit = async (name) => {
     try {
       await addFloor(name, token);
-      const updated = await getFloors(token);
-      setFloors(updated || []);
+      await loadFloorsAndRooms();
       toast.success(`✅ Floor "${name}" added`);
     } catch (err) {
       toast.error("❌ Failed to add floor");
@@ -72,6 +83,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
     if (!activeFloorId) return;
     try {
       await addRoom(activeFloorId, name, token);
+      await loadFloorsAndRooms();
       toast.success(`✅ Room "${name}" added to Floor ${activeFloorId}`);
     } catch (err) {
       toast.error("❌ Failed to add room");
@@ -118,9 +130,18 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
                       ＋
                     </button>
                   </div>
+
                   {expandedFloor[`1-${floor.id}`] && (
                     <ul className="room-list">
-                      <li className="room-name">No rooms yet</li>
+                      {(roomsByFloor[floor.id] || []).length > 0 ? (
+                        roomsByFloor[floor.id].map((room) => (
+                          <li key={room.id} className="room-name">
+                            • {room.name}
+                          </li>
+                        ))
+                      ) : (
+                        <li className="room-name">No rooms yet</li>
+                      )}
                     </ul>
                   )}
                 </div>
