@@ -1,27 +1,28 @@
 import React, { Suspense } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
+import { OrbitControls, useGLTF } from "@react-three/drei";
 import "./BlueprintViewer.css";
 
-const PlaceholderBuilding = () => {
-  const floors = Array.from({ length: 10 }, (_, i) => (
-    <mesh key={i} position={[0, i * 2, 0]}>
-      <boxGeometry args={[4, 2, 4]} />
-      <meshStandardMaterial color={i % 2 === 0 ? "#d0d0d0" : "#a0c4ff"} />
-    </mesh>
-  ));
-
-  return <group>{floors}</group>;
+// Load and render GLB model
+const BuildingModel = () => {
+  const { scene } = useGLTF("/building.glb"); 
+  return (
+    <group scale={[0.8, 0.8, 0.8]} position={[0, -4, 0]}>
+      <primitive object={scene} />
+    </group>
+  );
 };
+
+useGLTF.preload("/building.glb");
 
 const BlueprintViewer = () => {
   return (
     <div className="blueprint-wrapper">
-      <Canvas camera={{ position: [0, 12, 25], fov: 40 }}>
-        <ambientLight intensity={1.5} />
-        <directionalLight position={[10, 20, 10]} intensity={1.5} />
+      <Canvas camera={{ position: [0, 10, 20], fov: 40 }}>
+        <ambientLight intensity={1.2} />
+        <directionalLight position={[10, 15, 10]} intensity={1.2} />
         <Suspense fallback={null}>
-          <PlaceholderBuilding />
+          <BuildingModel />
         </Suspense>
         <OrbitControls enableZoom={true} autoRotate autoRotateSpeed={1} />
       </Canvas>
