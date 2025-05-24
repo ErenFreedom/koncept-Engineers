@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { getFloors, addFloor } from "../../api/floor"; 
-import { addRoom } from "../../api/room"; 
+import { getFloors, addFloor } from "../../api/floor";
+import { addRoom } from "../../api/room";
+import ModalInput from "../ModalInput/ModalInput";
 import "./HierarchySidebar.css";
 
 const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
@@ -8,11 +9,13 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
   const [expandedFloor, setExpandedFloor] = useState({});
   const [floors, setFloors] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeFloorId, setActiveFloorId] = useState(null); 
+  const [activeFloorId, setActiveFloorId] = useState(null);
+
+  const [showFloorModal, setShowFloorModal] = useState(false);
+  const [showRoomModal, setShowRoomModal] = useState(false);
 
   const token = localStorage.getItem("accessToken");
 
-  
   useEffect(() => {
     if (!token) return;
     const fetchFloors = async () => {
@@ -49,31 +52,23 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
     }
   };
 
-  const handleAddFloor = async () => {
-    const name = prompt("Enter floor name:");
-    if (!name) return;
-
+  const handleFloorSubmit = async (name) => {
     try {
       await addFloor(name, token);
       const updated = await getFloors(token);
       setFloors(updated || []);
     } catch (err) {
-      console.error("Failed to add floor:", err.message);
-      alert("❌ Could not add floor");
+      alert("❌ Failed to add floor");
     }
   };
 
-  const handleAddRoom = async () => {
-    const name = prompt("Enter room name:");
-    if (!name || !activeFloorId) return;
-
+  const handleRoomSubmit = async (name) => {
+    if (!activeFloorId) return;
     try {
       await addRoom(activeFloorId, name, token);
       alert(`Room "${name}" added to Floor ${activeFloorId}`);
-      // TODO: Reload rooms if displaying them
     } catch (err) {
-      console.error("Failed to add room:", err.message);
-      alert("❌ Could not add room");
+      alert("❌ Failed to add room");
     }
   };
 
@@ -84,7 +79,16 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
       <div className="site-block">
         <div className="site-name" onClick={() => toggleSite(1)}>
           ▸ Site Alpha
-          <button className="add-btn" title="Add Floor" onClick={handleAddFloor}>＋</button>
+          <button
+            className="add-btn"
+            title="Add Floor"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowFloorModal(true);
+            }}
+          >
+            ＋
+          </button>
         </div>
 
         {expandedSite === 1 && (
@@ -101,7 +105,8 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
                       title="Add Room"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleAddRoom();
+                        setActiveFloorId(floor.id);
+                        setShowRoomModal(true);
                       }}
                     >
                       ＋
@@ -118,6 +123,25 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
           </div>
         )}
       </div>
+
+      {/* Modals */}
+      {showFloorModal && (
+        <ModalInput
+          title="Add New Floor"
+          placeholder="Floor name"
+          onClose={() => setShowFloorModal(false)}
+          onSubmit={handleFloorSubmit}
+        />
+      )}
+
+      {showRoomModal && (
+        <ModalInput
+          title="Add New Room"
+          placeholder="Room name"
+          onClose={() => setShowRoomModal(false)}
+          onSubmit={handleRoomSubmit}
+        />
+      )}
     </div>
   );
 };
