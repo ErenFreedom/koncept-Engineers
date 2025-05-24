@@ -1,18 +1,24 @@
 .blueprint-wrapper {
     width: 100%;
-    height: 500px; /* ✅ Ensure fixed height */
-    background-color: #0a0a0a;
-    border-radius: 12px;
+    max-width: 900px;
+    height: 500px;               /* <== Ensure fixed height */
     margin: 40px auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    background-color: #111;
+    border-radius: 12px;
+    position: relative;
   }
   
   canvas {
     width: 100% !important;
     height: 100% !important;
-    border-radius: 12px;
+  }
+  
+  .blueprint-label {
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    color: #00ffff;
+    font-family: monospace;
+    font-size: 0.9rem;
   }
   

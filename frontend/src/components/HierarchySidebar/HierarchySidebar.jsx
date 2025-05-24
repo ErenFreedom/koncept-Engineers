@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./HierarchySidebar.css";
 
-const HierarchySidebar = ({ onToggleBuilding, onToggleFloor }) => {
+const HierarchySidebar = () => {
   const [expandedSite, setExpandedSite] = useState(null);
   const [expandedFloor, setExpandedFloor] = useState({});
 
@@ -38,17 +38,14 @@ const HierarchySidebar = ({ onToggleBuilding, onToggleFloor }) => {
   const toggleSite = (siteId) => {
     const isExpanding = expandedSite !== siteId;
     setExpandedSite(isExpanding ? siteId : null);
-    if (isExpanding && onToggleBuilding) onToggleBuilding();
   };
 
   const toggleFloor = (siteId, floorId) => {
     const key = `${siteId}-${floorId}`;
-    const isExpanding = !expandedFloor[key];
     setExpandedFloor((prev) => ({
       ...prev,
-      [key]: isExpanding,
+      [key]: !prev[key],
     }));
-    if (isExpanding && onToggleFloor) onToggleFloor();
   };
 
   return (

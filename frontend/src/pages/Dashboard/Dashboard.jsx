@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
@@ -11,9 +11,6 @@ const Dashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { admin, accessToken, logout } = useAuth();
-
-  const [showModel, setShowModel] = useState(false);
-  const [zoomToFloor, setZoomToFloor] = useState(false);
 
   useEffect(() => {
     if (!admin || !accessToken) {
@@ -35,22 +32,15 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <DashboardHeader />
+
       <div className="dashboard-body">
-        <HierarchySidebar
-          onToggleBuilding={() => {
-            setShowModel(true);
-            setZoomToFloor(false);
-          }}
-          onToggleFloor={() => {
-            setShowModel(true);
-            setZoomToFloor(true);
-          }}
-        />
+        <HierarchySidebar />
         <div className="dashboard-main-content">
           <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
           <p>Select a room to view sensor data 📟</p>
 
-          <BlueprintViewer show={showModel} zoomToFloor={zoomToFloor} />
+          {/* Model always visible */}
+          <BlueprintViewer />
         </div>
       </div>
     </div>
