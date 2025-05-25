@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getSensors, assignSensorToRoom } from "../../api/sensor";
+import { getRooms } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
 import "./RoomOverlay.css";
@@ -7,19 +8,24 @@ import "./RoomOverlay.css";
 const RoomOverlay = ({ room, onClose }) => {
   const { accessToken } = useAuth();
   const [sensors, setSensors] = useState([]);
+  const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
-    const fetchSensors = async () => {
+    const fetchData = async () => {
       try {
-        const fetched = await getSensors(accessToken);
-        setSensors(fetched || []);
+        const [sensorsFetched, roomsFetched] = await Promise.all([
+          getSensors(accessToken),
+          getRooms(accessToken),
+        ]);
+        setSensors(sensorsFetched || []);
+        setRooms(roomsFetched || []);
       } catch (err) {
-        toast.error("❌ Failed to load sensors");
+        toast.error("❌ Failed to load sensors or rooms");
       }
     };
 
     if (room && accessToken) {
-      fetchSensors();
+      fetchData();
     }
   }, [room, accessToken]);
 
@@ -37,6 +43,11 @@ const RoomOverlay = ({ room, onClose }) => {
     }
   };
 
+  const getRoomName = (roomId) => {
+    const match = rooms.find((r) => r.id === roomId);
+    return match ? match.name : "Unknown Room";
+  };
+
   if (!room) return null;
 
   return (
@@ -51,6 +62,11 @@ const RoomOverlay = ({ room, onClose }) => {
           {sensors.map((sensor) => (
             <div key={sensor.id} className="sensor-row">
               <span className="sensor-name">{sensor.name}</span>
+              {sensor.room_id && (
+                <span className="sensor-assigned-room">
+                  • Assigned to: {getRoomName(sensor.room_id)}
+                </span>
+              )}
               <button
                 className={`sensor-assign-btn ${sensor.room_id ? "disabled" : ""}`}
                 onClick={() => !sensor.room_id && handleAssign(sensor.id)}
