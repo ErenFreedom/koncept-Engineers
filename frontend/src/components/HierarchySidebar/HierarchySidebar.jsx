@@ -135,9 +135,14 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
                     <ul className="room-list">
                       {(roomsByFloor[floor.id] || []).length > 0 ? (
                         roomsByFloor[floor.id].map((room) => (
-                          <li key={room.id} className="room-name">
+                          <li
+                            key={room.id}
+                            className="room-name"
+                            onClick={() => onRoomSelect && onRoomSelect(room)}
+                          >
                             • {room.name}
                           </li>
+
                         ))
                       ) : (
                         <li className="room-name">No rooms yet</li>
@@ -151,7 +156,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
         )}
       </div>
 
-      {/* Modals */}
+      
       {showFloorModal && (
         <ModalInput
           title="Add New Floor"

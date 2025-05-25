@@ -58,3 +58,11 @@
     color: #5f5;
   }
   
+  .room-name {
+    cursor: pointer;
+  }
+  
+  .room-name:hover {
+    color: #0f0;
+  }
+  

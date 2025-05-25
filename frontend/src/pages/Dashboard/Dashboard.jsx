@@ -5,6 +5,7 @@ import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 import HierarchySidebar from "../../components/HierarchySidebar/HierarchySidebar";
 import BlueprintViewer from "../../components/BlueprintViewer/BlueprintViewer";
 import PlaceholderView from "../../components/BlueprintViewer/PlaceholderView";
+import RoomOverlay from "../../components/RoomOverlay/RoomOverlay";
 import { useAuth } from "../../context/AuthContext";
 import "./Dashboard.css";
 
@@ -14,7 +15,8 @@ const Dashboard = () => {
   const { admin, accessToken, logout } = useAuth();
 
   const [selectedSiteId, setSelectedSiteId] = useState(null);
-  const [focusedFloor, setFocusedFloor] = useState(null); // new state for zooming
+  const [focusedFloor, setFocusedFloor] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null); // 🆕 Room selection
 
   useEffect(() => {
     if (!admin || !accessToken) {
@@ -42,7 +44,9 @@ const Dashboard = () => {
           onFloorExpand={(floorId) =>
             setFocusedFloor({ zoomDistance: 1.5, fov: 35, floor: floorId })
           }
+          onRoomSelect={setSelectedRoom} // 🆕 room click handler
         />
+
         <div className="dashboard-main-content">
           <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
           <p>Select a room to view sensor data 📟</p>
@@ -55,6 +59,11 @@ const Dashboard = () => {
             )}
           </div>
         </div>
+
+        {/* Room Overlay */}
+        {selectedRoom && (
+          <RoomOverlay room={selectedRoom} onClose={() => setSelectedRoom(null)} />
+        )}
       </div>
     </div>
   );
