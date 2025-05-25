@@ -77,6 +77,10 @@
   animation: pulse 1s infinite;
 }
 
+.dashboard-main-content {
+  position: relative; /* required to position RoomOverlay */
+}
+
 /* Pulse animation for active sensor dot */
 @keyframes pulse {
   0% {

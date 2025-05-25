@@ -5,14 +5,15 @@ const RoomOverlay = ({ room, onClose }) => {
   if (!room) return null;
 
   return (
-    <div className="room-overlay">
-      <div className="room-header">
-        <span className="room-title">{room.name}</span>
-        <button className="close-btn" onClick={onClose}>×</button>
-      </div>
-
-      <div className="room-body">
-        <p>Room overlay content coming soon...</p>
+    <div className="room-overlay-container">
+      <div className="room-overlay-content">
+        <div className="room-overlay-header">
+          <h3>{room.name}</h3>
+          <button onClick={onClose} className="close-btn">✕</button>
+        </div>
+        <div className="room-overlay-body">
+          Room overlay content coming soon...
+        </div>
       </div>
     </div>
   );
