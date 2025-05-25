@@ -3,15 +3,17 @@ import { getSensors, assignSensorToRoom } from "../../api/sensor";
 import { getRooms } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
+import axios from "axios";
 import "./RoomOverlay.css";
 
 const RoomOverlay = ({ room, onClose }) => {
   const { accessToken } = useAuth();
   const [sensors, setSensors] = useState([]);
   const [rooms, setRooms] = useState([]);
+  const [liveData, setLiveData] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchInitial = async () => {
       try {
         const [sensorsFetched, roomsFetched] = await Promise.all([
           getSensors(accessToken),
@@ -24,8 +26,23 @@ const RoomOverlay = ({ room, onClose }) => {
       }
     };
 
+    const fetchLiveSensorData = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_BASE_URL}/api/dashboard/sensors`,
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        setLiveData(res.data.sensors || []);
+      } catch (err) {
+        console.error("Live sensor fetch failed:", err.message);
+      }
+    };
+
     if (room && accessToken) {
-      fetchData();
+      fetchInitial();
+      fetchLiveSensorData();
+      const interval = setInterval(fetchLiveSensorData, 5000); // every 5 sec
+      return () => clearInterval(interval);
     }
   }, [room, accessToken]);
 
@@ -34,9 +51,7 @@ const RoomOverlay = ({ room, onClose }) => {
       await assignSensorToRoom(sensorId, room.id, accessToken);
       toast.success("✅ Sensor assigned successfully!");
       setSensors((prev) =>
-        prev.map((s) =>
-          s.id === sensorId ? { ...s, room_id: room.id } : s
-        )
+        prev.map((s) => (s.id === sensorId ? { ...s, room_id: room.id } : s))
       );
     } catch (err) {
       toast.error("❌ Failed to assign sensor");
@@ -47,6 +62,14 @@ const RoomOverlay = ({ room, onClose }) => {
     const match = rooms.find((r) => r.id === roomId);
     return match ? match.name : "Unknown Room";
   };
+
+  const roomSensors = sensors
+    .filter((s) => s.room_id === room.id)
+    .map((s) => s.name);
+
+  const activeRoomSensorData = liveData.filter((d) =>
+    roomSensors.includes(d.name)
+  );
 
   if (!room) return null;
 
@@ -73,13 +96,37 @@ const RoomOverlay = ({ room, onClose }) => {
                 className={`sensor-assign-btn ${sensor.room_id ? "disabled" : ""}`}
                 onClick={() => !sensor.room_id && handleAssign(sensor.id)}
                 disabled={!!sensor.room_id}
-                title={sensor.room_id ? "Already assigned" : "Assign to room"}
               >
                 {sensor.room_id ? "Assigned" : "Add"}
               </button>
             </div>
           ))}
         </div>
+
+        {activeRoomSensorData.length > 0 && (
+          <>
+            <h3 className="sensor-data-heading">Live Sensor Data</h3>
+            <div className="sensor-card-grid">
+              {activeRoomSensorData.map((sensor) => (
+                <div key={sensor.bank_id} className="sensor-card">
+                  <div className="sensor-card-header">
+                    <span className="sensor-name-text">{sensor.name}</span>
+                    <span className="live-dot" />
+                  </div>
+                  <div className="sensor-meta">
+                    <strong>Value:</strong> {sensor.value}
+                  </div>
+                  <div className="sensor-meta">
+                    <strong>Quality:</strong> {sensor.quality}
+                  </div>
+                  <div className="sensor-meta">
+                    <strong>Timestamp:</strong> {sensor.timestamp}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
