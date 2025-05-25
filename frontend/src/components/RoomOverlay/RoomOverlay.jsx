@@ -41,7 +41,7 @@ const RoomOverlay = ({ room, onClose }) => {
     if (room && accessToken) {
       fetchInitial();
       fetchLiveSensorData();
-      const interval = setInterval(fetchLiveSensorData, 5000); // every 5 sec
+      const interval = setInterval(fetchLiveSensorData, 5000);
       return () => clearInterval(interval);
     }
   }, [room, accessToken]);
@@ -75,9 +75,24 @@ const RoomOverlay = ({ room, onClose }) => {
 
   return (
     <div className="room-overlay-container">
-      <button className="overlay-close-btn" onClick={onClose}>✕</button>
+      {/* Sensor Data - Center of screen */}
+      <div className="sensor-card-center-wrapper">
+        {activeRoomSensorData.map((sensor) => (
+          <div key={sensor.bank_id} className="sensor-card-centered">
+            <div className="sensor-card-header">
+              <span className="sensor-name-text">{sensor.name}</span>
+              <span className="live-dot" />
+            </div>
+            <div className="sensor-meta"><strong>Value:</strong> {sensor.value}</div>
+            <div className="sensor-meta"><strong>Quality:</strong> {sensor.quality}</div>
+            <div className="sensor-meta"><strong>Timestamp:</strong> {sensor.timestamp}</div>
+          </div>
+        ))}
+      </div>
 
+      {/* Sensor assignment panel - Right */}
       <div className="room-overlay-panel">
+        <button className="overlay-close-btn" onClick={onClose}>✕</button>
         <h2>{room.name}</h2>
         <p className="room-overlay-subtext">Assign sensors to this room:</p>
 
@@ -102,31 +117,6 @@ const RoomOverlay = ({ room, onClose }) => {
             </div>
           ))}
         </div>
-
-        {activeRoomSensorData.length > 0 && (
-          <>
-            <h3 className="sensor-data-heading">Live Sensor Data</h3>
-            <div className="sensor-card-grid">
-              {activeRoomSensorData.map((sensor) => (
-                <div key={sensor.bank_id} className="sensor-card">
-                  <div className="sensor-card-header">
-                    <span className="sensor-name-text">{sensor.name}</span>
-                    <span className="live-dot" />
-                  </div>
-                  <div className="sensor-meta">
-                    <strong>Value:</strong> {sensor.value}
-                  </div>
-                  <div className="sensor-meta">
-                    <strong>Quality:</strong> {sensor.quality}
-                  </div>
-                  <div className="sensor-meta">
-                    <strong>Timestamp:</strong> {sensor.timestamp}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </>
-        )}
       </div>
     </div>
   );
