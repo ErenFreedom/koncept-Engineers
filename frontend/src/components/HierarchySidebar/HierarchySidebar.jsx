@@ -6,7 +6,7 @@ import ModalInput from "../ModalInput/ModalInput";
 import { toast } from "react-toastify";
 import "./HierarchySidebar.css";
 
-const HierarchySidebar = ({ onSiteSelect, onFloorExpand }) => {
+const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
   const { admin } = useAuth();
 
   const [expandedSite, setExpandedSite] = useState(null);
