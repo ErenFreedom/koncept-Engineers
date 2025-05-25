@@ -93,18 +93,19 @@
   cursor: not-allowed;
 }
 
-/* --- Live Sensor Cards Center of Screen --- */
 .sensor-card-center-wrapper {
   position: absolute;
   top: 80px;
   left: 50%;
   transform: translateX(-50%);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(2, 1fr);  /* exactly 2 cards per row */
   gap: 20px;
-  width: 75%;
+  width: 70%;
+  max-width: 1000px;
   z-index: 900;
 }
+
 
 /* Each Card */
 .sensor-card-centered {
@@ -113,7 +114,9 @@
   border-radius: 10px;
   padding: 20px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  max-width: 450px;
 }
+
 
 /* Card Header */
 .sensor-card-header {
