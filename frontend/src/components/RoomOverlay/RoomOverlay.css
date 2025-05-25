@@ -18,17 +18,19 @@
   overflow-y: auto;
   box-shadow: -2px 0 6px rgba(0,0,0,0.4);
   color: #fff;
+  position: relative;
 }
 
 .overlay-close-btn {
   position: absolute;
-  top: 20px;
-  right: 340px;
+  top: 15px;
+  left: 20px;
   background: transparent;
   border: none;
   color: #ccc;
   font-size: 22px;
   cursor: pointer;
+  z-index: 10;
 }
 
 .room-overlay-subtext {
@@ -46,15 +48,27 @@
   justify-content: space-between;
   align-items: center;
   background: rgba(255, 255, 255, 0.05);
-  padding: 8px 10px;
-  margin-bottom: 8px;
+  padding: 10px;
+  margin-bottom: 10px;
   border-radius: 6px;
+  gap: 10px;
+}
+
+.sensor-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
 }
 
 .sensor-name {
-  color: #ccc;
+  color: #eee;
   font-size: 14px;
-  flex-grow: 1;
+}
+
+.sensor-assigned-room {
+  font-size: 12px;
+  color: #999;
+  font-style: italic;
 }
 
 .sensor-assign-btn {
@@ -65,6 +79,7 @@
   border: none;
   border-radius: 4px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .sensor-assign-btn.disabled {

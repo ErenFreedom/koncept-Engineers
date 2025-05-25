@@ -61,12 +61,14 @@ const RoomOverlay = ({ room, onClose }) => {
         <div className="sensor-list">
           {sensors.map((sensor) => (
             <div key={sensor.id} className="sensor-row">
-              <span className="sensor-name">{sensor.name}</span>
-              {sensor.room_id && (
-                <span className="sensor-assigned-room">
-                  • Assigned to: {getRoomName(sensor.room_id)}
-                </span>
-              )}
+              <div className="sensor-info">
+                <span className="sensor-name">{sensor.name}</span>
+                {sensor.room_id && (
+                  <span className="sensor-assigned-room">
+                    • Assigned to: {getRoomName(sensor.room_id)}
+                  </span>
+                )}
+              </div>
               <button
                 className={`sensor-assign-btn ${sensor.room_id ? "disabled" : ""}`}
                 onClick={() => !sensor.room_id && handleAssign(sensor.id)}
