@@ -1,3 +1,4 @@
+// RoomOverlay.jsx
 import React from "react";
 import "./RoomOverlay.css";
 
@@ -6,14 +7,10 @@ const RoomOverlay = ({ room, onClose }) => {
 
   return (
     <div className="room-overlay-container">
-      <div className="room-overlay-content">
-        <div className="room-overlay-header">
-          <h3>{room.name}</h3>
-          <button onClick={onClose} className="close-btn">✕</button>
-        </div>
-        <div className="room-overlay-body">
-          Room overlay content coming soon...
-        </div>
+      <button className="overlay-close-btn" onClick={onClose}>✕</button>
+      <div className="room-overlay-centered">
+        <h2>{room.name}</h2>
+        <p className="coming-soon-text">Room overlay content coming soon...</p>
       </div>
     </div>
   );

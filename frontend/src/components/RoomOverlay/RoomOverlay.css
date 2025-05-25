@@ -1,45 +1,39 @@
 .room-overlay-container {
-    position: absolute;
-    top: 60px; /* below header */
-    right: 0;
-    width: 100%;
-    height: calc(100vh - 60px);
-    display: flex;
-    justify-content: flex-end;
-    background: rgba(0, 0, 0, 0.4); /* semi-transparent background */
-    z-index: 1000;
-  }
-  
-  .room-overlay-content {
-    width: 400px;
-    max-width: 35%;
-    height: 100%;
-    background-color: rgba(15, 15, 15, 0.95); /* slightly transparent */
-    color: #fff;
-    padding: 20px;
-    overflow-y: auto;
-    box-shadow: -2px 0 8px rgba(0, 0, 0, 0.6);
-  }
-  
-  .room-overlay-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #333;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-  
-  .close-btn {
-    background: none;
-    border: none;
-    color: #bbb;
-    font-size: 20px;
-    cursor: pointer;
-  }
-  
-  .room-overlay-body {
-    font-size: 14px;
-    color: #ccc;
-  }
-  
+  position: absolute;
+  top: 60px; /* below the dashboard header */
+  right: 0;
+  width: 100%;
+  height: calc(100vh - 60px);
+  background-color: rgba(0, 0, 0, 0.4); /* Transparent dark layer */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.room-overlay-centered {
+  text-align: center;
+  color: #eee;
+  background: rgba(20, 20, 20, 0.85);
+  padding: 40px 60px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+.coming-soon-text {
+  margin-top: 10px;
+  font-size: 14px;
+  color: #bbb;
+  font-style: italic;
+}
+
+.overlay-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 30px;
+  background: transparent;
+  border: none;
+  color: #ccc;
+  font-size: 22px;
+  cursor: pointer;
+}
