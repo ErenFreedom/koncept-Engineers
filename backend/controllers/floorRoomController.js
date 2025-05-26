@@ -28,6 +28,17 @@ const addFloor = async (req, res) => {
   const floorTable = `Floor_${companyId}`;
 
   try {
+    
+    const [existing] = await db.execute(
+      `SELECT id FROM ${floorTable} WHERE name = ?`,
+      [name]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "🚫 Floor with this name already exists." });
+    }
+
+    
     await db.execute(
       `INSERT INTO ${floorTable} (name) VALUES (?)`,
       [name]
@@ -38,6 +49,7 @@ const addFloor = async (req, res) => {
     res.status(500).json({ message: "Failed to add floor", error: err.message });
   }
 };
+
 
 const addRoom = async (req, res) => {
   const { floor_id, name } = req.body;
@@ -51,6 +63,17 @@ const addRoom = async (req, res) => {
   const roomTable = `Room_${companyId}`;
 
   try {
+    
+    const [existing] = await db.execute(
+      `SELECT id FROM ${roomTable} WHERE floor_id = ? AND name = ?`,
+      [floor_id, name]
+    );
+
+    if (existing.length > 0) {
+      return res.status(400).json({ message: "🚫 Room with this name already exists on this floor." });
+    }
+
+    
     await db.execute(
       `INSERT INTO ${roomTable} (floor_id, name) VALUES (?, ?)`,
       [floor_id, name]
@@ -61,6 +84,7 @@ const addRoom = async (req, res) => {
     res.status(500).json({ message: "Failed to add room", error: err.message });
   }
 };
+
 
 const assignSensorToRoom = async (req, res) => {
     const { bank_id, room_id } = req.body;
