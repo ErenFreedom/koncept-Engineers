@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { getFloors, addFloor } from "../../api/floor";
-import { getRooms, addRoom } from "../../api/room";
+import { getFloors, addFloor, deleteFloor } from "../../api/floor";
+import { getRooms, addRoom, deleteRoom } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import ModalInput from "../ModalInput/ModalInput";
 import { toast } from "react-toastify";
@@ -18,6 +18,10 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
 
   const [showFloorModal, setShowFloorModal] = useState(false);
   const [showRoomModal, setShowRoomModal] = useState(false);
+
+  const [confirmDeleteRoom, setConfirmDeleteRoom] = useState(null);
+  const [confirmDeleteFloor, setConfirmDeleteFloor] = useState(null);
+
 
   const token = localStorage.getItem("accessToken");
 
@@ -90,6 +94,29 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
     }
   };
 
+  const handleDeleteRoom = async () => {
+    try {
+      await deleteRoom(confirmDeleteRoom.id, token);
+      toast.success(`🗑️ Room "${confirmDeleteRoom.name}" deleted`);
+      setConfirmDeleteRoom(null);
+      loadFloorsAndRooms();
+    } catch (err) {
+      toast.error("❌ Failed to delete room");
+    }
+  };
+
+  const handleDeleteFloor = async () => {
+    try {
+      await deleteFloor(confirmDeleteFloor.id, token);
+      toast.success(`🗑️ Floor "${confirmDeleteFloor.name}" deleted`);
+      setConfirmDeleteFloor(null);
+      loadFloorsAndRooms();
+    } catch (err) {
+      toast.error("❌ Failed to delete floor");
+    }
+  };
+
+
   return (
     <div className="hierarchy-sidebar">
       <h3 className="sidebar-heading">Building</h3>
@@ -129,21 +156,19 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
                     >
                       ＋
                     </button>
+                    <button className="delete-btn" onClick={(e) => { e.stopPropagation(); setConfirmDeleteFloor(floor); }}>🗑️</button>
                   </div>
 
                   {expandedFloor[`1-${floor.id}`] && (
                     <ul className="room-list">
                       {(roomsByFloor[floor.id] || []).length > 0 ? (
                         roomsByFloor[floor.id].map((room) => (
-                          <li
-                            key={room.id}
-                            className="room-name"
-                            onClick={() => onRoomSelect && onRoomSelect(room)}
-                          >
-                            • {room.name}
+                          <li key={room.id} className="room-name">
+                            <span onClick={() => onRoomSelect && onRoomSelect(room)}>• {room.name}</span>
+                            <button className="delete-btn" onClick={(e) => { e.stopPropagation(); setConfirmDeleteRoom(room); }}>🗑️</button>
                           </li>
-
                         ))
+
                       ) : (
                         <li className="room-name">No rooms yet</li>
                       )}
@@ -156,7 +181,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
         )}
       </div>
 
-      
+
       {showFloorModal && (
         <ModalInput
           title="Add New Floor"
@@ -174,6 +199,31 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
           onSubmit={handleRoomSubmit}
         />
       )}
+
+      {confirmDeleteRoom && (
+        <div className="confirm-modal">
+          <div className="confirm-modal-content">
+            <p>Delete room <strong>{confirmDeleteRoom.name}</strong>?</p>
+            <div className="modal-buttons">
+              <button onClick={handleDeleteRoom} className="modal-confirm">Yes</button>
+              <button onClick={() => setConfirmDeleteRoom(null)} className="modal-cancel">No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmDeleteFloor && (
+        <div className="confirm-modal">
+          <div className="confirm-modal-content">
+            <p>Delete floor <strong>{confirmDeleteFloor.name}</strong>?</p>
+            <div className="modal-buttons">
+              <button onClick={handleDeleteFloor} className="modal-confirm">Yes</button>
+              <button onClick={() => setConfirmDeleteFloor(null)} className="modal-cancel">No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
