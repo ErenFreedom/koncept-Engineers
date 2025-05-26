@@ -79,9 +79,11 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
       await loadFloorsAndRooms();
       toast.success(`✅ Floor "${name}" added`);
     } catch (err) {
-      toast.error("❌ Failed to add floor");
+      const msg = err?.response?.data?.message || "❌ Failed to add floor";
+      toast.error(msg);
     }
   };
+  
 
   const handleRoomSubmit = async (name) => {
     if (!activeFloorId) return;
@@ -90,9 +92,11 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
       await loadFloorsAndRooms();
       toast.success(`✅ Room "${name}" added to Floor ${activeFloorId}`);
     } catch (err) {
-      toast.error("❌ Failed to add room");
+      const msg = err?.response?.data?.message || "❌ Failed to add room";
+      toast.error(msg);
     }
   };
+  
 
   const handleDeleteRoom = async () => {
     try {
