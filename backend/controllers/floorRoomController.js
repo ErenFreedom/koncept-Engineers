@@ -90,4 +90,99 @@ const assignSensorToRoom = async (req, res) => {
     }
   };
 
-module.exports = { addFloor, addRoom, assignSensorToRoom };
+
+  const deleteRoom = async (req, res) => {
+    const { room_id } = req.body;
+    const decoded = decodeToken(req);
+    if (!decoded || !decoded.companyId)
+      return res.status(401).json({ message: "Unauthorized" });
+  
+    const companyId = decoded.companyId;
+    const roomTable = `Room_${companyId}`;
+    const sensorTable = `SensorBank_${companyId}`;
+  
+    try {
+      const [sensors] = await db.execute(
+        `SELECT id FROM ${sensorTable} WHERE room_id = ?`,
+        [room_id]
+      );
+  
+      if (sensors.length > 0) {
+        return res.status(400).json({ message: "Cannot delete room: sensors are still assigned." });
+      }
+  
+      const [result] = await db.execute(`DELETE FROM ${roomTable} WHERE id = ?`, [room_id]);
+  
+      if (result.affectedRows === 0)
+        return res.status(404).json({ message: "Room not found" });
+  
+      res.status(200).json({ message: `✅ Room ${room_id} deleted successfully` });
+    } catch (err) {
+      console.error("❌ Error deleting room:", err.message);
+      res.status(500).json({ message: "Failed to delete room", error: err.message });
+    }
+  };
+
+  const deleteFloor = async (req, res) => {
+    const { floor_id } = req.body;
+    const decoded = decodeToken(req);
+    if (!decoded || !decoded.companyId)
+      return res.status(401).json({ message: "Unauthorized" });
+  
+    const companyId = decoded.companyId;
+    const floorTable = `Floor_${companyId}`;
+    const roomTable = `Room_${companyId}`;
+  
+    try {
+      const [rooms] = await db.execute(
+        `SELECT id FROM ${roomTable} WHERE floor_id = ?`,
+        [floor_id]
+      );
+  
+      if (rooms.length > 0) {
+        return res.status(400).json({ message: "Cannot delete floor: rooms still exist on it." });
+      }
+  
+      const [result] = await db.execute(`DELETE FROM ${floorTable} WHERE id = ?`, [floor_id]);
+  
+      if (result.affectedRows === 0)
+        return res.status(404).json({ message: "Floor not found" });
+  
+      res.status(200).json({ message: `✅ Floor ${floor_id} deleted successfully` });
+    } catch (err) {
+      console.error("❌ Error deleting floor:", err.message);
+      res.status(500).json({ message: "Failed to delete floor", error: err.message });
+    }
+  };
+
+  const unassignSensorFromRoom = async (req, res) => {
+    const { bank_id } = req.body;
+    const decoded = decodeToken(req);
+  
+    if (!decoded || !decoded.companyId) {
+      return res.status(401).json({ message: "Unauthorized or invalid token" });
+    }
+  
+    const companyId = decoded.companyId;
+    const sensorTable = `SensorBank_${companyId}`;
+  
+    try {
+      const [result] = await db.execute(
+        `UPDATE ${sensorTable} SET room_id = NULL WHERE id = ?`,
+        [bank_id]
+      );
+  
+      if (result.affectedRows === 0) {
+        return res.status(404).json({ message: "Sensor not found or already unassigned" });
+      }
+  
+      res.status(200).json({ message: `✅ Sensor ${bank_id} unassigned from room successfully` });
+    } catch (err) {
+      console.error("❌ Failed to unassign sensor:", err.message);
+      res.status(500).json({ message: "Failed to unassign sensor", error: err.message });
+    }
+  };
+  
+  
+  
+module.exports = { addFloor, addRoom, assignSensorToRoom , deleteRoom, deleteFloor, unassignSensorFromRoom};

@@ -18,3 +18,11 @@ export const getRooms = async (token) => {
   });
   return res.data.rooms;
 };
+
+export const deleteRoom = async (roomId, token) => {
+  const res = await axios.delete(`${API}/api/room/delete`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { room_id: roomId }, 
+  });
+  return res.data;
+};

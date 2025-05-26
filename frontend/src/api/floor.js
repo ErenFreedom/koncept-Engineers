@@ -18,3 +18,11 @@ export const addFloor = async (name, token) => {
     }
   );
 };
+
+export const deleteFloor = async (floorId, token) => {
+  const res = await axios.delete(`${API}/api/floor/delete`, {
+    headers: { Authorization: `Bearer ${token}` },
+    data: { floor_id: floorId },
+  });
+  return res.data;
+};

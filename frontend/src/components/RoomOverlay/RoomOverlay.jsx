@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getSensors, assignSensorToRoom } from "../../api/sensor";
+import { getSensors, assignSensorToRoom, unassignSensorFromRoom } from "../../api/sensor";
 import { getRooms } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import { toast } from "react-toastify";
@@ -11,6 +11,8 @@ const RoomOverlay = ({ room, onClose }) => {
   const [sensors, setSensors] = useState([]);
   const [rooms, setRooms] = useState([]);
   const [liveData, setLiveData] = useState([]);
+  const [confirmUnassign, setConfirmUnassign] = useState(null);
+
 
   useEffect(() => {
     const fetchInitial = async () => {
@@ -58,6 +60,24 @@ const RoomOverlay = ({ room, onClose }) => {
     }
   };
 
+  const handleUnassign = async () => {
+    try {
+      await unassignSensorFromRoom(confirmUnassign.bank_id, accessToken);
+      toast.success("🚫 Sensor unassigned");
+
+
+      setSensors((prev) =>
+        prev.map((s) =>
+          s.name === confirmUnassign.name ? { ...s, room_id: null } : s
+        )
+      );
+      setConfirmUnassign(null);
+    } catch (err) {
+      toast.error("❌ Failed to unassign sensor");
+    }
+  };
+
+
   const getRoomName = (roomId) => {
     const match = rooms.find((r) => r.id === roomId);
     return match ? match.name : "Unknown Room";
@@ -75,7 +95,7 @@ const RoomOverlay = ({ room, onClose }) => {
 
   return (
     <div className="room-overlay-container">
-      {/* Sensor Data - Center of screen */}
+
       <div className="sensor-card-center-wrapper">
         {activeRoomSensorData.map((sensor) => (
           <div key={sensor.bank_id} className="sensor-card-centered">
@@ -86,11 +106,17 @@ const RoomOverlay = ({ room, onClose }) => {
             <div className="sensor-meta"><strong>Value:</strong> {sensor.value}</div>
             <div className="sensor-meta"><strong>Quality:</strong> {sensor.quality}</div>
             <div className="sensor-meta"><strong>Timestamp:</strong> {sensor.timestamp}</div>
+            <button
+              className="remove-sensor-btn"
+              onClick={() => setConfirmUnassign(sensor)}
+            >
+              Remove
+            </button>
           </div>
         ))}
       </div>
 
-      {/* Sensor assignment panel - Right */}
+
       <div className="room-overlay-panel">
         <button className="overlay-close-btn" onClick={onClose}>✕</button>
         <h2>{room.name}</h2>
@@ -118,6 +144,21 @@ const RoomOverlay = ({ room, onClose }) => {
           ))}
         </div>
       </div>
+
+      {confirmUnassign && (
+        <div className="confirm-modal">
+          <div className="confirm-modal-content">
+            <p>
+              Are you sure you want to unassign <strong>{confirmUnassign.name}</strong> from this room?
+            </p>
+            <div className="modal-buttons">
+              <button onClick={handleUnassign} className="modal-confirm">Yes</button>
+              <button onClick={() => setConfirmUnassign(null)} className="modal-cancel">No</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

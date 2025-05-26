@@ -17,3 +17,13 @@ export const assignSensorToRoom = async (bankId, roomId, token) => {
     }
   );
 };
+
+export const unassignSensorFromRoom = async (bankId, token) => {
+  await axios.post(
+    `${API}/api/sensor/unassign-room`,
+    { bank_id: bankId },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
