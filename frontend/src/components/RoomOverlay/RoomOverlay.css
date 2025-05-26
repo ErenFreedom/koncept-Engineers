@@ -23,18 +23,18 @@
   position: relative;
 }
 
-/* Close Button */
 .overlay-close-btn {
-  position: absolute;
-  top: 15px;
-  left: 20px;
+  position: fixed;
+  top: 20px;
+  left: 30px; /* changed from right: 30px */
   background: transparent;
   border: none;
   color: #ccc;
   font-size: 22px;
   cursor: pointer;
-  z-index: 10;
+  z-index: 1500; /* ensure it's always on top */
 }
+
 
 /* Text Above Dropdown */
 .room-overlay-subtext {
@@ -147,16 +147,19 @@
 }
 
 .remove-sensor-btn {
-  margin-top: 12px;
+  margin: 16px auto 0;
   padding: 6px 12px;
   font-size: 13px;
   background-color: #ff4d4f;
   color: #fff;
   border: none;
-  border-radius: 5px;
+  border-radius: 6px;
   cursor: pointer;
-  width: 100%;
+  width: 20px;
+  display: block;
+  text-align: center;
 }
+
 
 .confirm-modal {
   position: fixed;
