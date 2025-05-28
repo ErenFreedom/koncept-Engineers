@@ -112,28 +112,36 @@ const verifyAdminLoginOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // ✅ Fetch admin + company name
+    // Fetch admin + sub-site + main company info
     const [[admin]] = await db.execute(
-      `SELECT a.id, a.first_name, a.last_name, a.phone_number, a.email, a.company_id, a.nationality, c.name AS company_name
+      `SELECT 
+         a.id AS admin_id,
+         a.first_name, a.last_name, a.phone_number, a.email, a.nationality,
+         s.id AS sub_site_id, s.name AS sub_site_name, s.email AS sub_site_email,
+         m.id AS company_id, m.name AS company_name
        FROM Admin a
-       JOIN Company c ON a.company_id = c.id
+       JOIN Company s ON a.company_id = s.id
+       JOIN Company m ON s.parent_company_id = m.id
        WHERE a.email = ? OR a.phone_number = ?`,
       [identifier, identifier]
     );
 
     if (!admin) {
-      return res.status(404).json({ message: "Admin not found" });
+      return res.status(404).json({ message: "Admin not found or not linked to sub-site" });
     }
 
     const accessToken = jwt.sign(
       {
-        adminId: admin.id,
+        adminId: admin.admin_id,
         firstName: admin.first_name,
         lastName: admin.last_name,
         phoneNumber: admin.phone_number,
         email: admin.email,
         companyId: admin.company_id,
-        companyName: admin.company_name, // ✅ new field
+        companyName: admin.company_name,
+        subSiteId: admin.sub_site_id,
+        subSiteName: admin.sub_site_name,
+        subSiteEmail: admin.sub_site_email,
         nationality: admin.nationality
       },
       process.env.JWT_SECRET,
@@ -141,7 +149,7 @@ const verifyAdminLoginOtp = async (req, res) => {
     );
 
     const refreshToken = jwt.sign(
-      { adminId: admin.id },
+      { adminId: admin.admin_id },
       process.env.JWT_SECRET,
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
@@ -155,7 +163,7 @@ const verifyAdminLoginOtp = async (req, res) => {
     const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
 
     await redisClient.set(
-      `admin:${admin.id}:${sessionId}`,
+      `admin:${admin.admin_id}:${sessionId}`,
       JSON.stringify({
         refreshToken,
         loginTime: Date.now(),
@@ -173,14 +181,17 @@ const verifyAdminLoginOtp = async (req, res) => {
       accessToken,
       sessionId,
       admin: {
-        id: admin.id,
+        id: admin.admin_id,
         firstName: admin.first_name,
         lastName: admin.last_name,
         phoneNumber: admin.phone_number,
         email: admin.email,
+        nationality: admin.nationality,
         companyId: admin.company_id,
-        companyName: admin.company_name, // ✅ new field
-        nationality: admin.nationality
+        companyName: admin.company_name,
+        subSiteId: admin.sub_site_id,
+        subSiteName: admin.sub_site_name,
+        subSiteEmail: admin.sub_site_email
       }
     });
   } catch (error) {
@@ -188,6 +199,7 @@ const verifyAdminLoginOtp = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
 
 
@@ -226,11 +238,15 @@ const refreshAdminToken = async (req, res) => {
         return res.status(401).json({ message: "Session expired or invalidated" });
       }
 
-      // ✅ Fetch admin with company name
       const [[admin]] = await db.execute(
-        `SELECT a.id, a.first_name, a.last_name, a.phone_number, a.email, a.company_id, a.nationality, c.name AS company_name
+        `SELECT 
+           a.id AS admin_id,
+           a.first_name, a.last_name, a.phone_number, a.email, a.nationality,
+           s.id AS sub_site_id, s.name AS sub_site_name, s.email AS sub_site_email,
+           m.id AS company_id, m.name AS company_name
          FROM Admin a
-         JOIN Company c ON a.company_id = c.id
+         JOIN Company s ON a.company_id = s.id
+         JOIN Company m ON s.parent_company_id = m.id
          WHERE a.id = ?`,
         [adminId]
       );
@@ -241,13 +257,16 @@ const refreshAdminToken = async (req, res) => {
 
       const newAccessToken = jwt.sign(
         {
-          adminId: admin.id,
+          adminId: admin.admin_id,
           firstName: admin.first_name,
           lastName: admin.last_name,
           phoneNumber: admin.phone_number,
           email: admin.email,
           companyId: admin.company_id,
-          companyName: admin.company_name, // ✅ included here
+          companyName: admin.company_name,
+          subSiteId: admin.sub_site_id,
+          subSiteName: admin.sub_site_name,
+          subSiteEmail: admin.sub_site_email,
           nationality: admin.nationality,
         },
         process.env.JWT_SECRET,
@@ -257,15 +276,18 @@ const refreshAdminToken = async (req, res) => {
       res.status(200).json({
         accessToken: newAccessToken,
         admin: {
-          id: admin.id,
+          id: admin.admin_id,
           firstName: admin.first_name,
           lastName: admin.last_name,
           phoneNumber: admin.phone_number,
           email: admin.email,
-          companyId: admin.company_id,
-          companyName: admin.company_name, // ✅ included here
           nationality: admin.nationality,
-        },
+          companyId: admin.company_id,
+          companyName: admin.company_name,
+          subSiteId: admin.sub_site_id,
+          subSiteName: admin.sub_site_name,
+          subSiteEmail: admin.sub_site_email
+        }
       });
     });
   } catch (error) {

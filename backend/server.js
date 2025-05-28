@@ -45,6 +45,7 @@ const syncDbRoutes = require("./routes/syncDbRoutes");
 const sessionRoutes = require("./routes/sessionRoutes");
 const floorRoomRoutes = require("./routes/floorRoomRoutes");
 const floorRoomFetchRoutes = require("./routes/floorRoomFetchRoutes");
+const subSiteRoutes = require("./routes/subSiteRoutes");
 
 
 app.use("/api/admin", adminRoutes);
@@ -65,6 +66,8 @@ app.use("/api/cloud", syncDbRoutes);
 app.use("/api", sessionRoutes);
 app.use("/api", floorRoomRoutes);
 app.use("/api", floorRoomFetchRoutes);
+app.use("/api", subSiteRoutes);
+
 
 
 
