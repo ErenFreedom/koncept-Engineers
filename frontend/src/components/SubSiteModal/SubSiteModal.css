@@ -92,3 +92,12 @@
     cursor: pointer;
   }
   
+  .otp-method-selector {
+    margin: 10px 0;
+  }
+  
+  .otp-method-selector select {
+    padding: 5px;
+    margin-left: 10px;
+  }
+  
