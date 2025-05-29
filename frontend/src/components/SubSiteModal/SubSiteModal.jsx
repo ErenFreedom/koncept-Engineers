@@ -4,7 +4,7 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { useAuth } from "../../context/AuthContext";
 
-const SubSiteModal = ({ onClose, parentCompanyId }) => {
+const SubSiteModal = ({ onClose }) => {
   const { admin } = useAuth();
   const parentCompanyId = admin?.companyId;
 
@@ -34,7 +34,7 @@ const SubSiteModal = ({ onClose, parentCompanyId }) => {
     }
   }, [otpSent, timer]);
 
-  
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
