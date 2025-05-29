@@ -112,23 +112,30 @@ const verifyAdminLoginOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // Fetch admin + sub-site + main company info
+    // ✅ Fetch admin and main company details
     const [[admin]] = await db.execute(
       `SELECT 
          a.id AS admin_id,
          a.first_name, a.last_name, a.phone_number, a.email, a.nationality,
-         s.id AS sub_site_id, s.name AS sub_site_name, s.email AS sub_site_email,
-         m.id AS company_id, m.name AS company_name
+         a.company_id AS company_id,
+         c.name AS company_name,
+         c.email AS company_email
        FROM Admin a
-       JOIN Company s ON a.company_id = s.id
-       JOIN Company m ON s.parent_company_id = m.id
+       JOIN Company c ON a.company_id = c.id
        WHERE a.email = ? OR a.phone_number = ?`,
       [identifier, identifier]
     );
 
     if (!admin) {
-      return res.status(404).json({ message: "Admin not found or not linked to sub-site" });
+      return res.status(404).json({ message: "Admin not found or not linked to company" });
     }
+
+    // ✅ Fetch sub-sites under this main company
+    const [subSites] = await db.execute(
+      `SELECT id AS subSiteId, name AS subSiteName, email AS subSiteEmail
+       FROM Company WHERE parent_company_id = ?`,
+      [admin.company_id]
+    );
 
     const accessToken = jwt.sign(
       {
@@ -139,10 +146,9 @@ const verifyAdminLoginOtp = async (req, res) => {
         email: admin.email,
         companyId: admin.company_id,
         companyName: admin.company_name,
-        subSiteId: admin.sub_site_id,
-        subSiteName: admin.sub_site_name,
-        subSiteEmail: admin.sub_site_email,
-        nationality: admin.nationality
+        companyEmail: admin.company_email,
+        nationality: admin.nationality,
+        subSites
       },
       process.env.JWT_SECRET,
       { expiresIn: ACCESS_TOKEN_EXPIRY }
@@ -153,11 +159,6 @@ const verifyAdminLoginOtp = async (req, res) => {
       process.env.JWT_SECRET,
       { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
-
-    res.cookie("refreshToken", refreshToken, {
-      ...COOKIE_OPTIONS,
-      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 6 * 60 * 60 * 1000
-    });
 
     const sessionId = uuidv4();
     const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
@@ -176,6 +177,11 @@ const verifyAdminLoginOtp = async (req, res) => {
 
     await db.execute(`DELETE FROM LoginOtp WHERE identifier = ?`, [identifier]);
 
+    res.cookie("refreshToken", refreshToken, {
+      ...COOKIE_OPTIONS,
+      maxAge: rememberMe ? 30 * 24 * 60 * 60 * 1000 : 6 * 60 * 60 * 1000
+    });
+
     res.status(200).json({
       message: "Login successful",
       accessToken,
@@ -189,9 +195,8 @@ const verifyAdminLoginOtp = async (req, res) => {
         nationality: admin.nationality,
         companyId: admin.company_id,
         companyName: admin.company_name,
-        subSiteId: admin.sub_site_id,
-        subSiteName: admin.sub_site_name,
-        subSiteEmail: admin.sub_site_email
+        companyEmail: admin.company_email,
+        subSites
       }
     });
   } catch (error) {
@@ -242,11 +247,11 @@ const refreshAdminToken = async (req, res) => {
         `SELECT 
            a.id AS admin_id,
            a.first_name, a.last_name, a.phone_number, a.email, a.nationality,
-           s.id AS sub_site_id, s.name AS sub_site_name, s.email AS sub_site_email,
-           m.id AS company_id, m.name AS company_name
+           a.company_id AS company_id,
+           c.name AS company_name,
+           c.email AS company_email
          FROM Admin a
-         JOIN Company s ON a.company_id = s.id
-         JOIN Company m ON s.parent_company_id = m.id
+         JOIN Company c ON a.company_id = c.id
          WHERE a.id = ?`,
         [adminId]
       );
@@ -254,6 +259,12 @@ const refreshAdminToken = async (req, res) => {
       if (!admin) {
         return res.status(404).json({ message: "Admin not found" });
       }
+
+      const [subSites] = await db.execute(
+        `SELECT id AS subSiteId, name AS subSiteName, email AS subSiteEmail
+         FROM Company WHERE parent_company_id = ?`,
+        [admin.company_id]
+      );
 
       const newAccessToken = jwt.sign(
         {
@@ -264,10 +275,9 @@ const refreshAdminToken = async (req, res) => {
           email: admin.email,
           companyId: admin.company_id,
           companyName: admin.company_name,
-          subSiteId: admin.sub_site_id,
-          subSiteName: admin.sub_site_name,
-          subSiteEmail: admin.sub_site_email,
+          companyEmail: admin.company_email,
           nationality: admin.nationality,
+          subSites
         },
         process.env.JWT_SECRET,
         { expiresIn: ACCESS_TOKEN_EXPIRY }
@@ -284,9 +294,8 @@ const refreshAdminToken = async (req, res) => {
           nationality: admin.nationality,
           companyId: admin.company_id,
           companyName: admin.company_name,
-          subSiteId: admin.sub_site_id,
-          subSiteName: admin.sub_site_name,
-          subSiteEmail: admin.sub_site_email
+          companyEmail: admin.company_email,
+          subSites
         }
       });
     });
