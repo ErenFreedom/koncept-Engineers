@@ -111,6 +111,15 @@ const SubSiteModal = ({ onClose }) => {
                     <input name="phone_number" placeholder="Phone Number" onChange={handleChange} />
                 </div>
 
+                <div className="otp-method-selector">
+                    <label>Send OTP to:</label>
+                    <select value={otpMethod} onChange={(e) => setOtpMethod(e.target.value)}>
+                        <option value="email">Admin Email ({admin?.email})</option>
+                        <option value="phone">Admin Phone ({admin?.phone})</option>
+                    </select>
+                </div>
+
+
                 {!otpSent ? (
                     <button className="subsite-btn" onClick={sendOtp}>Proceed to OTP</button>
                 ) : (
