@@ -127,3 +127,14 @@
     color: white;
   }
   
+
+  .subsite-plus {
+    margin-left: 8px;
+    font-size: 18px;
+    color: #ffd700;
+  }
+  
+  .subsite-plus:hover {
+    color: #ffff33;
+  }
+  

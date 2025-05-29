@@ -3,6 +3,8 @@ import { getFloors, addFloor, deleteFloor } from "../../api/floor";
 import { getRooms, addRoom, deleteRoom } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import ModalInput from "../ModalInput/ModalInput";
+import SubSiteModal from "../SubSiteModal/SubSiteModal";
+
 import { toast } from "react-toastify";
 import "./HierarchySidebar.css";
 
@@ -21,6 +23,8 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
 
   const [confirmDeleteRoom, setConfirmDeleteRoom] = useState(null);
   const [confirmDeleteFloor, setConfirmDeleteFloor] = useState(null);
+  const [showSubSiteModal, setShowSubSiteModal] = useState(false);
+
 
 
   const token = localStorage.getItem("accessToken");
@@ -83,7 +87,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
       toast.error(msg);
     }
   };
-  
+
 
   const handleRoomSubmit = async (name) => {
     if (!activeFloorId) return;
@@ -96,7 +100,7 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
       toast.error(msg);
     }
   };
-  
+
 
   const handleDeleteRoom = async () => {
     try {
@@ -123,7 +127,17 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
 
   return (
     <div className="hierarchy-sidebar">
-      <h3 className="sidebar-heading">Building</h3>
+      <div className="sidebar-heading">
+        <h1>Building</h1>
+        <button
+          className="add-btn subsite-plus"
+          title="Register New Sub-Site"
+          onClick={() => setShowSubSiteModal(true)}
+        >
+          ＋
+        </button>
+      </div>
+
 
       <div className="site-block">
         <div className="site-name" onClick={() => toggleSite(1)}>
@@ -228,7 +242,17 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
         </div>
       )}
 
+      {showSubSiteModal && (
+        <SubSiteModal
+          onClose={() => setShowSubSiteModal(false)}
+          parentCompanyId={admin?.companyId}
+        />
+      )}
+
+
     </div>
+
+
   );
 };
 
