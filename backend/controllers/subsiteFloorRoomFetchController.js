@@ -14,12 +14,23 @@ const decodeToken = (req) => {
   }
 };
 
+const getTableNames = (companyId, subSiteId) => {
+  return {
+    floorTable: `Floor_${companyId}_${subSiteId}`,
+    roomTable: `Room_${companyId}_${subSiteId}`,
+    sensorTable: `SensorBank_${companyId}_${subSiteId}`,
+  };
+};
+
 const getSubSiteFloors = async (req, res) => {
   const decoded = decodeToken(req);
-  if (!decoded?.companyId || !decoded?.subSiteId)
-    return res.status(401).json({ message: "Unauthorized" });
+  const subSiteId = req.body.subsite_id || req.query.subsite_id;
 
-  const floorTable = `Floor_${decoded.companyId}_${decoded.subSiteId}`;
+  if (!decoded?.companyId || !subSiteId)
+    return res.status(401).json({ message: "Missing company/subsite info" });
+
+  const { floorTable } = getTableNames(decoded.companyId, subSiteId);
+
   try {
     const [rows] = await db.query(`SELECT id, name FROM ${floorTable}`);
     res.status(200).json({ floors: rows });
@@ -31,10 +42,13 @@ const getSubSiteFloors = async (req, res) => {
 
 const getSubSiteRooms = async (req, res) => {
   const decoded = decodeToken(req);
-  if (!decoded?.companyId || !decoded?.subSiteId)
-    return res.status(401).json({ message: "Unauthorized" });
+  const subSiteId = req.body.subsite_id || req.query.subsite_id;
 
-  const roomTable = `Room_${decoded.companyId}_${decoded.subSiteId}`;
+  if (!decoded?.companyId || !subSiteId)
+    return res.status(401).json({ message: "Missing company/subsite info" });
+
+  const { roomTable } = getTableNames(decoded.companyId, subSiteId);
+
   try {
     const [rows] = await db.query(`SELECT id, name, floor_id FROM ${roomTable}`);
     res.status(200).json({ rooms: rows });
@@ -46,10 +60,13 @@ const getSubSiteRooms = async (req, res) => {
 
 const getSubSiteSensors = async (req, res) => {
   const decoded = decodeToken(req);
-  if (!decoded?.companyId || !decoded?.subSiteId)
-    return res.status(401).json({ message: "Unauthorized" });
+  const subSiteId = req.body.subsite_id || req.query.subsite_id;
 
-  const sensorTable = `SensorBank_${decoded.companyId}_${decoded.subSiteId}`;
+  if (!decoded?.companyId || !subSiteId)
+    return res.status(401).json({ message: "Missing company/subsite info" });
+
+  const { sensorTable } = getTableNames(decoded.companyId, subSiteId);
+
   try {
     const [rows] = await db.query(`SELECT id, name, object_id, room_id FROM ${sensorTable}`);
     res.status(200).json({ sensors: rows });
@@ -59,4 +76,8 @@ const getSubSiteSensors = async (req, res) => {
   }
 };
 
-module.exports = { getSubSiteFloors, getSubSiteRooms, getSubSiteSensors };
+module.exports = {
+  getSubSiteFloors,
+  getSubSiteRooms,
+  getSubSiteSensors,
+};
