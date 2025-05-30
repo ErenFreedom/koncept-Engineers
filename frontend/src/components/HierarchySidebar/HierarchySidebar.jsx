@@ -226,12 +226,17 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
 
           {subSites.map((subsite) => (
             <SubSiteHierarchy
-              key={subsite.id}
-              subsite={subsite}
+              key={subsite.subSiteId}
+              subsite={{
+                id: subsite.subSiteId,
+                name: subsite.subSiteName,
+                email: subsite.subSiteEmail,
+              }}
               token={token}
               onRoomSelect={onRoomSelect}
             />
           ))}
+
         </div>
       )}
 
