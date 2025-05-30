@@ -1,8 +1,8 @@
 const db = require("../db/connector");
 const { sendOtpToEmail } = require("../utils/sendOtpEmail");
 const sendOtpSms = require("../utils/sendOtpSms");
+const jwt = require("jsonwebtoken");
 
-// Send OTP to Admin (email or phone)
 const sendSubSiteOtp = async (req, res) => {
     try {
         const { adminEmail, adminPhone, otp_method } = req.body;
@@ -48,7 +48,6 @@ const sendSubSiteOtp = async (req, res) => {
 };
 
 
-// Register Sub-Site
 const registerSubSite = async (req, res) => {
     try {
         const {
@@ -64,7 +63,7 @@ const registerSubSite = async (req, res) => {
             return res.status(400).json({ message: "Required fields missing" });
         }
 
-        // Verify OTP using adminEmail or adminPhone
+        
         const [otpResult] = await db.execute(
             `SELECT * FROM RegisterOtp
              WHERE (email = ? OR phone_number = ?)
@@ -76,7 +75,7 @@ const registerSubSite = async (req, res) => {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        // Call stored procedure to register sub-site
+        
         await db.execute(
             `CALL RegisterSubSite(?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
@@ -106,4 +105,47 @@ const registerSubSite = async (req, res) => {
     }
 };
 
-module.exports = { sendSubSiteOtp, registerSubSite };
+const listSubSites = async (req, res) => {
+    try {
+      const authHeader = req.headers.authorization || "";
+      const token = authHeader.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+  
+      if (!token) {
+        return res.status(401).json({ message: "No token provided" });
+      }
+  
+      let decoded;
+      try {
+        decoded = jwt.verify(token, process.env.JWT_SECRET);
+      } catch (err) {
+        return res.status(403).json({ message: "Invalid token" });
+      }
+  
+      const companyId = decoded.companyId;
+  
+      if (!companyId) {
+        return res.status(400).json({ message: "Company ID not found in token" });
+      }
+  
+      const [subsites] = await db.execute(
+        `SELECT 
+           id AS subSiteId,
+           name AS subSiteName,
+           email AS subSiteEmail,
+           alt_email AS subSiteAltEmail,
+           address1, address2, pincode,
+           pan_s3, gst_s3, created_at
+         FROM Company
+         WHERE parent_company_id = ?`,
+        [companyId]
+      );
+  
+      res.status(200).json({ subsites });
+    } catch (error) {
+      console.error("❌ Error fetching sub-sites:", error);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+  
+
+module.exports = { sendSubSiteOtp, registerSubSite, listSubSites };

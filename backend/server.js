@@ -46,6 +46,8 @@ const sessionRoutes = require("./routes/sessionRoutes");
 const floorRoomRoutes = require("./routes/floorRoomRoutes");
 const floorRoomFetchRoutes = require("./routes/floorRoomFetchRoutes");
 const subSiteRoutes = require("./routes/subSiteRoutes");
+const subsiteFloorRoomRoutes = require("./routes/subsiteFloorRoomRoutes");
+const subsiteFloorRoomFetchRoutes = require("./routes/subsiteFloorRoomFetchRoutes");
 
 
 app.use("/api/admin", adminRoutes);
@@ -67,6 +69,8 @@ app.use("/api", sessionRoutes);
 app.use("/api", floorRoomRoutes);
 app.use("/api", floorRoomFetchRoutes);
 app.use("/api", subSiteRoutes);
+app.use("/api/subsite/floor-room", subsiteFloorRoomRoutes);
+app.use("/api/subsite", subsiteFloorRoomFetchRoutes);
 
 
 
@@ -87,7 +91,6 @@ app.get('/', (req, res) => {
     res.status(200).json({ message: 'Server is running!' });
 });
 
-// Start the server
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });

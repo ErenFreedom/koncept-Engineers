@@ -4,6 +4,8 @@ import { getRooms, addRoom, deleteRoom } from "../../api/room";
 import { useAuth } from "../../context/AuthContext";
 import ModalInput from "../ModalInput/ModalInput";
 import SubSiteModal from "../SubSiteModal/SubSiteModal";
+import SubSiteHierarchy from "../SubSiteHierarchy/SubSiteHierarchy";
+
 
 import { toast } from "react-toastify";
 import "./HierarchySidebar.css";
@@ -24,6 +26,9 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
   const [confirmDeleteRoom, setConfirmDeleteRoom] = useState(null);
   const [confirmDeleteFloor, setConfirmDeleteFloor] = useState(null);
   const [showSubSiteModal, setShowSubSiteModal] = useState(false);
+
+  const [subSites, setSubSites] = useState([]);
+
 
 
 
@@ -57,6 +62,22 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
   useEffect(() => {
     loadFloorsAndRooms();
   }, [token]);
+
+
+  useEffect(() => {
+    try {
+      const storedToken = localStorage.getItem("accessToken");
+      if (!storedToken) return;
+
+      const payload = JSON.parse(atob(storedToken.split(".")[1]));
+      if (payload.subSites && Array.isArray(payload.subSites)) {
+        setSubSites(payload.subSites);  // assumed [{ id, name }]
+      }
+    } catch (err) {
+      console.error("Failed to parse token for sub-sites:", err);
+    }
+  }, []);
+
 
   const toggleSite = (siteId) => {
     const isExpanding = expandedSite !== siteId;
@@ -198,6 +219,22 @@ const HierarchySidebar = ({ onSiteSelect, onFloorExpand, onRoomSelect }) => {
           </div>
         )}
       </div>
+
+      {subSites.length > 0 && (
+        <div className="site-block">
+          <div className="sidebar-heading">Sub-Sites</div>
+
+          {subSites.map((subsite) => (
+            <SubSiteHierarchy
+              key={subsite.id}
+              subsite={subsite}
+              token={token}
+              onRoomSelect={onRoomSelect}
+            />
+          ))}
+        </div>
+      )}
+
 
 
       {showFloorModal && (

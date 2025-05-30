@@ -26,3 +26,33 @@ export const deleteRoom = async (roomId, token) => {
   });
   return res.data;
 };
+
+
+export const addSubsiteRoom = async (floorId, name, subsiteId, token) => {
+  await axios.post(
+    `${API}/api/subsite/floor-room/room/add`,
+    { floor_id: floorId, name, subsite_id: subsiteId },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+};
+
+export const getSubsiteRooms = async (token, subsiteId) => {
+  const res = await axios.get(`${API}/api/subsite/room/list`, {
+    headers: { Authorization: `Bearer ${token}` },
+    params: { subsite_id: subsiteId },
+  });
+  return res.data.rooms;
+};
+
+export const deleteSubsiteRoom = async (roomId, subsiteId, token) => {
+  const res = await axios.post(
+    `${API}/api/subsite/floor-room/room/delete`,
+    { room_id: roomId, subsite_id: subsiteId },
+    {
+      headers: { Authorization: `Bearer ${token}` },
+    }
+  );
+  return res.data;
+};
