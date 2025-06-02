@@ -99,7 +99,6 @@ const verifyAdminAppLoginOtp = async (req, res) => {
             return res.status(400).json({ message: "Identifier and OTP are required" });
         }
 
-       
         const [otpResults] = await db.execute(
             `SELECT * FROM AppLoginOtp WHERE identifier = ? AND otp = ? AND expires_at > UTC_TIMESTAMP();`,
             [identifier, otp]
@@ -109,9 +108,14 @@ const verifyAdminAppLoginOtp = async (req, res) => {
             return res.status(400).json({ message: "Invalid or expired OTP" });
         }
 
-        
         const [[admin]] = await db.execute(
-            `SELECT id, first_name, phone_number, email, company_id FROM Admin WHERE email = ? OR phone_number = ?`,
+            `SELECT 
+                a.id AS admin_id, a.first_name, a.phone_number, a.email, a.nationality,
+                a.company_id AS company_id,
+                c.name AS company_name, c.email AS company_email
+             FROM Admin a
+             JOIN Company c ON a.company_id = c.id
+             WHERE a.email = ? OR a.phone_number = ?`,
             [identifier, identifier]
         );
 
@@ -119,43 +123,55 @@ const verifyAdminAppLoginOtp = async (req, res) => {
             return res.status(404).json({ message: "Admin not found" });
         }
 
-       
+        // 🏢 Fetch sub-sites for the app token too
+        const [subSites] = await db.execute(
+            `SELECT id AS subSiteId, name AS subSiteName, email AS subSiteEmail
+             FROM Company WHERE parent_company_id = ?`,
+            [admin.company_id]
+        );
+
         const accessToken = jwt.sign(
-            { 
-                adminId: admin.id,
+            {
+                adminId: admin.admin_id,
                 firstName: admin.first_name,
                 phoneNumber: admin.phone_number,
                 email: admin.email,
-                companyId: admin.company_id 
+                nationality: admin.nationality,
+                companyId: admin.company_id,
+                companyName: admin.company_name,
+                companyEmail: admin.company_email,
+                subSites
             },
             process.env.JWT_SECRET_APP,
             { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
 
         const refreshToken = jwt.sign(
-            { adminId: admin.id },
+            { adminId: admin.admin_id },
             process.env.JWT_SECRET_APP,
             { expiresIn: REFRESH_TOKEN_EXPIRY }
         );
 
-       
-        res.cookie("refreshToken", refreshToken, {
-            ...COOKIE_OPTIONS,
-            maxAge: rememberMe ? 10 * 365 * 24 * 60 * 60 * 1000 : null, 
-        });
-
-        
         await db.execute(`DELETE FROM AppLoginOtp WHERE identifier = ?`, [identifier]);
 
-        res.status(200).json({ 
-            message: "Login successful", 
+        res.cookie("refreshToken", refreshToken, {
+            ...COOKIE_OPTIONS,
+            maxAge: rememberMe ? 10 * 365 * 24 * 60 * 60 * 1000 : null,
+        });
+
+        res.status(200).json({
+            message: "Login successful",
             accessToken,
             admin: {
-                id: admin.id,
+                id: admin.admin_id,
                 firstName: admin.first_name,
                 phoneNumber: admin.phone_number,
                 email: admin.email,
-                companyId: admin.company_id
+                nationality: admin.nationality,
+                companyId: admin.company_id,
+                companyName: admin.company_name,
+                companyEmail: admin.company_email,
+                subSites
             }
         });
 
@@ -171,30 +187,58 @@ const refreshAdminAppToken = async (req, res) => {
         const { refreshToken } = req.cookies;
         if (!refreshToken) return res.status(401).json({ message: "Unauthorized" });
 
-      
         jwt.verify(refreshToken, process.env.JWT_SECRET_APP, async (err, decoded) => {
             if (err) return res.status(403).json({ message: "Forbidden" });
 
             const [[admin]] = await db.execute(
-                `SELECT id, first_name, phone_number, email, company_id FROM Admin WHERE id = ?`,
+                `SELECT 
+                    a.id AS admin_id, a.first_name, a.phone_number, a.email, a.nationality,
+                    a.company_id AS company_id,
+                    c.name AS company_name, c.email AS company_email
+                 FROM Admin a
+                 JOIN Company c ON a.company_id = c.id
+                 WHERE a.id = ?`,
                 [decoded.adminId]
             );
 
             if (!admin) return res.status(404).json({ message: "Admin not found" });
 
+            const [subSites] = await db.execute(
+                `SELECT id AS subSiteId, name AS subSiteName, email AS subSiteEmail
+                 FROM Company WHERE parent_company_id = ?`,
+                [admin.company_id]
+            );
+
             const newAccessToken = jwt.sign(
-                { 
-                    adminId: admin.id,
+                {
+                    adminId: admin.admin_id,
                     firstName: admin.first_name,
                     phoneNumber: admin.phone_number,
                     email: admin.email,
-                    companyId: admin.company_id
+                    nationality: admin.nationality,
+                    companyId: admin.company_id,
+                    companyName: admin.company_name,
+                    companyEmail: admin.company_email,
+                    subSites
                 },
                 process.env.JWT_SECRET_APP,
                 { expiresIn: ACCESS_TOKEN_EXPIRY }
             );
 
-            res.status(200).json({ accessToken: newAccessToken });
+            res.status(200).json({
+                accessToken: newAccessToken,
+                admin: {
+                    id: admin.admin_id,
+                    firstName: admin.first_name,
+                    phoneNumber: admin.phone_number,
+                    email: admin.email,
+                    nationality: admin.nationality,
+                    companyId: admin.company_id,
+                    companyName: admin.company_name,
+                    companyEmail: admin.company_email,
+                    subSites
+                }
+            });
         });
 
     } catch (error) {
