@@ -1,6 +1,7 @@
 const db = require("../db/connector");
 const jwt = require("jsonwebtoken");
 
+// Extract admin details from token
 const getAdminDetailsFromToken = (req) => {
   try {
     const token = req.headers.authorization?.split(" ")[1];
@@ -10,12 +11,15 @@ const getAdminDetailsFromToken = (req) => {
   }
 };
 
+// Controller: Sync sub-site tables to local DB
 const syncSubSiteLocalDbFromCloud = async (req, res) => {
   try {
     const admin = getAdminDetailsFromToken(req);
     if (!admin) return res.status(401).json({ message: "Unauthorized" });
 
     const companyId = admin.companyId;
+
+    // Fetch all sub-sites for the company
     const [subsites] = await db.execute(
       `SELECT id FROM Company WHERE parent_company_id = ?`,
       [companyId]
@@ -24,33 +28,20 @@ const syncSubSiteLocalDbFromCloud = async (req, res) => {
     const results = [];
 
     for (const { id: subsiteId } of subsites) {
-      const bankTable = `SensorBank_${companyId}`;
-      const sensorTable = `Sensor_${companyId}`;
-      const apiTable = `SensorAPI_${companyId}`;
+      // Define dynamic sub-site-specific table names
+      const bankTable = `SensorBank_${companyId}_${subsiteId}`;
+      const sensorTable = `Sensor_${companyId}_${subsiteId}`;
+      const apiTable = `SensorAPI_${companyId}_${subsiteId}`;
 
-      // SensorBank rows for this subsite
-      const [bankRows] = await db.execute(
-        `SELECT * FROM ${bankTable} WHERE subsite_id = ?`, [subsiteId]
-      );
+      // Fetch data from those tables (no WHERE clauses needed)
+      const [bankRows] = await db.execute(`SELECT * FROM ${bankTable}`);
+      const [sensorRows] = await db.execute(`SELECT * FROM ${sensorTable}`);
+      const [apiRows] = await db.execute(`SELECT * FROM ${apiTable}`);
 
-      // Sensor rows linked to above banks
-      const [sensorRows] = await db.execute(
-        `SELECT s.* FROM ${sensorTable} s
-         JOIN ${bankTable} b ON s.bank_id = b.id
-         WHERE b.subsite_id = ?`, [subsiteId]
-      );
-
-      // API rows linked to those sensors
-      const [apiRows] = await db.execute(
-        `SELECT a.* FROM ${apiTable} a
-         JOIN ${sensorTable} s ON a.sensor_id = s.id
-         JOIN ${bankTable} b ON s.bank_id = b.id
-         WHERE b.subsite_id = ?`, [subsiteId]
-      );
-
-      // Extract unique bank_ids (for SensorData tables)
+      // Extract bank_ids to tell local DB what SensorData tables to create
       const sensorDataBankIds = [...new Set(sensorRows.map(s => s.bank_id))];
 
+      // Push sub-site data into response array
       results.push({
         subsiteId,
         sensorBank: bankRows,
@@ -60,6 +51,7 @@ const syncSubSiteLocalDbFromCloud = async (req, res) => {
       });
     }
 
+    // Send all sub-site data back to native app
     res.json({ result: results });
   } catch (err) {
     console.error("❌ Cloud Sub-site sync error:", err.message);
