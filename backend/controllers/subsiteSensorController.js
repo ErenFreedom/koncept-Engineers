@@ -28,16 +28,20 @@ const addSubSiteSensor = async (req, res) => {
       propertyName,
       dataType,
       apiEndpoint,
-      subsite_id
+      subsite_id,
+      subsiteId, // ✅ Accept both styles
     } = req.body;
 
+    const subsiteIdFinal = subsite_id || subsiteId;
+
     const adminDetails = getAdminDetailsFromToken(req);
-    if (!adminDetails || !adminDetails.companyId || !subsite_id)
+    if (!adminDetails || !adminDetails.companyId || !subsiteIdFinal) {
       return res.status(401).json({ message: "Unauthorized or missing sub-site info" });
+    }
 
-    const { sensorTable, apiTable } = getSubsiteSensorTables(adminDetails.companyId, subsite_id);
+    const { sensorTable, apiTable } = getSubsiteSensorTables(adminDetails.companyId, subsiteIdFinal);
 
-   
+    // ✅ Ensure sensor table exists
     await db.execute(`
       CREATE TABLE IF NOT EXISTS ${sensorTable} (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -52,7 +56,7 @@ const addSubSiteSensor = async (req, res) => {
       )
     `);
 
-    
+    // ✅ Ensure API table exists
     await db.execute(`
       CREATE TABLE IF NOT EXISTS ${apiTable} (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -63,6 +67,7 @@ const addSubSiteSensor = async (req, res) => {
       )
     `);
 
+    // ✅ Insert into Sensor table
     const [result] = await db.execute(
       `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type)
        VALUES (?, ?, ?, ?, ?)`,
@@ -71,18 +76,23 @@ const addSubSiteSensor = async (req, res) => {
 
     const insertedSensorId = result.insertId;
 
+    // ✅ Insert API
     await db.execute(
       `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
       [insertedSensorId, apiEndpoint]
     );
 
-    res.status(200).json({ message: "Sensor + API added successfully", sensorId: insertedSensorId });
+    res.status(200).json({
+      message: `Sensor + API added successfully to ${sensorTable}`,
+      sensorId: insertedSensorId
+    });
 
   } catch (error) {
     console.error("❌ Error adding subsite sensor:", error.message);
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
+
 
 const getAllSubSiteSensors = async (req, res) => {
   try {
