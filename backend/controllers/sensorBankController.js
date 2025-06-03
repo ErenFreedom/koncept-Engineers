@@ -18,7 +18,7 @@ const getAdminDetailsFromToken = (req) => {
 
 //The core logic resides here, 3 days for debugging can't believe lol
 
-const addSubSiteSensor = async (req, res) => {
+const addSensor = async (req, res) => {
   try {
     const {
       sensorName,
