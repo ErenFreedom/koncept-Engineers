@@ -18,78 +18,80 @@ const getAdminDetailsFromToken = (req) => {
 
 //The core logic resides here, 3 days for debugging can't believe lol
 
-const addSensor = async (req, res) => {
-    try {
-      const {
-        sensorName,
-        description,
-        objectId,
-        propertyName,
-        dataType,
-        apiEndpoint // ✅ Now received from connector app backend
-      } = req.body;
-  
-      const adminDetails = getAdminDetailsFromToken(req);
-      if (!adminDetails) {
-        return res.status(401).json({ message: "Unauthorized: Invalid or missing token" });
-      }
-  
-      const { companyId } = adminDetails;
-      const sensorTable = `SensorBank_${companyId}`;
-      const apiTable = `SensorAPI_${companyId}`;
-  
-      // ✅ Ensure tables exist
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS ${sensorTable} (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          name VARCHAR(255) NOT NULL,
-          description TEXT,
-          object_id VARCHAR(255) NOT NULL UNIQUE,
-          property_name VARCHAR(255) NOT NULL,
-          data_type VARCHAR(50) NOT NULL,
-          is_active TINYINT(1) DEFAULT 0,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        )
-      `);
-  
-      await db.execute(`
-        CREATE TABLE IF NOT EXISTS ${apiTable} (
-          id INT AUTO_INCREMENT PRIMARY KEY,
-          sensor_id INT NOT NULL,
-          api_endpoint TEXT NOT NULL,
-          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (sensor_id) REFERENCES ${sensorTable}(id) ON DELETE CASCADE
-        )
-      `);
-      
-  
-      // ✅ Insert into SensorBank
-      const [result] = await db.execute(
-        `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type, is_active)
-         VALUES (?, ?, ?, ?, ?, 0)`,
-        [sensorName, description, objectId, propertyName, dataType]
-      );
-  
-      const insertedSensorId = result.insertId;
-  
-      // ✅ Insert into SensorAPI using the actual API sent from the app
-      await db.execute(
-        `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
-        [insertedSensorId, apiEndpoint]
-      );
-  
-      res.status(200).json({
-        message: `Sensor + API added successfully to ${sensorTable}`,
-        sensorId: insertedSensorId
-      });
-  
-    } catch (error) {
-      console.error("❌ Error adding sensor:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
+const addSubSiteSensor = async (req, res) => {
+  try {
+    const {
+      sensorName,
+      description,
+      objectId,
+      propertyName,
+      dataType,
+      apiEndpoint,
+      subsite_id,
+      subsiteId, // ✅ Accept both styles
+    } = req.body;
+
+    const subsiteIdFinal = subsite_id || subsiteId;
+
+    const adminDetails = getAdminDetailsFromToken(req);
+    if (!adminDetails || !adminDetails.companyId || !subsiteIdFinal) {
+      return res.status(401).json({ message: "Unauthorized or missing sub-site info" });
     }
-  };
-  
+
+    const { sensorTable, apiTable } = getSubsiteSensorTables(adminDetails.companyId, subsiteIdFinal);
+
+    // ✅ Ensure sensor table exists
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS ${sensorTable} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        description TEXT,
+        object_id VARCHAR(255) NOT NULL UNIQUE,
+        property_name VARCHAR(255) NOT NULL,
+        data_type VARCHAR(50) NOT NULL,
+        is_active TINYINT(1) DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      )
+    `);
+
+    // ✅ Ensure API table exists
+    await db.execute(`
+      CREATE TABLE IF NOT EXISTS ${apiTable} (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        sensor_id INT NOT NULL,
+        api_endpoint TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sensor_id) REFERENCES ${sensorTable}(id) ON DELETE CASCADE
+      )
+    `);
+
+    // ✅ Insert into Sensor table
+    const [result] = await db.execute(
+      `INSERT INTO ${sensorTable} (name, description, object_id, property_name, data_type)
+       VALUES (?, ?, ?, ?, ?)`,
+      [sensorName, description, objectId, propertyName, dataType]
+    );
+
+    const insertedSensorId = result.insertId;
+
+    // ✅ Insert API
+    await db.execute(
+      `INSERT INTO ${apiTable} (sensor_id, api_endpoint) VALUES (?, ?)`,
+      [insertedSensorId, apiEndpoint]
+    );
+
+    res.status(200).json({
+      message: `Sensor + API added successfully to ${sensorTable}`,
+      sensorId: insertedSensorId
+    });
+
+  } catch (error) {
+    console.error("❌ Error adding subsite sensor:", error.message);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
 
 
 const getAllSensors = async (req, res) => {
