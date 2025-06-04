@@ -51,6 +51,7 @@ const subsiteFloorRoomFetchRoutes = require("./routes/subsiteFloorRoomFetchRoute
 const subSiteSensorRoutes = require("./routes/subsiteSensorRoutes");
 const subSiteSensorActivationRoutes = require("./routes/subSiteSensorActivationRoutes");
 const subSiteSyncDbRoutes = require("./routes/subSiteSyncDbRoutes");
+const subSiteSensorDataRoutes = require("./routes/subSiteSensorData");
 
 
 app.use("/api/admin", adminRoutes);
@@ -77,7 +78,7 @@ app.use("/api/subsite", subsiteFloorRoomFetchRoutes);
 app.use("/api/subsite/sensor", subSiteSensorRoutes);
 app.use("/api/subsite/sensor/activation", subSiteSensorActivationRoutes);
 app.use("/api/subsite/cloud", subSiteSyncDbRoutes);
-
+app.use("/api/subsite/sensor-data", subSiteSensorDataRoutes);
 
 
 
