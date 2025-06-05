@@ -13,7 +13,7 @@ const Step2 = ({ handleNext, step, totalSteps }) => {
       backgroundColor: "#ffffff",
       borderColor: state.isFocused ? "#ffd700" : "#cccccc",
       fontSize: "1rem",
-      boxShadow: state.isFocused ? "0 0 5px #ffd700" : "none",
+      boxShadow: state.isFocused ? "0 0 5pxrgb(51, 34, 159)" : "none",
       "&:hover": { borderColor: "#ffd700" },
     }),
   };

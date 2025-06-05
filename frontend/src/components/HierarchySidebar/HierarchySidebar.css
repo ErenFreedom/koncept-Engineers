@@ -1,0 +1,232 @@
+.hierarchy-sidebar {
+  width: 260px;
+  background-color: #111;
+  color: #e0e0e0;
+  padding: 20px 16px;
+  overflow-y: auto;
+  height: calc(100vh - 80px);
+  border-right: 1px solid #222;
+  box-sizing: border-box;
+  font-family: "Roboto", sans-serif;
+  user-select: none;
+  transition: background-color 0.3s ease;
+  position: relative; /* normal flow on desktop */
+  transform: none;
+  z-index: auto;
+}
+
+/* Sidebar headings */
+.sidebar-heading {
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 14px;
+  color: #fff;
+}
+
+/* Site and floor styles */
+.site-name,
+.floor-name {
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #1f1f1f;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.site-name:hover,
+.floor-name:hover {
+  background-color: #333;
+}
+
+/* Rooms */
+.room-list {
+  margin-left: 20px;
+  padding-left: 12px;
+  list-style: none;
+}
+
+.room-name {
+  font-size: 15px;
+  padding: 6px 0;
+  color: #bbb;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.room-name:hover {
+  color: #00ff00;
+}
+
+/* Buttons */
+.add-btn,
+.edit-btn,
+.delete-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: color 0.2s ease;
+  user-select: none;
+}
+
+.add-btn {
+  color: #00cc00;
+  margin-left: 8px;
+}
+
+.add-btn:hover {
+  color: #66ff66;
+}
+
+.delete-btn {
+  color: #ff5555;
+  margin-left: 6px;
+}
+
+.delete-btn:hover {
+  color: #ff8888;
+}
+
+/* Confirmation Modal */
+.confirm-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2500;
+}
+
+.confirm-modal-content {
+  background: #222;
+  padding: 24px 36px;
+  border-radius: 10px;
+  color: #eee;
+  text-align: center;
+  max-width: 320px;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.modal-confirm,
+.modal-cancel {
+  padding: 8px 20px;
+  font-size: 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.modal-confirm {
+  background-color: #d33;
+  color: #fff;
+}
+
+.modal-confirm:hover {
+  background-color: #ff4444;
+}
+
+.modal-cancel {
+  background-color: #444;
+  color: #ddd;
+}
+
+.modal-cancel:hover {
+  background-color: #666;
+}
+
+.toggle-sidebar-btn {
+  display: none; /* hide on desktop */
+}
+
+
+/* Mobile View */
+@media screen and (max-width: 768px) {
+  /* Sidebar hidden offscreen by default */
+  .hierarchy-sidebar {
+    position: fixed;
+    top: 60px; /* height of header */
+    left: 0;
+    width: 260px;
+    height: calc(100vh - 60px);
+    background-color: #121212;
+    border-right: 1px solid #222;
+    padding: 20px 16px;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1800;
+    overflow-y: auto;
+    box-sizing: border-box;
+  }
+
+  /* Sidebar visible when toggled */
+  .hierarchy-sidebar.open {
+    transform: translateX(0);
+  }
+
+  /* Overlay behind sidebar */
+  body.sidebar-open::after {
+    content: "";
+    position: fixed;
+    top: 60px;
+    left: 260px;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 1700;
+  }
+
+  /* Hide add/edit/delete buttons on mobile for cleaner UI */
+  .add-btn,
+  .edit-btn,
+  .delete-btn {
+    display: none !important;
+  }
+
+  /* Toggle button fixed on top left */
+  .toggle-sidebar-btn {
+    display: block;
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 1900;
+    background: transparent;
+    border: none;
+    color: #ddd;
+    font-size: 28px;
+    cursor: pointer;
+  }
+
+  /* Ensure header is fixed and visible */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 60px;
+    background-color: #111;
+    color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 2000;
+    box-sizing: border-box;
+  }
+  main, .content-area {
+    padding-top: 60px;
+  }
+}

@@ -1,0 +1,103 @@
+.subsite-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+  }
+  
+  .subsite-modal {
+    background: #1a1a1a;
+    color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 500px;
+    max-width: 90vw;
+    position: relative;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+  }
+  
+  .modal-fields input {
+    display: block;
+    width: 100%;
+    margin-bottom: 12px;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #333;
+    background: #000;
+    color: #fff;
+  }
+  
+  .subsite-btn {
+    width: 100%;
+    padding: 12px;
+    background: #ffd700;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 10px;
+  }
+  
+  .subsite-btn:hover {
+    background: #e6c200;
+  }
+  
+  .otp-input-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: center;
+  }
+  
+  .otp-box {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+    text-align: center;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background: #000;
+    color: white;
+  }
+  
+  .otp-box:focus {
+    border: 1px solid #ffd700;
+    box-shadow: 0 0 10px #ffd700;
+    outline: none;
+  }
+  
+  .timer-text {
+    text-align: center;
+    font-style: italic;
+    color: #ccc;
+    margin-top: 8px;
+    font-size: 0.95rem;
+  }
+  
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: red;
+    font-size: 20px;
+    cursor: pointer;
+  }
+  
+  .otp-method-selector {
+    margin: 10px 0;
+  }
+  
+  .otp-method-selector select {
+    padding: 5px;
+    margin-left: 10px;
+  }
+  
