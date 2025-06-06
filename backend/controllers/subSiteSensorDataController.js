@@ -1,6 +1,7 @@
 const db = require("../db/connector");
 const jwt = require("jsonwebtoken");
 
+/** ✅ Check if table exists */
 const checkIfSensorTableExists = async (tableName) => {
   try {
     console.log(`🔍 Checking if table ${tableName} exists...`);
@@ -12,25 +13,39 @@ const checkIfSensorTableExists = async (tableName) => {
   }
 };
 
+/** ✅ Sub-site sensor data insert controller */
 const insertSubsiteSensorData = async (req, res) => {
   try {
     console.log("🚀 Incoming sub-site sensor data...");
 
     const token = req.headers.authorization?.split(" ")[1];
-    if (!token) return res.status(401).json({ message: "Unauthorized: No token provided" });
+    if (!token) {
+      console.error("❌ No token provided in headers.");
+      return res.status(401).json({ message: "Unauthorized: No token provided" });
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_APP);
     const { companyId } = decoded;
 
+    // 🔍 Log decoded token
+    console.log("🔑 Token Decoded:", decoded);
+
     const { subsiteId, sensorId, batch } = req.body;
 
+    // 🔍 Log full payload
+    console.log("📦 Payload received:", JSON.stringify(req.body, null, 2));
+
     if (!companyId || !subsiteId || !sensorId || !Array.isArray(batch) || batch.length === 0) {
+      console.error("❌ Missing or invalid fields in payload.");
       return res.status(400).json({ message: "companyId, subsiteId, sensorId and non-empty batch are required" });
     }
 
     const tableName = `SensorData_${companyId}_${subsiteId}_${sensorId}`;
+    console.log(`📌 Target Table: ${tableName}`);
+
     const tableExists = await checkIfSensorTableExists(tableName);
     if (!tableExists) {
+      console.error(`❌ Table ${tableName} does not exist.`);
       return res.status(500).json({ message: `Table ${tableName} does not exist.` });
     }
 
@@ -44,6 +59,9 @@ const insertSubsiteSensorData = async (req, res) => {
 
     const placeholders = values.map(() => `(?, ?, ?, ?, ?)`).join(", ");
     const insertQuery = `INSERT INTO ${tableName} (sensor_id, value, quality, quality_good, timestamp) VALUES ${placeholders}`;
+
+    console.log("📝 Prepared SQL:", insertQuery);
+    console.log("📊 Values:", JSON.stringify(values, null, 2));
 
     await db.execute(insertQuery, values.flat());
 
