@@ -13,7 +13,6 @@ const checkIfSensorTableExists = async (tableName) => {
   }
 };
 
-/** ✅ Sub-site sensor data insert controller */
 const insertSubsiteSensorData = async (req, res) => {
   try {
     console.log("🚀 Incoming sub-site sensor data...");
@@ -27,12 +26,10 @@ const insertSubsiteSensorData = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET_APP);
     const { companyId } = decoded;
 
-    // 🔍 Log decoded token
     console.log("🔑 Token Decoded:", decoded);
 
     const { subsiteId, sensorId, batch } = req.body;
 
-    // 🔍 Log full payload
     console.log("📦 Payload received:", JSON.stringify(req.body, null, 2));
 
     if (!companyId || !subsiteId || !sensorId || !Array.isArray(batch) || batch.length === 0) {

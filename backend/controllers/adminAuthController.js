@@ -112,7 +112,6 @@ const verifyAdminLoginOtp = async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }
 
-    // ✅ Fetch admin and main company details
     const [[admin]] = await db.execute(
       `SELECT 
          a.id AS admin_id,
@@ -130,7 +129,6 @@ const verifyAdminLoginOtp = async (req, res) => {
       return res.status(404).json({ message: "Admin not found or not linked to company" });
     }
 
-    // ✅ Fetch sub-sites under this main company
     const [subSites] = await db.execute(
       `SELECT id AS subSiteId, name AS subSiteName, email AS subSiteEmail
        FROM Company WHERE parent_company_id = ?`,
