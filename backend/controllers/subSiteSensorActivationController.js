@@ -186,7 +186,8 @@ const removeActiveSubSiteSensor = async (req, res) => {
   
   const getAllActiveSubSiteSensors = async (req, res) => {
     try {
-      const { subsiteId } = req.query;
+      const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
       const adminDetails = getAdminDetailsFromToken(req);
       if (!adminDetails || !subsiteId) {
         return res.status(401).json({ message: "Unauthorized or Sub-site ID missing" });
