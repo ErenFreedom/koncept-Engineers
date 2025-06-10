@@ -21,6 +21,7 @@ import EditProfile from "./components/EditProfileModal/EditProfile";
 
 import { FormDataProvider } from "./context/FormDataContext"; 
 import { AuthProvider } from "./context/AuthContext"; // ✅ import AuthContext
+import { ModeProvider } from "./context/ModeContext"; // ModeContext 
 
 const App = () => {
   return (
@@ -28,6 +29,7 @@ const App = () => {
       <PersistGate loading={null} persistor={persistor}> 
         <FormDataProvider> 
           <AuthProvider> {/* ✅ Wrap AuthProvider here */}
+            <ModeProvider>
             <Router>
               <ToastContainer position="top-right" autoClose={3000} />
               <Routes>
@@ -46,6 +48,7 @@ const App = () => {
                 <Route path="/admin/edit-profile/:id" element={<EditProfile />} />
               </Routes>
             </Router>
+            </ModeProvider>
           </AuthProvider>
         </FormDataProvider>
       </PersistGate>

@@ -1,91 +1,68 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
-import HierarchySidebar from "../../components/HierarchySidebar/HierarchySidebar";
-import BlueprintViewer from "../../components/BlueprintViewer/BlueprintViewer";
-import PlaceholderView from "../../components/BlueprintViewer/PlaceholderView";
-import RoomOverlay from "../../components/RoomOverlay/RoomOverlay";
+import EngineeringDashboard from "./EngineeringDashboard";
+import OperationalDashboard from "./OperationalDashboard";
+import ModeSwitcher from "../../components/Modeswitcher/Modeswitcher";
+
+// Contexts
 import { useAuth } from "../../context/AuthContext";
+import { useMode } from "../../context/ModeContext"
+
+// Styles
 import "./Dashboard.css";
 
 const Dashboard = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  // Dummy admin for local testing
-  const { accessToken, logout } = useAuth();
-  const admin = {
+  const { accessToken, logout, admin: authAdmin } = useAuth();
+  const { mode, MODES } = useMode();
+
+  // Dummy admin object for local testing
+  const admin = authAdmin || {
     firstName: "Dev",
     lastName: "User",
-    id: "dummy-id"
+    id: "local-dev-id",
   };
 
-  const [selectedSiteId, setSelectedSiteId] = useState(null);
-  const [focusedFloor, setFocusedFloor] = useState(null);
-  const [selectedRoom, setSelectedRoom] = useState(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false); // 👈 Sidebar toggle state
-
-  // Auth check disabled for now
+  // Disabled auth check for local development
   useEffect(() => {
-    // if (!admin || !accessToken) {
+    // Uncomment for production use
+
+    // if (!authAdmin || !accessToken) {
     //   toast.error("Session expired. Please log in again.");
     //   navigate("/AuthAdmin");
     //   return;
     // }
 
-    // if (admin.id.toString() !== id.toString()) {
+    // if (authAdmin.id.toString() !== id.toString()) {
     //   toast.error("Unauthorized access!");
     //   logout();
     //   navigate("/AuthAdmin");
     //   return;
     // }
-  }, [admin, accessToken, id, navigate, logout]);
+  }, [authAdmin, accessToken, id, navigate, logout]);
 
   return (
-    <div className="dashboard-container">
-      <DashboardHeader />
+    <div className="min-h-screen bg-[#0a1b30] text-white relative">
+      {/* Mode switcher toggle */}
+      <ModeSwitcher />
 
-      {/* 📱 Toggle Button for Mobile */}
-      <button
-        className="toggle-sidebar-btn"
-        onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-      >
-        ☰
-      </button>
-
-      <div className="dashboard-body">
-        {/* Sidebar visible conditionally on small screens */}
-        <div className={`hierarchy-wrapper ${isSidebarOpen ? "open" : ""}`}>
-          <HierarchySidebar
-            onSiteSelect={setSelectedSiteId}
-            onFloorExpand={(floorId) =>
-              setFocusedFloor({ zoomDistance: 1.5, fov: 35, floor: floorId })
-            }
-            onRoomSelect={setSelectedRoom}
-          />
+      {/* Dashboard switch based on current mode */}
+      {mode === MODES.ENGINEERING ? (
+        <EngineeringDashboard admin={admin} />
+      ) : mode === MODES.OPERATIONAL ? (
+        <OperationalDashboard admin={admin} />
+      ) : (
+        <div className="text-center mt-10 text-red-400">
+          Unknown dashboard mode selected.
         </div>
-
-        <div className="dashboard-main-content">
-          <h1>Welcome, {admin.firstName} {admin.lastName}!</h1>
-          <p>Select a room to view sensor data 📟</p>
-
-          <div style={{ width: '100%', maxWidth: '1000px', margin: '0 auto' }}>
-            {selectedSiteId ? (
-              <BlueprintViewer focusFloor={focusedFloor} />
-            ) : (
-              <PlaceholderView />
-            )}
-          </div>
-        </div>
-
-        {selectedRoom && (
-          <RoomOverlay room={selectedRoom} onClose={() => setSelectedRoom(null)} />
-        )}
-      </div>
+      )}
     </div>
   );
 };
 
 export default Dashboard;
+
 
