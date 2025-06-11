@@ -6,14 +6,25 @@ const getAdminDetailsFromToken = (req) => {
     const authHeader =
       req.headers.authorization ||
       req.headers.Authorization ||
-      req.get("authorization") ||
-      req.get("Authorization");
+      req.get?.("authorization") ||
+      req.get?.("Authorization");
 
-    const token = authHeader?.split(" ")[1];
-    if (!token) return null;
+    console.log("📨 Raw Auth Header:", authHeader);
+    console.log("🔐 JWT_SECRET_APP:", process.env.JWT_SECRET_APP?.length + " chars");
+
+    const token = authHeader?.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : authHeader;
+
+    console.log("📦 Extracted Token:", token?.substring(0, 40) + "...");
+
+    if (!token) {
+      console.error("❌ No token found in request headers");
+      return null;
+    }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET_APP);
-    console.log("🔍 Extracted Admin Details from Token:", decoded);
+    console.log("✅ Token decoded successfully:", decoded);
 
     const companyId = decoded.companyId || decoded.company_id;
     if (!companyId) {
@@ -27,6 +38,7 @@ const getAdminDetailsFromToken = (req) => {
     return null;
   }
 };
+
 
 
 const activateSubSiteSensor = async (req, res) => {
