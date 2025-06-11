@@ -13,7 +13,7 @@ router.post("/activate", activateSubSiteSensor);
 
 router.post("/deactivate", deactivateSubSiteSensor);
 
-router.delete("/remove", removeActiveSubSiteSensor);
+router.post("/remove", removeActiveSubSiteSensor);
 
 router.get("/active", getAllActiveSubSiteSensors);
 
