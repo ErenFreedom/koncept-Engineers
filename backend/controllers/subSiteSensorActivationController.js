@@ -6,7 +6,7 @@ const getAdminDetailsFromToken = (req) => {
     const authHeader =
       req.headers.authorization ||
       req.headers.Authorization ||
-      req.get("authorization") || // fallback
+      req.get("authorization") ||
       req.get("Authorization");
 
     const token = authHeader?.split(" ")[1];
@@ -27,6 +27,7 @@ const getAdminDetailsFromToken = (req) => {
     return null;
   }
 };
+
 
 const activateSubSiteSensor = async (req, res) => {
     try {
@@ -135,55 +136,55 @@ const deactivateSubSiteSensor = async (req, res) => {
   }
 };
 
-
 const removeActiveSubSiteSensor = async (req, res) => {
-    try {
-      const { sensorId, subsiteId } = req.body;
-  
-      if (!sensorId || !subsiteId) {
-        return res.status(400).json({ message: "Sensor ID and Sub-site ID are required" });
-      }
-  
-      const adminDetails = getAdminDetailsFromToken(req);
-      if (!adminDetails) {
-        return res.status(401).json({ message: "Unauthorized: Invalid token" });
-      }
-  
-      const { companyId } = adminDetails;
-      const sensorTable = `Sensor_${companyId}_${subsiteId}`;
-      const sensorDataTable = `SensorData_${companyId}_${subsiteId}_${sensorId}`;
-  
-      const [sensor] = await db.execute(
-        `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
-        [sensorId]
-      );
-      if (sensor.length === 0) {
-        return res.status(404).json({ message: "Sensor not found in Active Sensors" });
-      }
-  
-      if (sensor[0].is_active === 1) {
-        return res.status(400).json({ message: "Sensor must be deactivated before removal" });
-      }
-  
-      await db.execute(`DELETE FROM ${sensorTable} WHERE bank_id = ?`, [sensorId]);
-      console.log(`✅ Sensor ${sensorId} deleted from ${sensorTable}`);
-  
-      try {
-        await db.execute(`DROP TABLE IF EXISTS ${sensorDataTable}`);
-        console.log(`🗑 Table ${sensorDataTable} dropped successfully.`);
-      } catch (dropErr) {
-        console.error(`❌ Error dropping table ${sensorDataTable}:`, dropErr.message);
-        return res.status(500).json({ message: "Failed to drop sensor data table", error: dropErr.message });
-      }
-  
-      res.status(200).json({ message: `Sensor ${sensorId} removed and table ${sensorDataTable} dropped successfully` });
-  
-    } catch (error) {
-      console.error("❌ Error in removeActiveSubSiteSensor:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
+  try {
+    const { sensorId, subsiteId } = req.body;
+
+    if (!sensorId || !subsiteId) {
+      return res.status(400).json({ message: "Sensor ID and Sub-site ID are required" });
     }
-  };
-  
+
+    const adminDetails = getAdminDetailsFromToken(req);
+    if (!adminDetails) {
+      return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    }
+
+    const { companyId } = adminDetails;
+    const sensorTable = `Sensor_${companyId}_${subsiteId}`;
+    const sensorDataTable = `SensorData_${companyId}_${subsiteId}_${sensorId}`;
+
+    const [sensor] = await db.execute(
+      `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
+      [sensorId]
+    );
+
+    if (sensor.length === 0) {
+      return res.status(404).json({ message: "Sensor not found in Active Sensors" });
+    }
+
+    if (sensor[0].is_active === 1) {
+      return res.status(400).json({ message: "Sensor must be deactivated before removal" });
+    }
+
+    await db.execute(`DELETE FROM ${sensorTable} WHERE bank_id = ?`, [sensorId]);
+    console.log(`✅ Sensor ${sensorId} deleted from ${sensorTable}`);
+
+    try {
+      await db.execute(`DROP TABLE IF EXISTS ${sensorDataTable}`);
+      console.log(`🗑 Table ${sensorDataTable} dropped successfully.`);
+    } catch (dropErr) {
+      console.error(`❌ Error dropping table ${sensorDataTable}:`, dropErr.message);
+      return res.status(500).json({ message: "Failed to drop sensor data table", error: dropErr.message });
+    }
+
+    res.status(200).json({ message: `Sensor ${sensorId} removed and table ${sensorDataTable} dropped successfully` });
+
+  } catch (error) {
+    console.error("❌ Error in removeActiveSubSiteSensor:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
   const getAllActiveSubSiteSensors = async (req, res) => {
     try {
       const subsiteId = req.query.subsite_id || req.query.subsiteId;
@@ -230,47 +231,48 @@ const removeActiveSubSiteSensor = async (req, res) => {
   };
   
   const reactivateSubSiteSensor = async (req, res) => {
-    try {
-      const { sensorId, subsiteId } = req.body;
-  
-      if (!sensorId || !subsiteId) {
-        return res.status(400).json({ message: "Sensor ID and Sub-site ID are required" });
-      }
-  
-      const adminDetails = getAdminDetailsFromToken(req);
-      if (!adminDetails) {
-        return res.status(401).json({ message: "Unauthorized: Invalid token" });
-      }
-  
-      const { companyId } = adminDetails;
-      const sensorTable = `Sensor_${companyId}_${subsiteId}`;
-  
-      const [sensor] = await db.execute(
-        `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
-        [sensorId]
-      );
-  
-      if (sensor.length === 0) {
-        return res.status(404).json({ message: "Sensor not found in managed sensors" });
-      }
-  
-      if (sensor[0].is_active === 1) {
-        return res.status(400).json({ message: "Sensor is already active" });
-      }
-  
-      await db.execute(
-        `UPDATE ${sensorTable} SET is_active = 1 WHERE bank_id = ?`,
-        [sensorId]
-      );
-  
-      console.log(`✅ Sensor ${sensorId} reactivated successfully in ${sensorTable}`);
-      res.status(200).json({ message: `Sensor ${sensorId} reactivated successfully` });
-  
-    } catch (error) {
-      console.error("❌ Error reactivating sub-site sensor:", error);
-      res.status(500).json({ message: "Internal Server Error", error: error.message });
+  try {
+    const { sensorId, subsiteId } = req.body;
+
+    if (!sensorId || !subsiteId) {
+      return res.status(400).json({ message: "Sensor ID and Sub-site ID are required" });
     }
-  };
+
+    const adminDetails = getAdminDetailsFromToken(req);
+    if (!adminDetails) {
+      return res.status(401).json({ message: "Unauthorized: Invalid token" });
+    }
+
+    const { companyId } = adminDetails;
+    const sensorTable = `Sensor_${companyId}_${subsiteId}`;
+
+    const [sensor] = await db.execute(
+      `SELECT * FROM ${sensorTable} WHERE bank_id = ?`,
+      [sensorId]
+    );
+
+    if (sensor.length === 0) {
+      return res.status(404).json({ message: "Sensor not found in managed sensors" });
+    }
+
+    if (sensor[0].is_active === 1) {
+      return res.status(400).json({ message: "Sensor is already active" });
+    }
+
+    await db.execute(
+      `UPDATE ${sensorTable} SET is_active = 1 WHERE bank_id = ?`,
+      [sensorId]
+    );
+
+    console.log(`✅ Sensor ${sensorId} reactivated successfully in ${sensorTable}`);
+    res.status(200).json({ message: `Sensor ${sensorId} reactivated successfully` });
+
+  } catch (error) {
+    console.error("❌ Error reactivating sub-site sensor:", error);
+    res.status(500).json({ message: "Internal Server Error", error: error.message });
+  }
+};
+
 
 module.exports = {
   activateSubSiteSensor,
