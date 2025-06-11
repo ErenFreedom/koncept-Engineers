@@ -211,9 +211,10 @@ const removeActiveSubSiteSensor = async (req, res) => {
       const bankTable = `SensorBank_${companyId}_${subsiteId}`;
   
       const [sensors] = await db.execute(`
-        SELECT s.*, b.name 
+        SELECT s.*, s.bank_id AS id, b.name
         FROM ${sensorTable} s
         JOIN ${bankTable} b ON s.bank_id = b.id
+
       `);
   
       res.status(200).json({ sensors });
