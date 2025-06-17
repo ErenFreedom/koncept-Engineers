@@ -1,27 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Bell, User } from "lucide-react";
+import { Bell, User, AppWindow } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
-import "./DashboardHeader.css";
 import { useAuth } from "../../context/AuthContext";
+import Launchpad from "../Launchpad/Launchpad";
+import "./DashboardHeader.css";
 
-const DashboardHeader = () => {
+const DashboardHeader = ({ onSelect }) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [password, setPassword] = useState("");
-  const dropdownRef = useRef(null);
+  const [showLaunchpad, setShowLaunchpad] = useState(false);
 
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const { admin, accessToken, logout } = useAuth();
 
   // Close dropdown if clicked outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownVisible(false);
       }
     };
@@ -29,7 +28,6 @@ const DashboardHeader = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Toggle dropdown via keyboard (Enter or Space)
   const handleProfileKeyDown = (e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -39,13 +37,10 @@ const DashboardHeader = () => {
     }
   };
 
-  // Logout function
   const handleLogout = async () => {
     try {
       const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId || !admin?.id) {
-        console.warn("Missing sessionId or adminId on logout");
-      } else {
+      if (sessionId && admin?.id) {
         await axios.post(
           `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
           { adminId: admin.id, sessionId },
@@ -53,13 +48,12 @@ const DashboardHeader = () => {
         );
       }
     } catch (error) {
-      console.warn("Logout request failed (continuing):", error);
+      console.warn("Logout request failed:", error);
     }
     logout();
     navigate("/Auth");
   };
 
-  // Password verify before navigating to Edit Profile
   const verifyPassword = async () => {
     if (!password.trim()) {
       toast.error("Password cannot be empty");
@@ -81,12 +75,11 @@ const DashboardHeader = () => {
         toast.error("Incorrect password");
       }
     } catch (err) {
-      toast.error("Verification failed, please try again");
+      toast.error("Verification failed");
       console.error(err);
     }
   };
 
-  // Close modal on Escape key
   useEffect(() => {
     const onEsc = (e) => {
       if (e.key === "Escape" && showModal) {
@@ -108,7 +101,15 @@ const DashboardHeader = () => {
         <div className="dashboard-title">Koncept Manager - Overview</div>
 
         <div className="dashboard-icons" ref={dropdownRef}>
+          <AppWindow
+            className="launchpad-icon"
+            title="Open Launchpad"
+            onClick={() => setShowLaunchpad(true)}
+            role="button"
+            tabIndex={0}
+          />
           <Bell className="notification-icon" />
+
           <User
             className="profile-icon"
             role="button"
@@ -118,12 +119,9 @@ const DashboardHeader = () => {
             onClick={() => setDropdownVisible((v) => !v)}
             onKeyDown={handleProfileKeyDown}
           />
+
           {dropdownVisible && (
-            <div
-              className="dropdown-menu"
-              role="menu"
-              aria-label="Profile options"
-            >
+            <div className="dropdown-menu" role="menu" aria-label="Profile options">
               <div
                 tabIndex={0}
                 role="menuitem"
@@ -131,12 +129,6 @@ const DashboardHeader = () => {
                 onClick={() => {
                   navigate("/admin/view-profile");
                   setDropdownVisible(false);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    navigate("/admin/view-profile");
-                    setDropdownVisible(false);
-                  }
                 }}
               >
                 👤 View Profile
@@ -149,43 +141,15 @@ const DashboardHeader = () => {
                   setShowModal(true);
                   setDropdownVisible(false);
                 }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    setShowModal(true);
-                    setDropdownVisible(false);
-                  }
-                }}
               >
                 ✏️ Edit Profile
               </div>
+              <div className="dropdown-item" role="menuitem">🔐 Change Password</div>
+              <div className="dropdown-item" role="menuitem">❓ Need Help?</div>
               <div
-                tabIndex={0}
-                role="menuitem"
-                className="dropdown-item"
-                onClick={() => {}}
-                onKeyDown={(e) => e.preventDefault()}
-              >
-                🔐 Change Password
-              </div>
-              <div
-                tabIndex={0}
-                role="menuitem"
-                className="dropdown-item"
-                onClick={() => {}}
-                onKeyDown={(e) => e.preventDefault()}
-              >
-                ❓ Need Help?
-              </div>
-              <div
-                tabIndex={0}
-                role="menuitem"
                 className="dropdown-item logout"
+                role="menuitem"
                 onClick={handleLogout}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    handleLogout();
-                  }
-                }}
               >
                 🚪 Logout
               </div>
@@ -193,6 +157,13 @@ const DashboardHeader = () => {
           )}
         </div>
       </header>
+
+      {showLaunchpad && (
+        <Launchpad
+          onClose={() => setShowLaunchpad(false)}
+          onSelect={onSelect} // ✅ Pass handler for module selection
+        />
+      )}
 
       {showModal && (
         <div
@@ -233,7 +204,6 @@ const DashboardHeader = () => {
                 className="modal-submit"
                 onClick={verifyPassword}
                 disabled={!password.trim()}
-                aria-disabled={!password.trim()}
               >
                 Verify
               </button>
@@ -246,4 +216,6 @@ const DashboardHeader = () => {
 };
 
 export default DashboardHeader;
+
+
 

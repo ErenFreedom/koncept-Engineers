@@ -1,7 +1,11 @@
 import React from "react";
+import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
 
 const OperationalDashboard = ({ admin }) => {
   return (
+    <div className="dashboard-container">
+      <DashboardHeader />
+    
     <div className="p-6">
       <h1 className="text-3xl font-semibold text-white mb-2">
         Operational Dashboard
@@ -15,6 +19,7 @@ const OperationalDashboard = ({ admin }) => {
           This is a placeholder for Operational KPIs and controls.
         </p>
       </div>
+    </div>
     </div>
   );
 };

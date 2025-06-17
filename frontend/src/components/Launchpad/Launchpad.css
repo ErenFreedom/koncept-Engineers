@@ -1,0 +1,104 @@
+/* Fullscreen overlay */
+.launchpad-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  backdrop-filter: blur(10px);
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Container box */
+.launchpad-container {
+  width: 85%;
+  max-width: 1000px;
+  background: #121212;
+  border-radius: 20px;
+  padding: 2rem;
+  box-shadow: 0 0 30px rgba(255, 255, 255, 0.08);
+  color: white;
+  position: relative;
+  animation: popIn 0.3s ease;
+}
+
+/* Top bar (X icon) */
+.launchpad-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2rem;
+}
+
+.launchpad-close {
+  cursor: pointer;
+  color: #ffffff;
+  font-size: 1.5rem;
+  transition: color 0.2s ease;
+}
+
+.launchpad-close:hover {
+  color: #0ea5e9; /* Subtle blue */
+}
+
+/* Card grid layout */
+.launchpad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Individual cards */
+.launchpad-card {
+  background-color: #1e1e1e;
+  border-radius: 15px;
+  border: 1px solid transparent;
+  padding: 1.5rem;
+  text-align: center;
+  transition: transform 0.2s ease, background 0.3s, border 0.3s;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.launchpad-card:hover {
+  transform: translateY(-5px);
+  background: #272727;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Icon style */
+.card-icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  filter: brightness(1.2);
+}
+
+/* Module name */
+.card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #f5f5f5;
+  margin-bottom: 0.5rem;
+}
+
+/* Description text */
+.card-desc {
+  font-size: 0.88rem;
+  color: #b0b0b0;
+}
+
+/* Entry animation */
+@keyframes popIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+

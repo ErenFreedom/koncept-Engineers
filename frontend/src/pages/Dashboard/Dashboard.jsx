@@ -1,68 +1,68 @@
-import React, { useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
-import EngineeringDashboard from "./EngineeringDashboard";
-import OperationalDashboard from "./OperationalDashboard";
-import ModeSwitcher from "../../components/Modeswitcher/Modeswitcher";
+import React, { useState } from "react";
+import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
+import Launchpad from "../../components/Launchpad/Launchpad";
 
-// Contexts
-import { useAuth } from "../../context/AuthContext";
-import { useMode } from "../../context/ModeContext"
+// Module pages
+import DataSetup from "../../components/Launchpadmodules/DataSetup";
+import Devices from "../../components/Launchpadmodules/Devices";
+import Account from "../../components/Launchpadmodules/Account";
+import Overview from "../../components/Launchpadmodules/Operationmanager";
 
-// Styles
 import "./Dashboard.css";
 
 const Dashboard = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const [showLaunchpad, setShowLaunchpad] = useState(false);
+  const [selectedModuleId, setSelectedModuleId] = useState(null);
 
-  const { accessToken, logout, admin: authAdmin } = useAuth();
-  const { mode, MODES } = useMode();
-
-  // Dummy admin object for local testing
-  const admin = authAdmin || {
-    firstName: "Dev",
-    lastName: "User",
-    id: "local-dev-id",
+  // Handle module selection from Launchpad
+  const handleModuleSelect = (moduleId) => {
+    setSelectedModuleId(moduleId);
+    setShowLaunchpad(false); // close modal after selection
   };
 
-  // Disabled auth check for local development
-  useEffect(() => {
-    // Uncomment for production use
-
-    // if (!authAdmin || !accessToken) {
-    //   toast.error("Session expired. Please log in again.");
-    //   navigate("/AuthAdmin");
-    //   return;
-    // }
-
-    // if (authAdmin.id.toString() !== id.toString()) {
-    //   toast.error("Unauthorized access!");
-    //   logout();
-    //   navigate("/AuthAdmin");
-    //   return;
-    // }
-  }, [authAdmin, accessToken, id, navigate, logout]);
+  // Dynamically render selected module
+  const renderSelectedModule = () => {
+    switch (selectedModuleId) {
+      case "data-setup":
+        return <DataSetup />;
+      case "devices":
+        return <Devices />;
+      case "account":
+        return <Account />;
+      case "operation-manager":
+        return <Overview />;
+      default:
+        return (
+          <main className="dashboard-main">
+            <h1>Welcome to Koncept Engineers</h1>
+            <p>Choose a module from the Launchpad to get started.</p>
+          </main>
+        );
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#0a1b30] text-white relative">
-      {/* Mode switcher toggle */}
-      <ModeSwitcher />
+    <div className="dashboard-wrapper">
+      {/* Header with Launchpad trigger */}
+     <DashboardHeader 
+  onLaunchpadClick={() => setShowLaunchpad(true)} 
+  onSelect={handleModuleSelect}  
+/>
 
-      {/* Dashboard switch based on current mode */}
-      {mode === MODES.ENGINEERING ? (
-        <EngineeringDashboard admin={admin} />
-      ) : mode === MODES.OPERATIONAL ? (
-        <OperationalDashboard admin={admin} />
-      ) : (
-        <div className="text-center mt-10 text-red-400">
-          Unknown dashboard mode selected.
-        </div>
+    
+      {renderSelectedModule()}
+
+      {/* Launchpad modal */}
+      {showLaunchpad && (
+        <Launchpad onClose={() => setShowLaunchpad(false)} onSelect={handleModuleSelect} />
       )}
     </div>
   );
 };
 
 export default Dashboard;
+
+
+
 
 

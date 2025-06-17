@@ -1,145 +1,31 @@
-/* Root container */
-.dashboard-container {
+.dashboard-wrapper {
+  background-color: #121212;
+  color: white;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  background-color: #000;
-  color: #fff;
-  font-family: "Roboto", sans-serif;
 }
 
-/* Header */
-.dashboard-header {
-  height: 80px;
-  display: flex;
-  align-items: center;
-  padding: 0 20px;
-  background-color: #000;
-  color: #fff;
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-}
-
-/* Body layout */
-.dashboard-body {
-  display: flex;
+.dashboard-main {
   flex: 1;
-  height: calc(100vh - 80px);
-  overflow: hidden;
-  background-color: #000;
-}
-
-/* Main content */
-.dashboard-main-content {
-  flex: 1;
-  padding: 30px 40px;
-  overflow-y: auto;
-  background-color: #000;
-  color: #fff;
-  position: relative;
-}
-
-/* Heading */
-.dashboard-heading {
-  margin-bottom: 30px;
+  padding: 2rem;
   text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 }
 
-.dashboard-heading h1 {
+.dashboard-main h1 {
   font-size: 2rem;
-  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
-/* Sensor card grid */
-.sensor-grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 40px;
-  max-width: 1600px;
-  margin: 0 auto;
+.dashboard-main p {
+  font-size: 1.1rem;
+  color: #ccc;
 }
 
-/* Sensor card */
-.sensor-card {
-  background-color: #fff;
-  color: #000;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s ease;
-  cursor: pointer;
-}
-
-.sensor-card:hover {
-  transform: translateY(-5px);
-}
-
-/* Status indicator */
-.green-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #00ff00;
-  animation: pulse 1s infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 0.6; }
-  50% { transform: scale(1.3); opacity: 1; }
-}
-
-/* Responsive adjustments */
-@media screen and (max-width: 1024px) {
-  .dashboard-main-content {
-    padding: 20px 30px;
-  }
-}
-
-@media screen and (max-width: 768px) {
-  .dashboard-body {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .dashboard-main-content {
-    padding: 20px;
-    height: calc(100vh - 80px);
-  }
-
-  .sensor-grid-container {
-    grid-template-columns: 1fr;
-    gap: 20px;
-  }
-
-  .edit-button,
-  .add-button,
-  .delete-button {
-    display: none !important;
-  }
-
-  .dashboard-heading h1 {
-    font-size: 1.6rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-}
-
-@media screen and (max-width: 480px) {
-  .dashboard-main-content {
-    padding: 15px 20px;
-  }
-
-  .sensor-card {
-    padding: 15px;
-    font-size: 0.9rem;
-  }
-
-  .dashboard-heading h1 {
-    font-size: 1.3rem;
-  }
-}
 
 
 
