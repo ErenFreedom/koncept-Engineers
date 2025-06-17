@@ -16,7 +16,8 @@ const decodeToken = (req) => {
 
 const getFloors = async (req, res) => {
   const decoded = decodeToken(req);
-  if (!decoded?.companyId) return res.status(401).json({ message: "Unauthorized" });
+  if (!decoded?.companyId)
+    return res.status(401).json({ message: "Unauthorized" });
 
   const floorTable = `Floor_${decoded.companyId}`;
   try {
@@ -30,7 +31,8 @@ const getFloors = async (req, res) => {
 
 const getRooms = async (req, res) => {
   const decoded = decodeToken(req);
-  if (!decoded?.companyId) return res.status(401).json({ message: "Unauthorized" });
+  if (!decoded?.companyId)
+    return res.status(401).json({ message: "Unauthorized" });
 
   const roomTable = `Room_${decoded.companyId}`;
   try {
@@ -42,18 +44,154 @@ const getRooms = async (req, res) => {
   }
 };
 
-const getSensors = async (req, res) => {
+const getFloorAreas = async (req, res) => {
   const decoded = decodeToken(req);
-  if (!decoded?.companyId) return res.status(401).json({ message: "Unauthorized" });
+  if (!decoded?.companyId)
+    return res.status(401).json({ message: "Unauthorized" });
 
-  const sensorTable = `SensorBank_${decoded.companyId}`;
+  const table = `FloorArea_${decoded.companyId}`;
   try {
-    const [rows] = await db.query(`SELECT id, name, object_id, room_id FROM ${sensorTable}`);
-    res.status(200).json({ sensors: rows });
+    const [rows] = await db.query(`SELECT id, name, floor_id FROM ${table}`);
+    res.status(200).json({ floorAreas: rows });
   } catch (err) {
-    console.error("❌ Failed to fetch sensors:", err.message);
-    res.status(500).json({ message: "Failed to fetch sensors" });
+    console.error("❌ Failed to fetch floor areas:", err.message);
+    res.status(500).json({ message: "Failed to fetch floor areas" });
   }
 };
 
-module.exports = { getFloors, getRooms, getSensors };
+const getRoomSegments = async (req, res) => {
+  const decoded = decodeToken(req);
+  if (!decoded?.companyId)
+    return res.status(401).json({ message: "Unauthorized" });
+
+  const table = `RoomSegment_${decoded.companyId}`;
+  try {
+    const [rows] = await db.query(`SELECT id, name, room_id FROM ${table}`);
+    res.status(200).json({ roomSegments: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch room segments:", err.message);
+    res.status(500).json({ message: "Failed to fetch room segments" });
+  }
+};
+
+const getPoEs = async (req, res) => {
+  const decoded = decodeToken(req);
+  if (!decoded?.companyId)
+    return res.status(401).json({ message: "Unauthorized" });
+
+  const table = `PieceOfEquipment_${decoded.companyId}`;
+  try {
+    const [rows] = await db.query(
+      `SELECT id, name, location_type, location_id FROM ${table}`
+    );
+    res.status(200).json({ piecesOfEquipment: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch PoEs:", err.message);
+    res.status(500).json({ message: "Failed to fetch pieces of equipment" });
+  }
+};
+
+
+const getSubSiteFloors = async (req, res) => {
+  const decoded = decodeToken(req);
+  const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
+  if (!decoded?.companyId || !subsiteId)
+    return res.status(401).json({ message: "Unauthorized or missing sub-site ID" });
+
+  const table = `Floor_${decoded.companyId}_${subsiteId}`;
+  try {
+    const [rows] = await db.query(`SELECT id, name FROM ${table}`);
+    res.status(200).json({ floors: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch sub-site floors:", err.message);
+    res.status(500).json({ message: "Failed to fetch sub-site floors" });
+  }
+};
+
+const getSubSiteRooms = async (req, res) => {
+  const decoded = decodeToken(req);
+  const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
+  if (!decoded?.companyId || !subsiteId)
+    return res.status(401).json({ message: "Unauthorized or missing sub-site ID" });
+
+  const table = `Room_${decoded.companyId}_${subsiteId}`;
+  try {
+    const [rows] = await db.query(`SELECT id, name, floor_id FROM ${table}`);
+    res.status(200).json({ rooms: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch sub-site rooms:", err.message);
+    res.status(500).json({ message: "Failed to fetch sub-site rooms" });
+  }
+};
+
+const getSubSiteFloorAreas = async (req, res) => {
+  const decoded = decodeToken(req);
+  const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
+  if (!decoded?.companyId || !subsiteId)
+    return res.status(401).json({ message: "Unauthorized or missing sub-site ID" });
+
+  const table = `FloorArea_${decoded.companyId}_${subsiteId}`;
+  try {
+    const [rows] = await db.query(`SELECT id, name, floor_id FROM ${table}`);
+    res.status(200).json({ floorAreas: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch sub-site floor areas:", err.message);
+    res.status(500).json({ message: "Failed to fetch sub-site floor areas" });
+  }
+};
+
+const getSubSiteRoomSegments = async (req, res) => {
+  const decoded = decodeToken(req);
+  const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
+  if (!decoded?.companyId || !subsiteId)
+    return res.status(401).json({ message: "Unauthorized or missing sub-site ID" });
+
+  const table = `RoomSegment_${decoded.companyId}_${subsiteId}`;
+  try {
+    const [rows] = await db.query(`SELECT id, name, room_id FROM ${table}`);
+    res.status(200).json({ roomSegments: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch sub-site room segments:", err.message);
+    res.status(500).json({ message: "Failed to fetch sub-site room segments" });
+  }
+};
+
+const getSubSitePoEs = async (req, res) => {
+  const decoded = decodeToken(req);
+  const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
+  if (!decoded?.companyId || !subsiteId)
+    return res.status(401).json({ message: "Unauthorized or missing sub-site ID" });
+
+  const table = `PieceOfEquipment_${decoded.companyId}_${subsiteId}`;
+  try {
+    const [rows] = await db.query(
+      `SELECT id, name, location_type, location_id FROM ${table}`
+    );
+    res.status(200).json({ piecesOfEquipment: rows });
+  } catch (err) {
+    console.error("❌ Failed to fetch sub-site PoEs:", err.message);
+    res.status(500).json({ message: "Failed to fetch sub-site equipment" });
+  }
+};
+
+
+
+
+
+module.exports = {
+  getFloors,
+  getRooms,
+  getFloorAreas,
+  getRoomSegments,
+  getPoEs,
+  getSubSiteFloors,
+  getSubSiteRooms,
+  getSubSiteFloorAreas,
+  getSubSiteRoomSegments,
+  getSubSitePoEs,
+};

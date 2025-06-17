@@ -34,7 +34,6 @@ const AdminAuth = () => {
       toast.success(`OTP sent to ${identifier}`);
 
       setOtpSent(true);
-      // ✅ Pass identifier via route state
       navigate("/AdminAuthOtp", { state: { identifier: identifier.trim() } });
     } catch (error) {
       console.error("❌ OTP sending failed:", error.response?.data || error.message);

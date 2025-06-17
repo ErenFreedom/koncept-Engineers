@@ -52,6 +52,7 @@ const subSiteSensorRoutes = require("./routes/subsiteSensorRoutes");
 const subSiteSensorActivationRoutes = require("./routes/subSiteSensorActivationRoutes");
 const subSiteSyncDbRoutes = require("./routes/subSiteSyncDbRoutes");
 const subSiteSensorDataRoutes = require("./routes/subSiteSensorData");
+const subSiteStructureRoutes = require("./routes/subSiteStructureRoutes");
 
 
 app.use("/api/admin", adminRoutes);
@@ -79,6 +80,7 @@ app.use("/api/subsite/sensor", subSiteSensorRoutes);
 app.use("/api/subsite/sensor/activation", subSiteSensorActivationRoutes);
 app.use("/api/subsite/cloud", subSiteSyncDbRoutes);
 app.use("/api/subsite/sensor-data", subSiteSensorDataRoutes);
+app.use("/api/subsite-structure", subSiteStructureRoutes);
 
 
 
