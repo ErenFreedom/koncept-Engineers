@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "./Hierarchy.css";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 
 const Hierarchy = () => {
   const { admin } = useAuth();
