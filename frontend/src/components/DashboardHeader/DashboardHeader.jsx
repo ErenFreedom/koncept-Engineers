@@ -13,6 +13,8 @@ const DashboardHeader = () => {
   const [password, setPassword] = useState("");
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
+  const [showLaunchpad, setShowLaunchpad] = useState(false);
+
 
   const { admin, accessToken, logout } = useAuth();
 
@@ -87,7 +89,8 @@ const DashboardHeader = () => {
         </div>
 
         <div className="header-right">
-          <FiGrid className="header-icon" title="Apps" />
+          <FiGrid className="header-icon" title="Apps" onClick={() => setShowLaunchpad(!showLaunchpad)} />
+
           <FiPhone className="header-icon" title="Contact Us" />
           <div className="profile-dropdown" ref={dropdownRef}>
             <FiUser className="header-icon" title="Profile" onClick={() => setDropdownVisible((prev) => !prev)} />
@@ -109,6 +112,32 @@ const DashboardHeader = () => {
           </div>
         </div>
       </header>
+
+      {showLaunchpad && (
+        <>
+          <div className="launchpad-overlay" onClick={() => setShowLaunchpad(false)} />
+          <div className="launchpad-panel">
+            <h3 className="launchpad-title">Launchpad</h3>
+            <p className="launchpad-subtitle">Access all your apps</p>
+
+            <div className="launchpad-grid">
+              {[
+                { label: "Home", icon: "/Home.png" },
+                { label: "Operations Manager", icon: "/Operational.png" },
+                { label: "Accounts", icon: "/Accounts.png" },
+                { label: "Devices", icon: "/Devices.png" },
+                { label: "Data Setup", icon: "/DataSetup.png" }
+              ].map((item, idx) => (
+                <div key={idx} className="launchpad-item">
+                  <img src={item.icon} alt={item.label} className="launchpad-icon" />
+                  <span>{item.label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
 
       {showModal && (
         <div className="modal-overlay">

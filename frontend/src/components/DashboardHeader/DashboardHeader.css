@@ -135,3 +135,68 @@
   background-color: #00bfa5;
   color: black;
 }
+
+
+/* === Launchpad Overlay === */
+.launchpad-overlay {
+  position: fixed;
+  top: 60px; /* below header */
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  z-index: 100;
+}
+
+/* === Launchpad Panel === */
+.launchpad-panel {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
+  height: 25vh;
+  background-color: #2a2a2a;
+  z-index: 101;
+  padding: 20px 40px;
+  color: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.launchpad-title {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.launchpad-subtitle {
+  font-size: 14px;
+  color: #bbbbbb;
+  margin-bottom: 15px;
+}
+
+/* Grid of icons */
+.launchpad-grid {
+  display: flex;
+  gap: 35px;
+  align-items: center;
+}
+
+.launchpad-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 10px;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.launchpad-item:hover {
+  background-color: #3a3a3a;
+}
+
+.launchpad-icon {
+  width: 42px;
+  height: 42px;
+  margin-bottom: 8px;
+}
