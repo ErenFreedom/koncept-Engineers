@@ -1,15 +1,19 @@
 // src/components/DataSetup/Overview/Overview.jsx
 import React, { useState } from "react";
 import "./Overview.css";
+import { useAuth } from "../../../context/AuthContext";
 
 const Overview = () => {
+  const { admin } = useAuth();
   const [showPartition, setShowPartition] = useState(true);
   const [showSites, setShowSites] = useState(true);
-  const sites = [
-    { name: "Main Site - Galgotias University" },
-    { name: "Subsite - Block A" },
-    { name: "Subsite - Block B" },
-    { name: "Subsite - Block C" },
+
+  const companyName = admin?.companyName || "Main Site";
+  const subSites = admin?.subSites || []; // assuming subSites is an array of names
+
+  const allSites = [
+    { name: `Main Site - ${companyName}` },
+    ...subSites.map((sub, i) => ({ name: `Subsite - ${sub.name || `Block ${i + 1}`}` })),
   ];
 
   const statistics = [
@@ -23,71 +27,41 @@ const Overview = () => {
 
   return (
     <div className="overview-tab">
-      <div className="collapsible-section">
-        <div
-          className="collapsible-header"
-          onClick={() => setShowPartition(!showPartition)}
-        >
+      {/* Partition Overview */}
+      <div className="section">
+        <div className="section-header" onClick={() => setShowPartition(!showPartition)}>
           <h3>Partition Overview</h3>
-          <span>{showPartition ? "▼" : "▶"}</span>
+          <div className="toggle-icon">{showPartition ? "▼" : "▶"}</div>
         </div>
         {showPartition && (
-          <div className="collapsible-body">
+          <div className="section-content">
             <div className="partition-form">
               <label>Partition *</label>
-              <input type="text" value="Galgotias University" disabled />
-            </div>
-            <div className="user-groups-table">
-              <div className="table-header">
-                <span>Name</span>
-                <span>Description</span>
-                <span>Role</span>
-              </div>
-              <div className="table-row">
-                <span>DV Standard</span>
-                <span>-</span>
-                <span>DV Standard</span>
-              </div>
-              <div className="table-row">
-                <span>DesigoCC Semantic Enrichment Manager</span>
-                <span>-</span>
-                <span>DesigoCC Semantic Enrichment Manager</span>
-              </div>
-              <div className="table-row">
-                <span>Storage Standard</span>
-                <span>-</span>
-                <span>Storage Standard</span>
-              </div>
-              <div className="table-row">
-                <span>Storage Advanced</span>
-                <span>-</span>
-                <span>Storage Advanced</span>
-              </div>
+              <input type="text" value={companyName} disabled />
             </div>
           </div>
         )}
       </div>
 
-      <div className="collapsible-section">
-        <div
-          className="collapsible-header"
-          onClick={() => setShowSites(!showSites)}
-        >
+      {/* Sites Overview */}
+      <div className="section">
+        <div className="section-header" onClick={() => setShowSites(!showSites)}>
           <h3>Sites Overview</h3>
-          <span>{showSites ? "▼" : "▶"}</span>
+          <div className="toggle-icon">{showSites ? "▼" : "▶"}</div>
         </div>
         {showSites && (
-          <div className="collapsible-body site-stack">
-            {sites.map((site, index) => (
+          <div className="section-content site-stack">
+            {allSites.map((site, index) => (
               <div key={index} className="site-card">
-                {site.name}
+                <h4>{site.name}</h4>
               </div>
             ))}
           </div>
         )}
       </div>
 
-      <div className="statistics-section">
+      {/* Statistics Section */}
+      <div className="stats-grid">
         {statistics.map((stat, index) => (
           <div key={index} className="stat-box">
             <div className="stat-value">{stat.value}</div>
