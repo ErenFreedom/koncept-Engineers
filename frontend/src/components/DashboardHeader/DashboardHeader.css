@@ -7,15 +7,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 25px;
+  padding: 0 30px;
   border-bottom: 1px solid #333;
   font-family: "Segoe UI", Roboto, sans-serif;
 }
 
+
 .header-left {
   display: flex;
   align-items: center;
+  gap: 30px; /* ✨ Adds spacing between logo and title */
 }
+
 
 .header-logo {
   height: 36px;
@@ -30,8 +33,10 @@
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 35px; /* ✨ More space between icons */
+  padding-right: 10px; /* ✨ Push slightly inward from the edge */
 }
+
 
 .header-icon {
   font-size: 20px;
