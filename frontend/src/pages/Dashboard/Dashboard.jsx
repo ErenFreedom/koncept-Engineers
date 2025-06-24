@@ -1,4 +1,3 @@
-// src/pages/Dashboard.jsx
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -37,19 +36,19 @@ const Dashboard = () => {
         <h3 className="dashboard-section-title">Quick Access</h3>
 
         <div className="dashboard-app-grid">
-          <div className="dashboard-app-card">
+          <div className="dashboard-app-card" onClick={() => navigate("/operational-manager")}>
             <img src="/Operational.png" alt="Operational" className="app-icon" />
             <span className="app-label">Operations Manager</span>
           </div>
-          <div className="dashboard-app-card">
+          <div className="dashboard-app-card" onClick={() => navigate("/accounts")}>
             <img src="/Accounts.png" alt="Accounts" className="app-icon" />
             <span className="app-label">Accounts</span>
           </div>
-          <div className="dashboard-app-card">
+          <div className="dashboard-app-card" onClick={() => navigate("/devices")}>
             <img src="/Devices.png" alt="Devices" className="app-icon" />
             <span className="app-label">Devices</span>
           </div>
-          <div className="dashboard-app-card">
+          <div className="dashboard-app-card" onClick={() => navigate("/data-setup")}>
             <img src="/DataSetup.png" alt="Data Setup" className="app-icon" />
             <span className="app-label">Data Setup</span>
           </div>
@@ -70,6 +69,7 @@ const Dashboard = () => {
           <div className="news-box">Item 3</div>
           <div className="news-box">Item 4</div>
         </div>
+
         <h3 className="dashboard-section-title">Latest Work and Technology</h3>
         <div className="dashboard-latest-grid">
           <div className="latest-box">Tech 1</div>
@@ -78,9 +78,6 @@ const Dashboard = () => {
           <div className="latest-box">Tech 4</div>
         </div>
       </div>
-
-
-
     </div>
   );
 };

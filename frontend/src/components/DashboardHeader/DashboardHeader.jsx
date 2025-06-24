@@ -6,6 +6,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import "./DashboardHeader.css";
 import { useAuth } from "../../context/AuthContext";
+import { useLocation } from "react-router-dom";
+
 
 const DashboardHeader = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -17,6 +19,7 @@ const DashboardHeader = () => {
 
 
   const { admin, accessToken, logout } = useAuth();
+  const location = useLocation();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -43,6 +46,15 @@ const DashboardHeader = () => {
     }
     logout();
     navigate("/Auth");
+  };
+
+  const getPageTitle = () => {
+    if (location.pathname.includes("/dashboard")) return "Home";
+    if (location.pathname.includes("/operational-manager")) return "Operations Manager";
+    if (location.pathname.includes("/accounts")) return "Accounts";
+    if (location.pathname.includes("/devices")) return "Devices";
+    if (location.pathname.includes("/data-setup")) return "Data Setup";
+    return "Dashboard";
   };
 
   const verifyPasswordAndNavigate = async () => {
@@ -85,7 +97,8 @@ const DashboardHeader = () => {
       <header className="dashboard-header">
         <div className="header-left">
           <img src="/Logo.png" alt="Koncept Logo" className="header-logo" />
-          <h2 className="header-title">Home</h2>
+          <h2 className="header-title">{getPageTitle()}</h2>
+
         </div>
 
         <div className="header-right">
@@ -122,17 +135,25 @@ const DashboardHeader = () => {
 
             <div className="launchpad-grid">
               {[
-                { label: "Home", icon: "/Home.png" },
-                { label: "Operations Manager", icon: "/Operational.png" },
-                { label: "Accounts", icon: "/Accounts.png" },
-                { label: "Devices", icon: "/Devices.png" },
-                { label: "Data Setup", icon: "/DataSetup.png" }
+                { label: "Home", icon: "/Home.png", path: `/dashboard/${admin?.id}` },
+                { label: "Operations Manager", icon: "/Operational.png", path: "/operational-manager" },
+                { label: "Accounts", icon: "/Accounts.png", path: "/accounts" },
+                { label: "Devices", icon: "/Devices.png", path: "/devices" },
+                { label: "Data Setup", icon: "/DataSetup.png", path: "/data-setup" }
               ].map((item, idx) => (
-                <div key={idx} className="launchpad-item">
+                <div
+                  key={idx}
+                  className="launchpad-item"
+                  onClick={() => {
+                    navigate(item.path);
+                    setShowLaunchpad(false);
+                  }}
+                >
                   <img src={item.icon} alt={item.label} className="launchpad-icon" />
                   <span>{item.label}</span>
                 </div>
               ))}
+
             </div>
           </div>
         </>
