@@ -1,0 +1,19 @@
+/* src/components/DataSetup/DataSetup.css */
+
+.page-container {
+  background-color: #000000;
+  color: white;
+  min-height: 100vh;
+  font-family: "Segoe UI", Roboto, sans-serif;
+}
+
+.page-body {
+  padding: 40px 60px;
+}
+
+.page-heading {
+  font-size: 26px;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 20px;
+}

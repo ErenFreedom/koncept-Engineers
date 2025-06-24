@@ -4,7 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Provider } from "react-redux";
 import { PersistGate } from "redux-persist/integration/react";
-import { store, persistor } from "./redux/store"; 
+import { store, persistor } from "./redux/store";
 import HomePage from "./pages/HomePage/HomePage";
 import BreakPoint from "./pages/Registration/BreakPoint";
 import Admin from "./pages/Registration/Admin";
@@ -18,16 +18,21 @@ import AdminAuthOtp from "./pages/OTP/AdminAuthOtp";
 import Dashboard from "./pages/Dashboard/Dashboard";
 import ViewProfile from "./components/ToViewInfo/ViewProfile";
 import EditProfile from "./components/EditProfileModal/EditProfile";
+import OperationalManager from "./components/OperationalManager/OperationalManager";
+import Accounts from "./components/Accounts/Accounts";
+import Devices from "./components/Devices/Devices";
+import DataSetup from "./components/DataSetup/DataSetup";
 
-import { FormDataProvider } from "./context/FormDataContext"; 
-import { AuthProvider } from "./context/AuthContext"; // ✅ import AuthContext
+
+import { FormDataProvider } from "./context/FormDataContext";
+import { AuthProvider } from "./context/AuthContext";
 
 const App = () => {
   return (
-    <Provider store={store}> 
-      <PersistGate loading={null} persistor={persistor}> 
-        <FormDataProvider> 
-          <AuthProvider> {/* ✅ Wrap AuthProvider here */}
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <FormDataProvider>
+          <AuthProvider> 
             <Router>
               <ToastContainer position="top-right" autoClose={3000} />
               <Routes>
@@ -44,6 +49,11 @@ const App = () => {
                 <Route path="/Dashboard/:id" element={<Dashboard />} />
                 <Route path="/admin/view-profile" element={<ViewProfile />} />
                 <Route path="/admin/edit-profile/:id" element={<EditProfile />} />
+                <Route path="/operational-manager" element={<OperationalManager />} />
+                <Route path="/accounts" element={<Accounts />} />
+                <Route path="/devices" element={<Devices />} />
+                <Route path="/data-setup" element={<DataSetup />} />
+
               </Routes>
             </Router>
           </AuthProvider>
