@@ -1,4 +1,3 @@
-// src/components/DataSetup/Overview/Overview.jsx
 import React, { useState } from "react";
 import "./Overview.css";
 import { useAuth } from "../../../context/AuthContext";
@@ -9,12 +8,13 @@ const Overview = () => {
   const [showSites, setShowSites] = useState(true);
 
   const companyName = admin?.companyName || "Main Site";
-  const subSites = admin?.subSites || []; // assuming subSites is an array of names
+  const subSites = admin?.subSites || [];
+  const allSites = [{ id: 0, name: `Main Site - ${companyName}` }, ...subSites.map((s, i) => ({
+    id: s.subSiteId,
+    name: `Subsite - ${s.subSiteName || `Block ${i + 1}`}`
+  }))];
 
-  const allSites = [
-    { name: `Main Site - ${companyName}` },
-    ...subSites.map((sub, i) => ({ name: `Subsite - ${sub.name || `Block ${i + 1}`}` })),
-  ];
+  const [selectedSite, setSelectedSite] = useState(allSites[0].name);
 
   const statistics = [
     { label: "Buildings", value: 1 },
@@ -36,8 +36,18 @@ const Overview = () => {
         {showPartition && (
           <div className="section-content">
             <div className="partition-form">
-              <label>Partition *</label>
-              <input type="text" value={companyName} disabled />
+              <label htmlFor="partition-select">Partition *</label>
+              <select
+                id="partition-select"
+                value={selectedSite}
+                onChange={(e) => setSelectedSite(e.target.value)}
+              >
+                {allSites.map((site) => (
+                  <option key={site.id} value={site.name}>
+                    {site.name}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
         )}
@@ -51,8 +61,8 @@ const Overview = () => {
         </div>
         {showSites && (
           <div className="section-content site-stack">
-            {allSites.map((site, index) => (
-              <div key={index} className="site-card">
+            {allSites.map((site) => (
+              <div key={site.id} className="site-card">
                 <h4>{site.name}</h4>
               </div>
             ))}
@@ -60,7 +70,7 @@ const Overview = () => {
         )}
       </div>
 
-      {/* Statistics Section */}
+      {/* Statistics */}
       <div className="stats-grid">
         {statistics.map((stat, index) => (
           <div key={index} className="stat-box">

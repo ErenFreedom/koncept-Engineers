@@ -114,3 +114,15 @@
   font-size: 14px;
   color: #cfd6e6;
 }
+
+
+.partition-form select {
+  padding: 10px;
+  border: 1px solid #374567;
+  background-color: #101524;
+  color: #ffffff;
+  border-radius: 6px;
+  font-size: 14px;
+  width: 320px;
+  cursor: pointer;
+}
