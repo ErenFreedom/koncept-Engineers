@@ -1,9 +1,8 @@
-// src/components/DataSetup/DataSetup.jsx
 import React, { useEffect } from "react";
+import { useParams, useNavigate, useLocation, Outlet } from "react-router-dom";
 import DashboardHeader from "../DashboardHeader/DashboardHeader";
 import "./DataSetup.css";
 import { useAuth } from "../../context/AuthContext";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
 
 const tabRoutes = ["overview", "hierarchy", "tables", "relationships"];
 
@@ -16,7 +15,6 @@ const DataSetup = () => {
   const currentTab = location.pathname.split("/").pop(); // gets 'overview' etc.
 
   useEffect(() => {
-    // Redirect to overview if no valid tab is selected
     if (!tabRoutes.includes(currentTab)) {
       navigate(`/data-setup/${id}/overview`);
     }
@@ -33,19 +31,19 @@ const DataSetup = () => {
         </div>
 
         <div className="data-setup-tabs">
-          {["Overview", "Hierarchy", "Tables", "Relationships"].map((tab) => (
+          {tabRoutes.map((tab) => (
             <div
               key={tab}
-              className={`tab-item ${currentTab === tab.toLowerCase() ? "active" : ""}`}
-              onClick={() => navigate(`/data-setup/${id}/${tab.toLowerCase()}`)}
+              className={`tab-item ${currentTab === tab ? "active" : ""}`}
+              onClick={() => navigate(`/data-setup/${id}/${tab}`)}
             >
-              {tab}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </div>
           ))}
         </div>
 
         <div className="data-setup-content">
-          <p>Loading {currentTab.charAt(0).toUpperCase() + currentTab.slice(1)} Component...</p>
+          <Outlet />
         </div>
       </div>
     </div>
