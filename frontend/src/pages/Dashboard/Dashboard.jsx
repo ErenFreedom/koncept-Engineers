@@ -70,15 +70,16 @@ const Dashboard = () => {
           <div className="news-box">Item 3</div>
           <div className="news-box">Item 4</div>
         </div>
+        <h3 className="dashboard-section-title">Latest Work and Technology</h3>
+        <div className="dashboard-latest-grid">
+          <div className="latest-box">Tech 1</div>
+          <div className="latest-box">Tech 2</div>
+          <div className="latest-box">Tech 3</div>
+          <div className="latest-box">Tech 4</div>
+        </div>
       </div>
 
-      <h3 className="dashboard-section-title">Latest Work and Technology</h3>
-      <div className="dashboard-latest-grid">
-        <div className="latest-box">Tech 1</div>
-        <div className="latest-box">Tech 2</div>
-        <div className="latest-box">Tech 3</div>
-        <div className="latest-box">Tech 4</div>
-      </div>
+
 
     </div>
   );
