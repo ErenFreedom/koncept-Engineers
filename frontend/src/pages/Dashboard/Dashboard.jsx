@@ -54,6 +54,22 @@ const Dashboard = () => {
             <span className="app-label">Data Setup</span>
           </div>
         </div>
+
+        <h3 className="dashboard-section-title">Portfolio Overview</h3>
+        <div className="dashboard-portfolio-grid">
+          <div className="portfolio-box" style={{ flex: 2 }}>Subscriptions</div>
+          <div className="portfolio-box" style={{ flex: 1 }}>Sites</div>
+          <div className="portfolio-box" style={{ flex: 1 }}>Devices</div>
+          <div className="portfolio-box" style={{ flex: 1.5 }}>Point of Contact</div>
+        </div>
+
+        <h3 className="dashboard-section-title">News and Trends</h3>
+        <div className="dashboard-news-grid">
+          <div className="news-box">Item 1</div>
+          <div className="news-box">Item 2</div>
+          <div className="news-box">Item 3</div>
+          <div className="news-box">Item 4</div>
+        </div>
       </div>
     </div>
   );
