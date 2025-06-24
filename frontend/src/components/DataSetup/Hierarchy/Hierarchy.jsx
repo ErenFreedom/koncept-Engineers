@@ -1,4 +1,3 @@
-// Hierarchy.jsx (updated with full-page layout, toggle tree, stacked forms)
 import React, { useState } from "react";
 import "./Hierarchy.css";
 import { useAuth } from "../../../context/AuthContext";
@@ -6,18 +5,19 @@ import { useAuth } from "../../../context/AuthContext";
 const Hierarchy = () => {
   const { admin } = useAuth();
   const [expandedNodes, setExpandedNodes] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const toggleNode = (site, level) => {
+  const toggleNode = (parent, index) => {
+    const key = `${parent}-${index}`;
     setExpandedNodes((prev) => ({
       ...prev,
-      [site + level]: !prev[site + level],
+      [key]: !prev[key],
     }));
   };
 
   const dummyTree = [
     {
       site: `Main Site - ${admin?.companyName || "Company"}`,
-      level: 0,
       children: [
         {
           name: "Building A",
@@ -37,7 +37,6 @@ const Hierarchy = () => {
     },
     {
       site: "Subsite - Block 1",
-      level: 0,
       children: [
         {
           name: "Block1 Building A",
@@ -50,14 +49,19 @@ const Hierarchy = () => {
   const renderTree = (nodes, parent = "", level = 0) => {
     return nodes.map((node, index) => {
       const key = `${parent}-${index}`;
+      const label = typeof node === "string" ? node : node.name || node.site;
       const isExpanded = expandedNodes[key];
+
+      const shouldDisplay =
+        !searchTerm || label.toLowerCase().includes(searchTerm.toLowerCase());
+
       return (
         <div key={key} className="tree-node" style={{ marginLeft: level * 15 }}>
           <div
             className="tree-node-label"
             onClick={() => toggleNode(parent, index)}
           >
-            ▶ {typeof node === "string" ? node : node.name || node.site}
+            ▶ {label}
           </div>
           {typeof node !== "string" && node.children && isExpanded && (
             <div className="tree-children">
@@ -71,6 +75,18 @@ const Hierarchy = () => {
 
   return (
     <div className="hierarchy-tab">
+      {/* Search Bar */}
+      <div className="search-container">
+        <input
+          type="text"
+          placeholder="Search site, building, floor, or room..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="search-input"
+        />
+      </div>
+
+      {/* Main Layout */}
       <div className="hierarchy-container">
         {/* Tree View */}
         <div className="tree-panel">
@@ -80,7 +96,7 @@ const Hierarchy = () => {
           </div>
         </div>
 
-        {/* Form Section */}
+        {/* Right Form Section */}
         <div className="form-panel">
           <div className="form-box">
             <h4>Site Name</h4>

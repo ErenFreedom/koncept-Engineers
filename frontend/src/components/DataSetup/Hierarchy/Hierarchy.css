@@ -5,14 +5,41 @@
   color: #ffffff;
 }
 
+/* 🔍 Search Bar */
+.search-container {
+  width: 100%;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: center;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
+  border: 1px solid #303c57;
+  border-radius: 6px;
+  background-color: #15182a;
+  color: #d3d3d3;
+  outline: none;
+  transition: 0.2s ease;
+}
+
+.search-input:focus {
+  border-color: #4d90fe;
+  background-color: #1b1e34;
+}
+
 .hierarchy-container {
   display: flex;
   flex-direction: row;
   gap: 1rem;
-  height: calc(100vh - 150px);
+  height: calc(100vh - 180px); /* Adjust based on header height */
   padding-bottom: 1rem;
 }
 
+/* 🌲 Tree Panel */
 .tree-panel {
   flex: 1;
   background-color: #15182a;
@@ -53,6 +80,7 @@
   margin-left: 1rem;
 }
 
+/* 🧾 Form Panel */
 .form-panel {
   flex: 2;
   display: flex;
