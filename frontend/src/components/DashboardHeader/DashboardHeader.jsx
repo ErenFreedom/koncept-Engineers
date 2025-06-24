@@ -1,10 +1,11 @@
+// src/components/DashboardHeader/DashboardHeader.jsx
 import React, { useState, useRef, useEffect } from "react";
-import { Bell, User } from "lucide-react";
+import { FiGrid, FiPhone, FiUser } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import "./DashboardHeader.css";
-import { useAuth } from "../../context/AuthContext"; 
+import { useAuth } from "../../context/AuthContext";
 
 const DashboardHeader = () => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -13,7 +14,7 @@ const DashboardHeader = () => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  const { admin, accessToken, logout } = useAuth(); 
+  const { admin, accessToken, logout } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -28,26 +29,19 @@ const DashboardHeader = () => {
   const handleLogout = async () => {
     try {
       const sessionId = localStorage.getItem("sessionId");
-      if (!sessionId || !admin?.id) {
-        console.warn("Missing sessionId or adminId during logout");
-      } else {
+      if (sessionId && admin?.id) {
         await axios.post(
           `${process.env.REACT_APP_API_BASE_URL}/api/admin/auth/logout`,
-          { adminId: admin.id, sessionId }, 
+          { adminId: admin.id, sessionId },
           { withCredentials: true }
         );
       }
     } catch (err) {
-      console.warn("Logout request failed (but continuing):", err);
+      console.warn("Logout failed silently:", err);
     }
-  
-    logout(); 
+    logout();
     navigate("/Auth");
   };
-  
-  
-  
-
 
   const verifyPasswordAndNavigate = async () => {
     if (!accessToken || !admin?.id) {
@@ -79,7 +73,7 @@ const DashboardHeader = () => {
         toast.error("❌ Incorrect password.");
       }
     } catch (err) {
-      console.error("❌ Password verification failed:", err);
+      console.error("Password verification failed:", err);
       toast.error("Something went wrong while verifying.");
     }
   };
@@ -87,16 +81,16 @@ const DashboardHeader = () => {
   return (
     <>
       <header className="dashboard-header">
-        <div className="dashboard-logo">
-          <img src="/Logo.png" alt="Koncept Engineers Logo" className="logo-image" />
+        <div className="header-left">
+          <img src="/Logo.png" alt="Koncept Logo" className="header-logo" />
+          <h2 className="header-title">Home</h2>
         </div>
 
-        <div className="dashboard-title">Koncept Manager - Overview</div>
-
-        <div className="dashboard-icons">
-          <Bell className="notification-icon" />
+        <div className="header-right">
+          <FiGrid className="header-icon" title="Apps" />
+          <FiPhone className="header-icon" title="Contact Us" />
           <div className="profile-dropdown" ref={dropdownRef}>
-            <User className="profile-icon" onClick={() => setDropdownVisible((prev) => !prev)} />
+            <FiUser className="header-icon" title="Profile" onClick={() => setDropdownVisible((prev) => !prev)} />
             {dropdownVisible && (
               <div className="dropdown-menu">
                 <div className="dropdown-item" onClick={() => navigate("/admin/view-profile")}>
@@ -116,7 +110,6 @@ const DashboardHeader = () => {
         </div>
       </header>
 
-      
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content">

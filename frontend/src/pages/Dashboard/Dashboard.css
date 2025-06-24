@@ -1,98 +1,27 @@
-/* Main dashboard layout */
+/* src/pages/Dashboard.css */
+
+/* Root container for the page */
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  height: 100vh;
   background-color: #000000;
   color: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-family: "Segoe UI", Roboto, sans-serif;
 }
 
-/* Below the header: split left sidebar + main content */
+/* Body below the header */
 .dashboard-body {
-  display: flex;
   flex: 1;
-  height: calc(100vh - 60px); /* adjust if your header height differs */
-  overflow: hidden;
-}
-
-/* Main content right of sidebar */
-.dashboard-main-content {
-  flex: 1;
-  padding: 30px 40px;
-  overflow-y: auto;
   background-color: #000000;
-  color: #ffffff;
+  padding: 30px;
+  overflow-y: auto;
 }
 
-/* Heading welcome message */
-.dashboard-heading {
-  margin-bottom: 30px;
+/* Loading state */
+.dashboard-loading {
+  color: white;
   text-align: center;
-}
-
-.dashboard-heading h1 {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ffffff;
-}
-
-/* Sensor card grid */
-.sensor-grid-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 40px;
-  justify-content: center;
-  align-items: start;
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-/* Sensor card appearance */
-.sensor-card {
-  background-color: #ffffff;
-  color: #000000;
-  border-radius: 20px;
-  padding: 20px;
-  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
-  transition: transform 0.2s ease-in-out;
-}
-
-.sensor-card:hover {
-  transform: translateY(-5px);
-}
-
-.sensor-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.green-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background-color: #00ff00;
-  animation: pulse 1s infinite;
-}
-
-.dashboard-main-content {
-  position: relative; /* required to position RoomOverlay */
-}
-
-/* Pulse animation for active sensor dot */
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
+  font-size: 18px;
+  padding: 40px;
 }
