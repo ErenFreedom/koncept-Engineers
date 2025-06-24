@@ -1,5 +1,5 @@
 // src/pages/Dashboard.jsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import DashboardHeader from "../../components/DashboardHeader/DashboardHeader";
@@ -31,8 +31,29 @@ const Dashboard = () => {
   return (
     <div className="dashboard-container">
       <DashboardHeader />
+
       <div className="dashboard-body">
-        {/* 🔧 We'll add sidebar, summary, and charts here later */}
+        <h1 className="dashboard-greeting">Hello, {admin.firstName}</h1>
+        <h3 className="dashboard-section-title">Quick Access</h3>
+
+        <div className="dashboard-app-grid">
+          <div className="dashboard-app-card">
+            <img src="/Operational.png" alt="Operational" className="app-icon" />
+            <span className="app-label">Operations Manager</span>
+          </div>
+          <div className="dashboard-app-card">
+            <img src="/Accounts.png" alt="Accounts" className="app-icon" />
+            <span className="app-label">Accounts</span>
+          </div>
+          <div className="dashboard-app-card">
+            <img src="/Devices.png" alt="Devices" className="app-icon" />
+            <span className="app-label">Devices</span>
+          </div>
+          <div className="dashboard-app-card">
+            <img src="/DataSetup.png" alt="Data Setup" className="app-icon" />
+            <span className="app-label">Data Setup</span>
+          </div>
+        </div>
       </div>
     </div>
   );

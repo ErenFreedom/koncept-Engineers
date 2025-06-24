@@ -1,27 +1,56 @@
-/* src/pages/Dashboard.css */
+.dashboard-greeting {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
 
-/* Root container for the page */
-.dashboard-container {
+.dashboard-section-title {
+  font-size: 20px;
+  font-weight: 500;
+  margin-top: 10px;
+  margin-bottom: 25px;
+  color: #cccccc;
+}
+
+/* Grid container */
+.dashboard-app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 30px;
+  margin-bottom: 50px;
+  max-width: 800px;
+}
+
+/* Individual card */
+.dashboard-app-card {
+  background-color: #1e1e1e;
+  border-radius: 12px;
+  padding: 25px 15px;
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  background-color: #000000;
+  align-items: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(255, 255, 255, 0.05);
+}
+
+.dashboard-app-card:hover {
+  transform: translateY(-5px);
+  background-color: #2a2a2a;
+  box-shadow: 0 4px 12px rgba(255, 255, 255, 0.15);
+}
+
+/* Icon image */
+.app-icon {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 12px;
+}
+
+/* Label text */
+.app-label {
   color: #ffffff;
-  font-family: "Segoe UI", Roboto, sans-serif;
-}
-
-/* Body below the header */
-.dashboard-body {
-  flex: 1;
-  background-color: #000000;
-  padding: 30px;
-  overflow-y: auto;
-}
-
-/* Loading state */
-.dashboard-loading {
-  color: white;
+  font-size: 16px;
+  font-weight: 500;
   text-align: center;
-  font-size: 18px;
-  padding: 40px;
 }
