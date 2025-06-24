@@ -1,3 +1,4 @@
+// src/pages/Dashboard/Dashboard.jsx
 import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -36,19 +37,19 @@ const Dashboard = () => {
         <h3 className="dashboard-section-title">Quick Access</h3>
 
         <div className="dashboard-app-grid">
-          <div className="dashboard-app-card" onClick={() => navigate("/operational-manager")}>
+          <div className="dashboard-app-card" onClick={() => navigate(`/operational-manager/${id}`)}>
             <img src="/Operational.png" alt="Operational" className="app-icon" />
             <span className="app-label">Operations Manager</span>
           </div>
-          <div className="dashboard-app-card" onClick={() => navigate("/accounts")}>
+          <div className="dashboard-app-card" onClick={() => navigate(`/accounts/${id}`)}>
             <img src="/Accounts.png" alt="Accounts" className="app-icon" />
             <span className="app-label">Accounts</span>
           </div>
-          <div className="dashboard-app-card" onClick={() => navigate("/devices")}>
+          <div className="dashboard-app-card" onClick={() => navigate(`/devices/${id}`)}>
             <img src="/Devices.png" alt="Devices" className="app-icon" />
             <span className="app-label">Devices</span>
           </div>
-          <div className="dashboard-app-card" onClick={() => navigate("/data-setup")}>
+          <div className="dashboard-app-card" onClick={() => navigate(`/data-setup/${id}/overview`)}>
             <img src="/DataSetup.png" alt="Data Setup" className="app-icon" />
             <span className="app-label">Data Setup</span>
           </div>

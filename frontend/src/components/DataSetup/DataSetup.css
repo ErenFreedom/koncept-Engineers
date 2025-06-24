@@ -1,19 +1,72 @@
 /* src/components/DataSetup/DataSetup.css */
 
 .page-container {
-  background-color: #000000;
+  background-color: #000;
   color: white;
   min-height: 100vh;
   font-family: "Segoe UI", Roboto, sans-serif;
 }
 
-.page-body {
-  padding: 40px 60px;
+.data-setup-body {
+  padding: 30px 60px;
 }
 
-.page-heading {
-  font-size: 26px;
+.data-setup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.site-name {
+  font-size: 24px;
   font-weight: 600;
+}
+
+.create-button {
+  padding: 10px 20px;
+  background-color: transparent;
   color: white;
-  margin-bottom: 20px;
+  border: 1px solid #555;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.create-button:hover {
+  background-color: #2a2a2a;
+}
+
+/* Tabs */
+.data-setup-tabs {
+  display: flex;
+  gap: 25px;
+  border-bottom: 1px solid #333;
+  margin-bottom: 25px;
+}
+
+.tab-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  color: #ccc;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.tab-item:hover {
+  color: white;
+}
+
+.tab-item.active {
+  border-bottom: 2px solid #00bfa5;
+  color: white;
+}
+
+/* Tab content */
+.data-setup-content {
+  min-height: 300px;
+  background-color: #111;
+  padding: 30px;
+  border-radius: 8px;
 }

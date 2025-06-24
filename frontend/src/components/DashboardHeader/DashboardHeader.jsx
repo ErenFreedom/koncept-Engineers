@@ -136,10 +136,11 @@ const DashboardHeader = () => {
             <div className="launchpad-grid">
               {[
                 { label: "Home", icon: "/Home.png", path: `/dashboard/${admin?.id}` },
-                { label: "Operations Manager", icon: "/Operational.png", path: "/operational-manager" },
-                { label: "Accounts", icon: "/Accounts.png", path: "/accounts" },
-                { label: "Devices", icon: "/Devices.png", path: "/devices" },
-                { label: "Data Setup", icon: "/DataSetup.png", path: "/data-setup" }
+                { label: "Operations Manager", icon: "/Operational.png", path: `/operational-manager/${admin?.id}` },
+                { label: "Accounts", icon: "/Accounts.png", path: `/accounts/${admin?.id}` },
+                { label: "Devices", icon: "/Devices.png", path: `/devices/${admin?.id}` },
+                { label: "Data Setup", icon: "/DataSetup.png", path: `/data-setup/${admin?.id}/overview` } // Default to Overview tab
+
               ].map((item, idx) => (
                 <div
                   key={idx}

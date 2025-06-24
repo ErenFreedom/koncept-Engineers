@@ -22,6 +22,10 @@ import OperationalManager from "./components/OperationalManager/OperationalManag
 import Accounts from "./components/Accounts/Accounts";
 import Devices from "./components/Devices/Devices";
 import DataSetup from "./components/DataSetup/DataSetup";
+import Overview from "./components/DataSetup/Overview/Overview";
+import Hierarchy from "./components/DataSetup/Hierarchy/Hierarchy";
+import Tables from "./components/DataSetup/Tables/Tables";
+import Relationships from "./components/DataSetup/Relationships/Relationships";
 
 
 import { FormDataProvider } from "./context/FormDataContext";
@@ -32,7 +36,7 @@ const App = () => {
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
         <FormDataProvider>
-          <AuthProvider> 
+          <AuthProvider>
             <Router>
               <ToastContainer position="top-right" autoClose={3000} />
               <Routes>
@@ -49,10 +53,14 @@ const App = () => {
                 <Route path="/Dashboard/:id" element={<Dashboard />} />
                 <Route path="/admin/view-profile" element={<ViewProfile />} />
                 <Route path="/admin/edit-profile/:id" element={<EditProfile />} />
-                <Route path="/operational-manager" element={<OperationalManager />} />
-                <Route path="/accounts" element={<Accounts />} />
-                <Route path="/devices" element={<Devices />} />
-                <Route path="/data-setup" element={<DataSetup />} />
+                <Route path="/operational-manager/:id" element={<OperationalManager />} />
+                <Route path="/accounts/:id" element={<Accounts />} />
+                <Route path="/devices/:id" element={<Devices />} />
+                <Route path="/data-setup/:id" element={<DataSetup />} />
+                <Route path="/data-setup/:id/overview" element={<Overview />} />
+                <Route path="/data-setup/:id/hierarchy" element={<Hierarchy />} />
+                <Route path="/data-setup/:id/tables" element={<Tables />} />
+                <Route path="/data-setup/:id/relationships" element={<Relationships />} />
 
               </Routes>
             </Router>
