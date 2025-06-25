@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FaSearch, FaEdit, FaTrash, FaChevronDown } from "react-icons/fa";
-import "./Table.css";
+import "./Tables.css";
 
 const Table = () => {
   const [search, setSearch] = useState("");
