@@ -1,0 +1,101 @@
+.table-wrapper {
+  padding: 1rem;
+  background-color: #0d0d0d;
+  color: #ffffff;
+  min-height: 100vh;
+}
+
+.table-toolbar {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.table-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.table-search input {
+  padding: 0.5rem 1rem 0.5rem 2rem;
+  border-radius: 4px;
+  border: none;
+  background-color: #15182a;
+  color: #ffffff;
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.6rem;
+  color: #ccc;
+}
+
+.table-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.filter-btn,
+.column-settings-btn {
+  background-color: #1b1f35;
+  border: 1px solid #303c57;
+  color: #b0c4ff;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #1b1f35;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.styled-table th,
+.styled-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #303c57;
+}
+
+.styled-table th {
+  background-color: #202540;
+  color: #b0c4ff;
+  font-weight: 500;
+}
+
+.styled-table td {
+  background-color: #1b1f35;
+}
+
+.action-icons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-icon,
+.delete-icon {
+  cursor: pointer;
+}
+
+.edit-icon {
+  color: #4fc3f7;
+}
+
+.delete-icon {
+  color: #ef5350;
+}
+
+.form-placeholder {
+  margin-top: 2rem;
+  background-color: #1b1f35;
+  border: 1px solid #303c57;
+  padding: 1rem;
+  border-radius: 6px;
+}

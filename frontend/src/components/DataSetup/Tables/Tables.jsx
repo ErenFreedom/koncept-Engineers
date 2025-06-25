@@ -1,12 +1,71 @@
-import React from "react";
+import React, { useState } from "react";
+import { FaSearch, FaEdit, FaTrash, FaChevronDown } from "react-icons/fa";
+import "./Table.css";
 
-const Tables = () => {
+const Table = () => {
+  const [search, setSearch] = useState("");
+
+  const data = [
+    { name: "Building -A", id: "7c035368-...", level: 0, location: "Galgotias" },
+    { name: "Building-B", id: "d3969a7e-...", level: 1, location: "Galgotias" },
+    { name: "Second", id: "a1fc20c7-...", level: 2, location: "Galgotias" },
+    { name: "Seventh Floor", id: "3f11a7e2-...", level: 7, location: "Galgotias" },
+  ];
+
   return (
-    <div className="tables-tab">
-      <h2>Tables</h2>
-      <p>This is the Tables tab content.</p>
+    <div className="table-wrapper">
+      <div className="table-toolbar">
+        <div className="table-search">
+          <FaSearch className="search-icon" />
+          <input
+            type="text"
+            placeholder="Search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="table-actions">
+          <button className="filter-btn">Floors <FaChevronDown /></button>
+          <button className="column-settings-btn">Column settings</button>
+        </div>
+      </div>
+
+      <table className="styled-table">
+        <thead>
+          <tr>
+            <th><input type="checkbox" /></th>
+            <th>Name</th>
+            <th>ID</th>
+            <th>Floor level</th>
+            <th>Location</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data
+            .filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
+            .map((item, index) => (
+              <tr key={index}>
+                <td><input type="checkbox" /></td>
+                <td>{item.name}</td>
+                <td>{item.id}</td>
+                <td>{item.level}</td>
+                <td>{item.location}</td>
+                <td className="action-icons">
+                  <FaEdit className="edit-icon" title="Edit" />
+                  <FaTrash className="delete-icon" title="Delete" />
+                </td>
+              </tr>
+            ))}
+        </tbody>
+      </table>
+
+      <div className="form-placeholder">
+        <h4>Form Placeholder</h4>
+        <p>This form will change dynamically based on selected entity type.</p>
+      </div>
     </div>
   );
 };
 
-export default Tables;
+export default Table;
