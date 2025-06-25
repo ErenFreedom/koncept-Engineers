@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { FaSearch, FaEdit, FaTrash, FaChevronDown } from "react-icons/fa";
+import { FaSearch, FaChevronDown, FaEdit, FaTrash } from "react-icons/fa";
 import "./Tables.css";
 
 const Table = () => {
@@ -14,6 +14,19 @@ const Table = () => {
 
   return (
     <div className="table-wrapper">
+      {/* Top toolbar with buttons */}
+      <div className="table-header-bar">
+        <div className="left-bar">
+          <h2>Tables</h2>
+        </div>
+        <div className="right-buttons">
+          <button className="top-btn create">+ Create</button>
+          <button className="top-btn edit"><FaEdit /> Edit</button>
+          <button className="top-btn delete"><FaTrash /> Delete</button>
+        </div>
+      </div>
+
+      {/* Filter and search */}
       <div className="table-toolbar">
         <div className="table-search">
           <FaSearch className="search-icon" />
@@ -30,6 +43,7 @@ const Table = () => {
         </div>
       </div>
 
+      {/* Table */}
       <table className="styled-table">
         <thead>
           <tr>
@@ -38,7 +52,6 @@ const Table = () => {
             <th>ID</th>
             <th>Floor level</th>
             <th>Location</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -51,15 +64,12 @@ const Table = () => {
                 <td>{item.id}</td>
                 <td>{item.level}</td>
                 <td>{item.location}</td>
-                <td className="action-icons">
-                  <FaEdit className="edit-icon" title="Edit" />
-                  <FaTrash className="delete-icon" title="Delete" />
-                </td>
               </tr>
             ))}
         </tbody>
       </table>
 
+      {/* Form Placeholder */}
       <div className="form-placeholder">
         <h4>Form Placeholder</h4>
         <p>This form will change dynamically based on selected entity type.</p>
