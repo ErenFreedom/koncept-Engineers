@@ -14,11 +14,9 @@ const Table = () => {
 
   return (
     <div className="table-wrapper">
-      {/* Top toolbar with buttons */}
+      {/* Top bar with section title and action buttons */}
       <div className="table-header-bar">
-        <div className="left-bar">
-          <h2>Tables</h2>
-        </div>
+        <h2>Tables</h2>
         <div className="right-buttons">
           <button className="top-btn create">+ Create</button>
           <button className="top-btn edit"><FaEdit /> Edit</button>
@@ -26,7 +24,7 @@ const Table = () => {
         </div>
       </div>
 
-      {/* Filter and search */}
+      {/* Search and filters */}
       <div className="table-toolbar">
         <div className="table-search">
           <FaSearch className="search-icon" />
@@ -69,7 +67,7 @@ const Table = () => {
         </tbody>
       </table>
 
-      {/* Form Placeholder */}
+      {/* Placeholder */}
       <div className="form-placeholder">
         <h4>Form Placeholder</h4>
         <p>This form will change dynamically based on selected entity type.</p>
