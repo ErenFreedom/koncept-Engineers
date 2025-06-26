@@ -42,9 +42,8 @@ const HierarchyTree = ({ treeData, onSelect }) => {
     return nodes.map((node, idx) => {
       const currentPath = `${path}-${idx}`;
       const label = typeof node === "string" ? node : node.name || node.site;
-      const nodeType = inferNodeType(label);
+      const nodeType = node?.type || "unknown"; // ✅ use actual type
       const isExpanded = expandedNodes[currentPath];
-      const actions = getAllowedActions(nodeType);
 
       return (
         <div
@@ -60,17 +59,17 @@ const HierarchyTree = ({ treeData, onSelect }) => {
             ) : (
               <span className="leaf-dot">•</span>
             )}
+
             <span className="node-label" onClick={() => onSelect(label, nodeType)}>
               {label}
             </span>
-            <div className="actions">
-              {actions.map((act, i) => (
-                <button key={i} className="add-btn" title={act}>
-                  +
-                </button>
-              ))}
-            </div>
+
+            {/* optional + button, if you want to keep it */}
+            {/* <div className="actions">
+            <button className="add-btn">+</button>
+          </div> */}
           </div>
+
           {isExpanded && node.children && (
             <div className="tree-children">
               {renderTree(node.children, currentPath, depth + 1)}
@@ -80,6 +79,7 @@ const HierarchyTree = ({ treeData, onSelect }) => {
       );
     });
   };
+
 
   return <div className="hierarchy-tree-container">{renderTree(treeData)}</div>;
 };
