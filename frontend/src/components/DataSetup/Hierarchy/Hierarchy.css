@@ -120,3 +120,48 @@
   display: flex;
   gap: 1.5rem;
 }
+
+
+.three-dot-menu {
+  cursor: pointer;
+  font-size: 1.3rem;
+  padding: 0.25rem 0.5rem;
+  background: #1d2238;
+  border-radius: 4px;
+  transition: 0.2s;
+}
+.three-dot-menu:hover {
+  background: #2a3048;
+}
+
+.context-dropdown {
+  position: absolute;
+  top: 120px; /* adjust based on layout */
+  left: 50px;
+  background-color: #1d2238;
+  border: 1px solid #303c57;
+  border-radius: 6px;
+  padding: 0.5rem;
+  z-index: 100;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.context-dropdown button {
+  display: block;
+  width: 100%;
+  padding: 0.4rem 1rem;
+  background: none;
+  border: none;
+  color: #d3d3d3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.context-dropdown button:disabled {
+  color: #555;
+  cursor: not-allowed;
+}
+
+.context-dropdown button:hover:not(:disabled) {
+  background-color: #2a3048;
+}

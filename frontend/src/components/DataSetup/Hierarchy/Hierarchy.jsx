@@ -21,6 +21,8 @@ const Hierarchy = () => {
   const [expandedNodes, setExpandedNodes] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNode, setSelectedNode] = useState(null);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownAction, setDropdownAction] = useState(null);
 
   const toggleNode = (parent, index) => {
     const key = `${parent}-${index}`;
@@ -32,19 +34,71 @@ const Hierarchy = () => {
 
   const handleNodeClick = (label, type) => {
     setSelectedNode({ label, type });
+    setDropdownAction(null); // reset form
   };
 
-  // const inferTypeFromLabel = (label) => {
-  //   const lower = label.toLowerCase();
-  //   if (lower.includes("main site")) return "main-site";
-  //   if (lower.includes("subsite")) return "subsite";
-  //   if (lower.includes("room segment")) return "room-segment";
-  //   if (lower.includes("floor area")) return "floor-area";
-  //   if (lower.includes("floor")) return "floor";
-  //   if (lower.includes("room")) return "room";
-  //   if (lower.includes("poe")) return "poe";
-  //   return "unknown";
-  // };
+  const handleDropdownSelect = (actionType) => {
+    setDropdownAction(actionType);
+    setShowDropdown(false);
+  };
+
+  const allowedForms = {
+    "main-site": ["floor"],
+    floor: ["room"],
+    room: ["floor-area", "room-segment", "poe"],
+    "floor-area": [],
+    "room-segment": [],
+    poe: [],
+    subsite: ["subsite-floor"],
+    "subsite-floor": ["subsite-room"],
+    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"],
+    "subsite-floor-area": [],
+    "subsite-room-segment": [],
+    "subsite-poe": [],
+  };
+
+  const labelMap = {
+    floor: "Add Floor",
+    room: "Add Room",
+    "floor-area": "Add Floor Area",
+    "room-segment": "Add Room Segment",
+    poe: "Add Piece of Equipment",
+    subsite: "Register Sub-site",
+    "subsite-floor": "Add Subsite Floor",
+    "subsite-room": "Add Subsite Room",
+    "subsite-floor-area": "Add Subsite Floor Area",
+    "subsite-room-segment": "Add Subsite Room Segment",
+    "subsite-poe": "Add Subsite PoE",
+  };
+
+  const renderFormForAction = (actionType) => {
+    switch (actionType) {
+      case "floor":
+        return <AddFloorForm />;
+      case "room":
+        return <AddRoomForm />;
+      case "floor-area":
+        return <AddFloorAreaForm />;
+      case "room-segment":
+        return <AddRoomSegmentForm />;
+      case "poe":
+        return <AddPieceOfEquipmentForm />;
+      case "subsite":
+        return <RegisterSubSiteForm />;
+      case "subsite-floor":
+        return <AddSubsiteFloorForm />;
+      case "subsite-room":
+        return <AddSubsiteRoomForm />;
+      case "subsite-floor-area":
+        return <AddSubsiteFloorAreaForm />;
+      case "subsite-room-segment":
+        return <AddSubsiteRoomSegmentForm />;
+      case "subsite-poe":
+        return <AddSubsitePoEForm />;
+      default:
+        return <p className="no-selection">🛈 Select a node and action to view a form.</p>;
+    }
+  };
 
   const dummyTree = [
     {
@@ -77,70 +131,9 @@ const Hierarchy = () => {
     },
   ];
 
-  // const renderTree = (nodes, parent = "", level = 0) => {
-  //   return nodes.map((node, index) => {
-  //     const key = `${parent}-${index}`;
-  //     const label = typeof node === "string" ? node : node.name || node.site;
-  //     const isExpanded = expandedNodes[key];
-  //     const inferredType = inferTypeFromLabel(label);
-
-  //     const shouldDisplay =
-  //       !searchTerm || label.toLowerCase().includes(searchTerm.toLowerCase());
-
-  //     if (!shouldDisplay) return null;
-
-  //     return (
-  //       <div key={key} className="tree-node" style={{ marginLeft: level * 15 }}>
-  //         <div
-  //           className="tree-node-label"
-  //           onClick={() => handleNodeClick(label, inferredType)}
-  //         >
-  //           ▶ {label}
-  //         </div>
-  //         {typeof node !== "string" && node.children && isExpanded && (
-  //           <div className="tree-children">
-  //             {renderTree(node.children, key, level + 1)}
-  //           </div>
-  //         )}
-  //       </div>
-  //     );
-  //   });
-  // };
-
-  const renderFormForType = (type) => {
-    switch (type) {
-      case "main-site":
-        return <MainSiteInfoForm />;
-      case "subsite":
-        return <RegisterSubSiteForm />;
-      case "floor":
-        return <AddFloorForm />;
-      case "room":
-        return <AddRoomForm />;
-      case "floor-area":
-        return <AddFloorAreaForm />;
-      case "room-segment":
-        return <AddRoomSegmentForm />;
-      case "poe":
-        return <AddPieceOfEquipmentForm />;
-      case "subsite-floor":
-        return <AddSubsiteFloorForm />;
-      case "subsite-room":
-        return <AddSubsiteRoomForm />;
-      case "subsite-floor-area":
-        return <AddSubsiteFloorAreaForm />;
-      case "subsite-room-segment":
-        return <AddSubsiteRoomSegmentForm />;
-      case "subsite-poe":
-        return <AddSubsitePoEForm />;
-      default:
-        return <p className="no-selection">🛈 Select a node from the hierarchy to view/edit details.</p>;
-    }
-  };
-
   return (
     <div className="hierarchy-tab">
-      {/* Search Bar */}
+      {/* 🔍 Search Bar */}
       <div className="search-container">
         <input
           type="text"
@@ -153,9 +146,13 @@ const Hierarchy = () => {
 
       {/* Main Layout */}
       <div className="hierarchy-container">
-        {/* Tree View */}
-        <div className="tree-panel">
-          <h3>Hierarchy Tree</h3>
+        {/* 🌳 Tree Panel */}
+        <div className="tree-panel" style={{ position: "relative" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h3>Hierarchy Tree</h3>
+            <div className="three-dot-menu" onClick={() => setShowDropdown(!showDropdown)}>⋮</div>
+          </div>
+
           <div className="tree-list">
             <HierarchyTree
               treeData={dummyTree.map((s) => ({ ...s, name: s.site }))}
@@ -163,13 +160,32 @@ const Hierarchy = () => {
             />
           </div>
 
+          {/* 🎯 Context Dropdown */}
+          {showDropdown && selectedNode?.type && (
+            <div className="context-dropdown">
+              {(Object.keys(labelMap) || []).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => handleDropdownSelect(key)}
+                  disabled={
+                    !allowedForms[selectedNode.type] ||
+                    !allowedForms[selectedNode.type].includes(key)
+                  }
+                >
+                  {labelMap[key]}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Right Form Section */}
+        {/* 📄 Form Panel */}
         <div className="form-panel">
           <div className="form-box">
             <h4>{selectedNode?.label || "Site Name"}</h4>
-            {renderFormForType(selectedNode?.type)}
+            {dropdownAction ? renderFormForAction(dropdownAction) : (
+              <p className="no-selection">🛈 Use the ⋮ menu to select what to add</p>
+            )}
           </div>
 
           <div className="form-box">
