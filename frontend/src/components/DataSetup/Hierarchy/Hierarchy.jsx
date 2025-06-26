@@ -43,7 +43,7 @@ const Hierarchy = () => {
   };
 
   const allowedForms = {
-    "main-site": ["floor"],
+    "main-site": ["floor", "main-site-info"], // ✅ add here
     floor: ["room"],
     room: ["floor-area", "room-segment", "poe"],
     "floor-area": [],
@@ -57,6 +57,7 @@ const Hierarchy = () => {
     "subsite-poe": [],
   };
 
+
   const labelMap = {
     floor: "Add Floor",
     room: "Add Room",
@@ -69,7 +70,9 @@ const Hierarchy = () => {
     "subsite-floor-area": "Add Subsite Floor Area",
     "subsite-room-segment": "Add Subsite Room Segment",
     "subsite-poe": "Add Subsite PoE",
+    "main-site-info": "Edit Main Site Info",
   };
+
 
   const renderFormForAction = (actionType) => {
     switch (actionType) {
@@ -95,10 +98,13 @@ const Hierarchy = () => {
         return <AddSubsiteRoomSegmentForm />;
       case "subsite-poe":
         return <AddSubsitePoEForm />;
+      case "main-site-info":
+        return <MainSiteInfoForm />; // ✅ new case
       default:
         return <p className="no-selection">🛈 Select a node and action to view a form.</p>;
     }
   };
+
 
   const dummyTree = [
     {
