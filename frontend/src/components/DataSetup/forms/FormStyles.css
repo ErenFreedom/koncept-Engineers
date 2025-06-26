@@ -1,0 +1,33 @@
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  background-color: #202540;
+  padding: 1rem;
+  border-radius: 6px;
+  color: #b0c4ff;
+}
+
+.form-container input,
+.form-container select,
+.form-container textarea {
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: none;
+  background-color: #15182a;
+  color: #ffffff;
+}
+
+.form-container button {
+  background-color: #4263eb;
+  border: none;
+  color: white;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  width: fit-content;
+}
+
+.form-container button:hover {
+  background-color: #5f7dfb;
+}

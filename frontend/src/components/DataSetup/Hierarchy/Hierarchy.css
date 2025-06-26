@@ -100,3 +100,11 @@
   margin-bottom: 0.5rem;
   font-size: 1.05rem;
 }
+
+/* 🧭 Node Selection Notice */
+.no-selection {
+  color: #99a3c8;
+  font-style: italic;
+  font-size: 0.95rem;
+  margin-top: 0.5rem;
+}
