@@ -9,7 +9,7 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  column-gap: 2rem;
+  column-gap: 8rem;
   row-gap: 1.5rem; /* ⬅️ more vertical spacing between rows */
 }
 
@@ -35,6 +35,7 @@
   border-radius: 6px;
   width: 100%;
   transition: 0.2s;
+  box-sizing: border-box;
 }
 
 .form-container input:focus,
