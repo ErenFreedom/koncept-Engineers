@@ -5,19 +5,23 @@
   border-radius: 10px;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
   color: #d4dfff;
-  max-width: 700px;
+  max-width: 750px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1rem 2rem;
+  column-gap: 2rem;
+  row-gap: 1.5rem; /* ⬅️ more vertical spacing between rows */
 }
 
-/* Headings span full width */
+/* Section Headings (like Admin Details, Company Details) */
 .form-container h3 {
   grid-column: 1 / -1;
   font-size: 1.2rem;
   color: #a7bfff;
-  margin-bottom: 1rem;
+  margin: 1.5rem 0 0.5rem;
+  font-weight: 600;
+  border-bottom: 1px solid #303c57;
+  padding-bottom: 0.3rem;
 }
 
 /* Inputs and selects */
@@ -30,6 +34,7 @@
   font-size: 0.95rem;
   border-radius: 6px;
   width: 100%;
+  transition: 0.2s;
 }
 
 .form-container input:focus,
@@ -48,7 +53,8 @@
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: background 0.3s ease;
+  margin-top: 1rem;
 }
 
 .form-container button[type="submit"]:hover {
