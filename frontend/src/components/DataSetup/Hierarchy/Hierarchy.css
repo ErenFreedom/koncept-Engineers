@@ -57,8 +57,10 @@
 }
 
 .tree-list {
-  font-size: 0.95rem;
+  padding-right: 0.5rem;
+  overflow-x: auto;
 }
+
 
 .tree-node {
   margin-bottom: 0.5rem;

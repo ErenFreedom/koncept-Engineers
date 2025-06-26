@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import "./Hierarchy.css";
 import { useAuth } from "../../../context/AuthContext";
+import HierarchyTree from "./HierarchyTree";
 
-// 🔁 Import all form components
 import AddFloorForm from "../forms/AddFloorForm";
 import AddRoomForm from "../forms/AddRoomForm";
 import AddFloorAreaForm from "../forms/AddFloorAreaForm";
@@ -34,17 +34,17 @@ const Hierarchy = () => {
     setSelectedNode({ label, type });
   };
 
-  const inferTypeFromLabel = (label) => {
-    const lower = label.toLowerCase();
-    if (lower.includes("main site")) return "main-site";
-    if (lower.includes("subsite")) return "subsite";
-    if (lower.includes("room segment")) return "room-segment";
-    if (lower.includes("floor area")) return "floor-area";
-    if (lower.includes("floor")) return "floor";
-    if (lower.includes("room")) return "room";
-    if (lower.includes("poe")) return "poe";
-    return "unknown";
-  };
+  // const inferTypeFromLabel = (label) => {
+  //   const lower = label.toLowerCase();
+  //   if (lower.includes("main site")) return "main-site";
+  //   if (lower.includes("subsite")) return "subsite";
+  //   if (lower.includes("room segment")) return "room-segment";
+  //   if (lower.includes("floor area")) return "floor-area";
+  //   if (lower.includes("floor")) return "floor";
+  //   if (lower.includes("room")) return "room";
+  //   if (lower.includes("poe")) return "poe";
+  //   return "unknown";
+  // };
 
   const dummyTree = [
     {
@@ -77,35 +77,35 @@ const Hierarchy = () => {
     },
   ];
 
-  const renderTree = (nodes, parent = "", level = 0) => {
-    return nodes.map((node, index) => {
-      const key = `${parent}-${index}`;
-      const label = typeof node === "string" ? node : node.name || node.site;
-      const isExpanded = expandedNodes[key];
-      const inferredType = inferTypeFromLabel(label);
+  // const renderTree = (nodes, parent = "", level = 0) => {
+  //   return nodes.map((node, index) => {
+  //     const key = `${parent}-${index}`;
+  //     const label = typeof node === "string" ? node : node.name || node.site;
+  //     const isExpanded = expandedNodes[key];
+  //     const inferredType = inferTypeFromLabel(label);
 
-      const shouldDisplay =
-        !searchTerm || label.toLowerCase().includes(searchTerm.toLowerCase());
+  //     const shouldDisplay =
+  //       !searchTerm || label.toLowerCase().includes(searchTerm.toLowerCase());
 
-      if (!shouldDisplay) return null;
+  //     if (!shouldDisplay) return null;
 
-      return (
-        <div key={key} className="tree-node" style={{ marginLeft: level * 15 }}>
-          <div
-            className="tree-node-label"
-            onClick={() => handleNodeClick(label, inferredType)}
-          >
-            ▶ {label}
-          </div>
-          {typeof node !== "string" && node.children && isExpanded && (
-            <div className="tree-children">
-              {renderTree(node.children, key, level + 1)}
-            </div>
-          )}
-        </div>
-      );
-    });
-  };
+  //     return (
+  //       <div key={key} className="tree-node" style={{ marginLeft: level * 15 }}>
+  //         <div
+  //           className="tree-node-label"
+  //           onClick={() => handleNodeClick(label, inferredType)}
+  //         >
+  //           ▶ {label}
+  //         </div>
+  //         {typeof node !== "string" && node.children && isExpanded && (
+  //           <div className="tree-children">
+  //             {renderTree(node.children, key, level + 1)}
+  //           </div>
+  //         )}
+  //       </div>
+  //     );
+  //   });
+  // };
 
   const renderFormForType = (type) => {
     switch (type) {
@@ -157,8 +157,12 @@ const Hierarchy = () => {
         <div className="tree-panel">
           <h3>Hierarchy Tree</h3>
           <div className="tree-list">
-            {renderTree(dummyTree.map((s, i) => ({ ...s, name: s.site })))}
+            <HierarchyTree
+              treeData={dummyTree.map((s) => ({ ...s, name: s.site }))}
+              onSelect={handleNodeClick}
+            />
           </div>
+
         </div>
 
         {/* Right Form Section */}
