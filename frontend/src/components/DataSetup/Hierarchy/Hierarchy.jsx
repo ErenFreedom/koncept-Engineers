@@ -2,6 +2,11 @@ import React, { useState } from "react";
 import "./Hierarchy.css";
 import { useAuth } from "../../../context/AuthContext";
 import HierarchyTree from "./HierarchyTree";
+import { useDispatch, useSelector } from "react-redux";
+import { useEffect } from "react";
+import { useMemo } from "react";
+import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
+
 
 import AddFloorForm from "../forms/AddFloorForm";
 import AddRoomForm from "../forms/AddRoomForm";
@@ -18,11 +23,19 @@ import MainSiteInfoForm from "../forms/MainSiteInfoForm";
 
 const Hierarchy = () => {
   const { admin } = useAuth();
+  const dispatch = useDispatch();
+  const { floors, rooms, floorAreas, roomSegments, poes, loading, error } = useSelector((state) => state.hierarchy);
+
+  useEffect(() => {
+    dispatch(fetchHierarchyData(null));
+  }, [dispatch]);
+
   const [expandedNodes, setExpandedNodes] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNode, setSelectedNode] = useState(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const [dropdownAction, setDropdownAction] = useState(null);
+
 
   const toggleNode = (parent, index) => {
     const key = `${parent}-${index}`;
@@ -106,36 +119,88 @@ const Hierarchy = () => {
   };
 
 
-  const dummyTree = [
-    {
+  const buildDynamicTree = () => {
+    const siteNode = {
       site: `Main Site - ${admin?.companyName || "Company"}`,
-      children: [
-        {
-          name: "Floor 1",
-          children: [
-            {
-              name: "Room A",
-              children: ["PoE 1", "Room Segment A", "Floor Area A"],
-            },
-          ],
-        },
-      ],
-    },
-    {
-      site: "Subsite - Block 1",
-      children: [
-        {
-          name: "Subsite Floor A",
-          children: [
-            {
-              name: "Subsite Room B",
-              children: ["Subsite PoE X", "Subsite Room Segment Y"],
-            },
-          ],
-        },
-      ],
-    },
-  ];
+      type: "main-site",
+      children: [],
+    };
+
+    const floorNodes = floors.map((floor) => {
+      const floorNode = {
+        name: floor.name,
+        type: "floor",
+        children: [],
+      };
+
+      const roomNodes = rooms
+        .filter((r) => r.floor_id === floor.id)
+        .map((room) => {
+          const roomNode = {
+            name: room.name,
+            type: "room",
+            children: [],
+          };
+
+          const roomSegmentNodes = roomSegments
+            .filter((seg) => seg.room_id === room.id)
+            .map((seg) => ({
+              name: seg.name,
+              type: "room-segment",
+            }));
+
+          const roomPoEs = poes
+            .filter((poe) => poe.location_type === "room" && poe.location_id === room.id)
+            .map((poe) => ({
+              name: poe.name,
+              type: "poe",
+            }));
+
+          roomNode.children = [...roomSegmentNodes, ...roomPoEs];
+          return roomNode;
+        });
+
+      const floorAreaNodes = floorAreas
+        .filter((fa) => fa.floor_id === floor.id)
+        .map((fa) => {
+          const faPoEs = poes
+            .filter((poe) => poe.location_type === "floor_area" && poe.location_id === fa.id)
+            .map((poe) => ({
+              name: poe.name,
+              type: "poe",
+            }));
+          return {
+            name: fa.name,
+            type: "floor-area",
+            children: faPoEs,
+          };
+        });
+
+      const floorPoEs = poes
+        .filter((poe) => poe.location_type === "floor" && poe.location_id === floor.id)
+        .map((poe) => ({
+          name: poe.name,
+          type: "poe",
+        }));
+
+      floorNode.children = [...floorAreaNodes, ...roomNodes, ...floorPoEs];
+      return floorNode;
+    });
+
+    const sitePoEs = poes
+      .filter((poe) => poe.location_type === "site")
+      .map((poe) => ({
+        name: poe.name,
+        type: "poe",
+      }));
+
+    siteNode.children = [...floorNodes, ...sitePoEs];
+    return [siteNode];
+  };
+
+  const dynamicTree = useMemo(() => buildDynamicTree(), [floors, rooms, floorAreas, roomSegments, poes]);
+
+
 
   return (
     <div className="hierarchy-tab">
@@ -160,10 +225,14 @@ const Hierarchy = () => {
           </div>
 
           <div className="tree-list">
+            {loading && <p className="loading-text">Loading hierarchy...</p>}
+            {error && <p className="error-text">Error: {error}</p>}
+
             <HierarchyTree
-              treeData={dummyTree.map((s) => ({ ...s, name: s.site }))}
+              treeData={dynamicTree}
               onSelect={handleNodeClick}
             />
+
           </div>
 
           {/* 🎯 Context Dropdown */}
