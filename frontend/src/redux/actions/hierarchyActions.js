@@ -1,4 +1,3 @@
-
 import axios from "axios";
 import {
   FETCH_HIERARCHY_DATA_REQUEST,
@@ -6,11 +5,9 @@ import {
   FETCH_HIERARCHY_DATA_FAIL,
 } from "../constants/hierarchyConstants";
 
-export const fetchHierarchyData = (subsiteId = null) => async (dispatch, getState) => {
+export const fetchHierarchyData = (subsiteId = null, token) => async (dispatch) => {
   try {
     dispatch({ type: FETCH_HIERARCHY_DATA_REQUEST });
-
-    const { auth: { token } } = getState();
 
     const config = {
       headers: { Authorization: `Bearer ${token}` },

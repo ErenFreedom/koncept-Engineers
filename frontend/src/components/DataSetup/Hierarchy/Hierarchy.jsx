@@ -22,13 +22,16 @@ import AddSubsitePoEForm from "../forms/AddSubsitePoEForm";
 import MainSiteInfoForm from "../forms/MainSiteInfoForm";
 
 const Hierarchy = () => {
-  const { admin } = useAuth();
+  const { admin, accessToken } = useAuth();
   const dispatch = useDispatch();
   const { floors, rooms, floorAreas, roomSegments, poes, loading, error } = useSelector((state) => state.hierarchy);
 
   useEffect(() => {
-    dispatch(fetchHierarchyData(null));
-  }, [dispatch]);
+    if (accessToken) {
+      dispatch(fetchHierarchyData(null, accessToken));
+    }
+  }, [dispatch, accessToken]);
+
 
   const [expandedNodes, setExpandedNodes] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
