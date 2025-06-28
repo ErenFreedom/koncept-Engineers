@@ -229,7 +229,10 @@ const Hierarchy = () => {
 
           <div className="tree-list">
             {loading && <p className="loading-text">Loading hierarchy...</p>}
-            {error && <p className="error-text">Error: {error}</p>}
+            {error && floors.length === 0 && rooms.length === 0 && floorAreas.length === 0 && roomSegments.length === 0 && poes.length === 0 && (
+              <p className="error-text">Error: {error}</p>
+            )}
+
 
             <HierarchyTree
               treeData={dynamicTree}
