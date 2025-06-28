@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import "./Hierarchy.css";
 import { useAuth } from "../../../context/AuthContext";
 import HierarchyTree from "./HierarchyTree";
@@ -32,12 +32,32 @@ const Hierarchy = () => {
     }
   }, [dispatch, accessToken]);
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        treePanelRef.current &&
+        !treePanelRef.current.contains(event.target)
+      ) {
+        setDropdownNode(null); 
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+
 
   const [expandedNodes, setExpandedNodes] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNode, setSelectedNode] = useState(null);
   const [dropdownNode, setDropdownNode] = useState(null);
   const [dropdownAction, setDropdownAction] = useState(null);
+  const treePanelRef = useRef(null);
+
 
 
   const toggleNode = (parent, index) => {
@@ -56,7 +76,7 @@ const Hierarchy = () => {
 
   const handleDropdownSelect = (actionType) => {
     setDropdownAction(actionType);
-    setDropdownNode(null); 
+    setDropdownNode(null);
   };
 
 
@@ -215,7 +235,7 @@ const Hierarchy = () => {
       {/* Main Layout */}
       <div className="hierarchy-container">
         {/* 🌳 Tree Panel */}
-        <div className="tree-panel" style={{ position: "relative" }}>
+        <div className="tree-panel" ref={treePanelRef}  style={{ position: "relative" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>Hierarchy Tree</h3>
             <div
