@@ -56,8 +56,9 @@ const Hierarchy = () => {
 
   const handleDropdownSelect = (actionType) => {
     setDropdownAction(actionType);
-    setShowDropdown(false);
+    setDropdownNode(null); 
   };
+
 
   const allowedForms = {
     "main-site": ["floor", "poe"],                  // In site: floors + PoEs
@@ -221,7 +222,7 @@ const Hierarchy = () => {
               className="three-dot-menu"
               onClick={(e) => {
                 e.stopPropagation();
-                setDropdownNode(selectedNode); 
+                setDropdownNode(selectedNode);
               }}
             >
               ⋮
