@@ -36,7 +36,7 @@ const Hierarchy = () => {
   const [expandedNodes, setExpandedNodes] = useState({});
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedNode, setSelectedNode] = useState(null);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [dropdownNode, setDropdownNode] = useState(null);
   const [dropdownAction, setDropdownAction] = useState(null);
 
 
@@ -48,10 +48,11 @@ const Hierarchy = () => {
     }));
   };
 
-  const handleNodeClick = (label, type) => {
-    setSelectedNode({ label, type });
-    setDropdownAction(null); // reset form
+  const handleNodeClick = (label, type, node) => {
+    setSelectedNode({ label, type, ...node });
+    setDropdownNode(null);
   };
+
 
   const handleDropdownSelect = (actionType) => {
     setDropdownAction(actionType);
@@ -59,19 +60,20 @@ const Hierarchy = () => {
   };
 
   const allowedForms = {
-    "main-site": ["floor", "main-site-info"], // ✅ add here
-    floor: ["room"],
-    room: ["floor-area", "room-segment", "poe"],
-    "floor-area": [],
-    "room-segment": [],
-    poe: [],
-    subsite: ["subsite-floor"],
-    "subsite-floor": ["subsite-room"],
-    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"],
-    "subsite-floor-area": [],
-    "subsite-room-segment": [],
-    "subsite-poe": [],
+    "main-site": ["floor", "poe"],                  // In site: floors + PoEs
+    floor: ["room", "floor-area", "poe"],           // Floor: rooms + floor areas + PoEs
+    room: ["room-segment", "poe"],                  // Room: room segments + PoEs
+    "floor-area": ["poe"],                          // Floor area: PoEs
+    "room-segment": ["poe"],                        // Room segment: PoEs
+    poe: ["data-point"],                           // PoEs: sensors
+    subsite: ["subsite-floor"],                    // Subsite: subsite floors
+    "subsite-floor": ["subsite-room"],             // Subsite floor: subsite rooms
+    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"], // Subsite room
+    "subsite-floor-area": [],                      // Subsite floor area: nothing more
+    "subsite-room-segment": [],                    // Subsite room segment: nothing more
+    "subsite-poe": [],                             // Subsite PoE: nothing more
   };
+
 
 
   const labelMap = {
@@ -80,6 +82,7 @@ const Hierarchy = () => {
     "floor-area": "Add Floor Area",
     "room-segment": "Add Room Segment",
     poe: "Add Piece of Equipment",
+    "data-point": "Mount Data Point",
     subsite: "Register Sub-site",
     "subsite-floor": "Add Subsite Floor",
     "subsite-room": "Add Subsite Room",
@@ -90,36 +93,26 @@ const Hierarchy = () => {
   };
 
 
-  const renderFormForAction = (actionType) => {
-    switch (actionType) {
-      case "floor":
-        return <AddFloorForm />;
-      case "room":
-        return <AddRoomForm />;
-      case "floor-area":
-        return <AddFloorAreaForm />;
-      case "room-segment":
-        return <AddRoomSegmentForm />;
-      case "poe":
-        return <AddPieceOfEquipmentForm />;
-      case "subsite":
-        return <RegisterSubSiteForm />;
-      case "subsite-floor":
-        return <AddSubsiteFloorForm />;
-      case "subsite-room":
-        return <AddSubsiteRoomForm />;
-      case "subsite-floor-area":
-        return <AddSubsiteFloorAreaForm />;
-      case "subsite-room-segment":
-        return <AddSubsiteRoomSegmentForm />;
-      case "subsite-poe":
-        return <AddSubsitePoEForm />;
-      case "main-site-info":
-        return <MainSiteInfoForm />; // ✅ new case
-      default:
-        return <p className="no-selection">🛈 Select a node and action to view a form.</p>;
+
+  const renderFormForAction = (type, node) => {
+    switch (type) {
+      case "floor": return <AddFloorForm data={node} />;
+      case "room": return <AddRoomForm data={node} />;
+      case "floor-area": return <AddFloorAreaForm data={node} />;
+      case "room-segment": return <AddRoomSegmentForm data={node} />;
+      case "poe": return <AddPieceOfEquipmentForm data={node} />;
+      case "data-point": return <div>Data Point Form Placeholder</div>;
+      case "main-site": return <MainSiteInfoForm data={node} />;
+      case "subsite": return <RegisterSubSiteForm data={node} />;
+      case "subsite-floor": return <AddSubsiteFloorForm data={node} />;
+      case "subsite-room": return <AddSubsiteRoomForm data={node} />;
+      case "subsite-floor-area": return <AddSubsiteFloorAreaForm data={node} />;
+      case "subsite-room-segment": return <AddSubsiteRoomSegmentForm data={node} />;
+      case "subsite-poe": return <AddSubsitePoEForm data={node} />;
+      default: return <p className="no-selection">🛈 No form available for this node</p>;
     }
   };
+
 
 
   const buildDynamicTree = () => {
@@ -237,20 +230,22 @@ const Hierarchy = () => {
             <HierarchyTree
               treeData={dynamicTree}
               onSelect={handleNodeClick}
+              setDropdownNode={setDropdownNode}
             />
+
 
           </div>
 
           {/* 🎯 Context Dropdown */}
-          {showDropdown && selectedNode?.type && (
+          {dropdownNode && (
             <div className="context-dropdown">
               {(Object.keys(labelMap) || []).map((key) => (
                 <button
                   key={key}
                   onClick={() => handleDropdownSelect(key)}
                   disabled={
-                    !allowedForms[selectedNode.type] ||
-                    !allowedForms[selectedNode.type].includes(key)
+                    !allowedForms[dropdownNode.type] ||
+                    !allowedForms[dropdownNode.type].includes(key)
                   }
                 >
                   {labelMap[key]}
@@ -258,16 +253,18 @@ const Hierarchy = () => {
               ))}
             </div>
           )}
+
         </div>
 
         {/* 📄 Form Panel */}
         <div className="form-panel">
           <div className="form-box">
-            <h4>{selectedNode?.label || "Site Name"}</h4>
-            {dropdownAction ? renderFormForAction(dropdownAction) : (
-              <p className="no-selection">🛈 Use the ⋮ menu to select what to add</p>
+            <h4>{selectedNode?.label || "Select a Node"}</h4>
+            {selectedNode ? renderFormForAction(selectedNode.type, selectedNode) : (
+              <p className="no-selection">🛈 Select a node to view its details</p>
             )}
           </div>
+
 
           <div className="form-box">
             <h4>Relationships</h4>

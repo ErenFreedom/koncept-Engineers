@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import "./HierarchyTree.css";
 
-const HierarchyTree = ({ treeData, onSelect }) => {
+const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
   const [expandedNodes, setExpandedNodes] = useState({});
 
   const toggleExpand = (path) => {
@@ -30,9 +30,22 @@ const HierarchyTree = ({ treeData, onSelect }) => {
               <span className="leaf-dot">•</span>
             )}
 
-            <span className="node-label" onClick={() => onSelect(label, nodeType)}>
+            <span
+              className="node-label"
+              onClick={() => onSelect(label, nodeType, node)} // ✅ passes node details
+            >
               {label}
             </span>
+
+            <div
+              className="three-dot-menu"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDropdownNode(node); // ✅ opens dropdown for this specific node
+              }}
+            >
+              ⋮
+            </div>
           </div>
 
           {isExpanded && node.children && (
