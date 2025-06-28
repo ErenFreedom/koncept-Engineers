@@ -217,7 +217,16 @@ const Hierarchy = () => {
         <div className="tree-panel" style={{ position: "relative" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>Hierarchy Tree</h3>
-            <div className="three-dot-menu" onClick={() => setShowDropdown(!showDropdown)}>⋮</div>
+            <div
+              className="three-dot-menu"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDropdownNode(selectedNode); 
+              }}
+            >
+              ⋮
+            </div>
+
           </div>
 
           <div className="tree-list">
