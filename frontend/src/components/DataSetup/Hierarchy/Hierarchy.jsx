@@ -24,7 +24,8 @@ import MainSiteInfoForm from "../forms/MainSiteInfoForm";
 const Hierarchy = () => {
   const { admin, accessToken } = useAuth();
   const dispatch = useDispatch();
-  const { floors, rooms, floorAreas, roomSegments, poes, loading, error } = useSelector((state) => state.hierarchy);
+  const { floors, rooms, floorAreas, roomSegments, poes, subsites, loading, error } = useSelector((state) => state.hierarchy);
+
 
   useEffect(() => {
     if (accessToken) {
