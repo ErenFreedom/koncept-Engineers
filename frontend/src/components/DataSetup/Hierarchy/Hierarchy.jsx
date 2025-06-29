@@ -38,7 +38,7 @@ const Hierarchy = () => {
         treePanelRef.current &&
         !treePanelRef.current.contains(event.target)
       ) {
-        setDropdownNode(null); 
+        setDropdownNode(null);
       }
     };
 
@@ -212,8 +212,18 @@ const Hierarchy = () => {
       }));
 
     siteNode.children = [...floorNodes, ...sitePoEs];
-    return [siteNode];
+
+    // ✅ Add subsite nodes below the main site
+    const subsiteNodes = subsites.map((sub) => ({
+      name: `Sub-site - ${sub.subSiteName}`,
+      type: "subsite",
+      children: [],
+      ...sub, // Attach the full subsite object as node data
+    }));
+
+    return [siteNode, ...subsiteNodes];
   };
+
 
   const dynamicTree = useMemo(() => buildDynamicTree(), [floors, rooms, floorAreas, roomSegments, poes]);
 
@@ -235,7 +245,7 @@ const Hierarchy = () => {
       {/* Main Layout */}
       <div className="hierarchy-container">
         {/* 🌳 Tree Panel */}
-        <div className="tree-panel" ref={treePanelRef}  style={{ position: "relative" }}>
+        <div className="tree-panel" ref={treePanelRef} style={{ position: "relative" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>Hierarchy Tree</h3>
             <div

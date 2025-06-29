@@ -1,63 +1,100 @@
 import React, { useState, useEffect } from "react";
 import "./FormStyles.css";
 
-// In real use, fetch this from Redux state or props
-const dummyData = {
-  first_name: "John",
-  middle_name: "M.",
-  last_name: "Doe",
-  date_of_birth: "1995-05-20",
-  nationality: "Indian",
-  address1: "123 Street Name",
-  address2: "Near Something",
-  pincode: "201310",
-  phone_number: "+91-9876543210",
-  landline: "0120-123456",
-  email: "admin@example.com",
-  company_name: "Galgotias",
-  company_email: "info@galgotias.com",
-  company_alt_email: "contact@galgotias.com",
-  company_address1: "GCET Campus",
-  company_address2: "Greater Noida",
-  company_pincode: "201310",
-  aadhar: "aadhar-url.pdf",
-  pan: "pan-url.pdf",
-  gst: "gst-url.pdf"
-};
+const MainSiteInfoForm = ({ data }) => {
+  const [formData, setFormData] = useState({
+    company_name: "",
+    company_email: "",
+    company_alt_email: "",
+    company_address1: "",
+    company_address2: "",
+    company_pincode: "",
+    pan_s3: "",
+    gst_s3: "",
+  });
 
-const MainSiteInfoForm = () => {
-  const [data, setData] = useState(dummyData); // Replace dummyData with actual data source
+  // Update form when new data prop arrives
+  useEffect(() => {
+    if (data) {
+      setFormData({
+        company_name: data.company_name || "",
+        company_email: data.company_email || "",
+        company_alt_email: data.company_alt_email || "",
+        company_address1: data.company_address1 || "",
+        company_address2: data.company_address2 || "",
+        company_pincode: data.company_pincode || "",
+        pan_s3: data.pan_s3 || "",
+        gst_s3: data.gst_s3 || "",
+      });
+    }
+  }, [data]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Updated Main Site Info:", formData);
+    // Here you'd dispatch editMainSiteInfo(formData, token) redux action.
+  };
 
   return (
-    <form className="form-container">
-      <h3>Admin Details</h3>
-      <input value={data.first_name} disabled placeholder="First Name" />
-      <input value={data.middle_name} disabled placeholder="Middle Name" />
-      <input value={data.last_name} disabled placeholder="Last Name" />
-      <input value={data.date_of_birth} disabled placeholder="Date of Birth" type="date" />
-      <input value={data.nationality} disabled placeholder="Nationality" />
-      <input value={data.address1} disabled placeholder="Address Line 1" />
-      <input value={data.address2} disabled placeholder="Address Line 2" />
-      <input value={data.pincode} disabled placeholder="Pincode" />
-      <input value={data.phone_number} disabled placeholder="Phone Number" />
-      <input value={data.landline} disabled placeholder="Landline" />
-      <input value={data.email} disabled placeholder="Email" />
-
-      <h3>Company Details</h3>
-      <input value={data.company_name} disabled placeholder="Company Name" />
-      <input value={data.company_email} disabled placeholder="Company Email" />
-      <input value={data.company_alt_email} disabled placeholder="Alternate Email" />
-      <input value={data.company_address1} disabled placeholder="Address Line 1" />
-      <input value={data.company_address2} disabled placeholder="Address Line 2" />
-      <input value={data.company_pincode} disabled placeholder="Pincode" />
+    <form className="form-container" onSubmit={handleSubmit}>
+      <h3>Company Info</h3>
+      <input
+        name="company_name"
+        value={formData.company_name}
+        onChange={handleChange}
+        placeholder="Company Name"
+      />
+      <input
+        name="company_email"
+        value={formData.company_email}
+        onChange={handleChange}
+        placeholder="Company Email"
+      />
+      <input
+        name="company_alt_email"
+        value={formData.company_alt_email}
+        onChange={handleChange}
+        placeholder="Alternate Email"
+      />
+      <input
+        name="company_address1"
+        value={formData.company_address1}
+        onChange={handleChange}
+        placeholder="Address Line 1"
+      />
+      <input
+        name="company_address2"
+        value={formData.company_address2}
+        onChange={handleChange}
+        placeholder="Address Line 2"
+      />
+      <input
+        name="company_pincode"
+        value={formData.company_pincode}
+        onChange={handleChange}
+        placeholder="Pincode"
+      />
 
       <h3>Documents</h3>
-      <input value={data.aadhar} disabled placeholder="Aadhar URL" />
-      <input value={data.pan} disabled placeholder="PAN URL" />
-      <input value={data.gst} disabled placeholder="GST URL" />
+      <input
+        name="pan_s3"
+        value={formData.pan_s3}
+        onChange={handleChange}
+        placeholder="PAN URL"
+      />
+      <input
+        name="gst_s3"
+        value={formData.gst_s3}
+        onChange={handleChange}
+        placeholder="GST URL"
+      />
 
-      {/* Optional Edit Button Later */}
-      {/* <button type="button">Edit Info</button> */}
+      <button type="submit">Save Changes</button>
     </form>
   );
 };

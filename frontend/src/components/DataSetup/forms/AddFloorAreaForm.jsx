@@ -1,23 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./FormStyles.css";
 
-const AddFloorForm = () => {
+const AddFloorAreaForm = ({ data, onSubmit }) => {
   const [name, setName] = useState("");
-  const [level, setLevel] = useState("");
+  const [floorId, setFloorId] = useState("");
+
+  useEffect(() => {
+    if (data) {
+      setName(data.name || "");
+      setFloorId(data.floor_id || "");
+    } else {
+      setName("");
+      setFloorId("");
+    }
+  }, [data]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Floor:", { name, level });
+    onSubmit({ name, floor_id: floorId });
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>Add Floor</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
-      <input type="number" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Floor Level" />
-      <button type="submit">Add Floor</button>
+      <h3>{data ? "Edit Floor Area" : "Add Floor Area"}</h3>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Area Name" />
+      <input value={floorId} onChange={(e) => setFloorId(e.target.value)} placeholder="Floor ID" />
+      <button type="submit">{data ? "Update Floor Area" : "Add Floor Area"}</button>
     </form>
   );
 };
 
-export default AddFloorForm;
+export default AddFloorAreaForm;

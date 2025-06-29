@@ -3,10 +3,11 @@ import {thunk} from "redux-thunk";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
-import { authReducer } from "./reducers/authReducer";  // ✅ IMPORT your auth reducer
+import { authReducer } from "./reducers/authReducer"; 
 import siteReducer from "./reducers/siteReducer";
 import subSiteStructureReducer from "./reducers/subSiteStructureReducer";
 import { hierarchyReducer } from "./reducers/hierarchyReducer"; 
+import { subsiteReducer } from "./reducers/subsiteReducer";
 
 const persistConfig = {
   key: "root",
@@ -14,10 +15,11 @@ const persistConfig = {
 };
 
 const rootReducer = combineReducers({
-  auth: authReducer, // ✅ ADD auth reducer here
+  auth: authReducer, 
   site: siteReducer,
   subSiteStructure: subSiteStructureReducer,
   hierarchy: hierarchyReducer, 
+  subsite: subsiteReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

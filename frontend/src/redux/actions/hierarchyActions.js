@@ -28,12 +28,20 @@ export const fetchHierarchyData = (subsiteId = null, token) => async (dispatch) 
       }
     };
 
-    const [floorsData, roomsData, floorAreasData, roomSegmentsData, poesData] = await Promise.all([
+    const [
+      floorsData,
+      roomsData,
+      floorAreasData,
+      roomSegmentsData,
+      poesData,
+      subsitesData,  
+    ] = await Promise.all([
       safeGet(`${baseUrl}/floors${query}`, "Floors"),
       safeGet(`${baseUrl}/rooms${query}`, "Rooms"),
       safeGet(`${baseUrl}/floor-areas${query}`, "FloorAreas"),
       safeGet(`${baseUrl}/room-segments${query}`, "RoomSegments"),
       safeGet(`${baseUrl}/poes${query}`, "PoEs"),
+      safeGet(`${process.env.REACT_APP_API_BASE_URL}/api/list`, "SubSites"), 
     ]);
 
     const allFailed = [floorsData, roomsData, floorAreasData, roomSegmentsData, poesData]
@@ -55,6 +63,7 @@ export const fetchHierarchyData = (subsiteId = null, token) => async (dispatch) 
         floorAreas: floorAreasData?.floorAreas || [],
         roomSegments: roomSegmentsData?.roomSegments || [],
         poes: poesData?.piecesOfEquipment || [],
+        subsites: subsitesData?.subsites || [], 
       },
     });
   } catch (error) {

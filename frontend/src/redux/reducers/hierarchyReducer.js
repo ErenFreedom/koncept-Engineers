@@ -1,4 +1,3 @@
-
 import {
   FETCH_HIERARCHY_DATA_REQUEST,
   FETCH_HIERARCHY_DATA_SUCCESS,
@@ -13,18 +12,19 @@ const initialState = {
   floorAreas: [],
   roomSegments: [],
   poes: [],
+  subsites: [], 
 };
 
 export const hierarchyReducer = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_HIERARCHY_DATA_REQUEST:
-      return { ...state, loading: true };
+      return { ...state, loading: true, error: null };
 
     case FETCH_HIERARCHY_DATA_SUCCESS:
       return {
         ...state,
         loading: false,
-        ...action.payload,
+        ...action.payload, 
       };
 
     case FETCH_HIERARCHY_DATA_FAIL:
