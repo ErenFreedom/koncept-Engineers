@@ -214,19 +214,19 @@ const Hierarchy = () => {
 
     siteNode.children = [...floorNodes, ...sitePoEs];
 
-    // ✅ Add subsite nodes below the main site
     const subsiteNodes = subsites.map((sub) => ({
       name: `Sub-site - ${sub.subSiteName}`,
       type: "subsite",
       children: [],
-      ...sub, // Attach the full subsite object as node data
+      ...sub, 
     }));
 
     return [siteNode, ...subsiteNodes];
   };
 
 
-  const dynamicTree = useMemo(() => buildDynamicTree(), [floors, rooms, floorAreas, roomSegments, poes]);
+  const dynamicTree = useMemo(() => buildDynamicTree(), [floors, rooms, floorAreas, roomSegments, poes, subsites]);
+
 
 
 
