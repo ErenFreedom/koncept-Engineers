@@ -24,7 +24,17 @@ import MainSiteInfoForm from "../forms/MainSiteInfoForm";
 const Hierarchy = () => {
   const { admin, accessToken } = useAuth();
   const dispatch = useDispatch();
-  const { floors, rooms, floorAreas, roomSegments, poes, subsites, loading, error } = useSelector((state) => state.hierarchy);
+  const {
+    floors = [],
+    rooms = [],
+    floorAreas = [],
+    roomSegments = [],
+    poes = [],
+    subsites = [],
+    loading = false,
+    error = null,
+  } = useSelector((state) => state.hierarchy || {});
+
 
 
   useEffect(() => {
@@ -218,7 +228,7 @@ const Hierarchy = () => {
       name: `Sub-site - ${sub.subSiteName}`,
       type: "subsite",
       children: [],
-      ...sub, 
+      ...sub,
     }));
 
     return [siteNode, ...subsiteNodes];
