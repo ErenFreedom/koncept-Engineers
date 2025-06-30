@@ -73,7 +73,10 @@
   background-color: #1d2235;
   border-radius: 4px;
   display: inline-block;
+  font-size: 1.3rem;          
+  font-weight: bold;          
 }
+
 
 .tree-node-label:hover {
   background-color: #2a3048;
