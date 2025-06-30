@@ -35,8 +35,12 @@ const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
               onClick={() => onSelect(label, nodeType, node)}
             >
               <div className="node-main-text">{label}</div>
-              <div className="node-type-text">{nodeType}</div>
+              <div className="node-type-text">
+                Type: {nodeType.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+              </div>
             </div>
+
+
 
 
             <div
