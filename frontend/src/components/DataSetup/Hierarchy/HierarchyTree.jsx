@@ -30,12 +30,14 @@ const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
               <span className="leaf-dot">•</span>
             )}
 
-            <span
+            <div
               className="node-label"
-              onClick={() => onSelect(label, nodeType, node)} // ✅ passes node details
+              onClick={() => onSelect(label, nodeType, node)}
             >
-              {label}
-            </span>
+              <div className="node-main-text">{label}</div>
+              <div className="node-type-text">{nodeType}</div>
+            </div>
+
 
             <div
               className="three-dot-menu"
