@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity } from "../../../redux/actions/siteActions";
+import { addSubsiteEntity } from "../../../redux/actions/subsiteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
@@ -14,30 +14,22 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
 
   useEffect(() => {
     console.log("🪵 AddSubsiteRoomSegmentForm data:", data);
-    if (data && data.name) {
+    if (data) {
       setName(data.name || "");
-      setRoomId(data.room_id || data.parentId || "");
+      setRoomId(data.room_id ?? data.parentId ?? "");
       setSubsiteId(
-        data.subsite_id ||
-        data.subSiteId ||
-        data.parentId ||
-        data.id || ""
+        data.subsite_id ??
+        data.subSiteId ??
+        data.subsiteId ??
+        ""
       );
-    } else if (data && data.parentType === "subsite-room" && data.parentId) {
-      setName("");
-      setRoomId(data.parentId);
-      setSubsiteId(data.subsite_id || data.subSiteId || "");
-    } else {
-      setName("");
-      setRoomId("");
-      setSubsiteId("");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, room_id: roomId, subsite_id: subsiteId };
-    await dispatch(addEntity("subsite-room-segment", payload, accessToken));
+    await dispatch(addSubsiteEntity("room-segment", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
   };

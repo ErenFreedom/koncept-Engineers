@@ -90,10 +90,12 @@ const Hierarchy = () => {
 
 
   const handleDropdownSelect = (actionType) => {
+    console.log("🪵 Dropdown node on select:", dropdownNode);
     setActiveForm({ actionType, parentNode: dropdownNode });
     setDropdownAction(null);
     setDropdownNode(null);
   };
+
 
 
 
@@ -258,84 +260,85 @@ const Hierarchy = () => {
 
     // 🏢 Subsites
     const subsiteNodes = subsites.map((sub) => {
-  const subsiteFloorNodes = sub.subsiteFloors?.map((floor) => {
-    const floorNode = {
-      id: floor.id,
-      name: floor.name,
-      type: "subsite-floor",
-      subsite_id: sub.subsite_id, // ✅ required for forms
-      children: [],
-    };
+      const subsiteFloorNodes = sub.subsiteFloors?.map((floor) => {
+        const floorNode = {
+          id: floor.id,
+          name: floor.name,
+          type: "subsite-floor",
+          subsite_id: sub.subsite_id, // ✅ required for forms
+          children: [],
+        };
 
-    const floorAreaNodes = floor.floorAreas?.map((fa) => {
-      const faPoEs = fa.poes?.map((poe) => ({
-        id: poe.id,
-        name: poe.name,
-        type: "subsite-poe",
-        location_type: poe.location_type,
-        location_id: poe.location_id,
-        subsite_id: sub.subsite_id, // ✅ here too
-      })) || [];
+        const floorAreaNodes = floor.floorAreas?.map((fa) => {
+          const faPoEs = fa.poes?.map((poe) => ({
+            id: poe.id,
+            name: poe.name,
+            type: "subsite-poe",
+            location_type: poe.location_type,
+            location_id: poe.location_id,
+            subsite_id: sub.subsite_id, // ✅ here too
+          })) || [];
+          return {
+            id: fa.id,
+            name: fa.name,
+            type: "subsite-floor-area",
+            floor_id: fa.floor_id,
+            subsite_id: sub.subsite_id, // ✅ important
+            children: faPoEs,
+          };
+        }) || [];
+
+        const floorRoomNodes = floor.rooms?.map((room) => {
+          const roomSegmentNodes = room.roomSegments?.map((seg) => ({
+            id: seg.id,
+            name: seg.name,
+            type: "subsite-room-segment",
+            room_id: seg.room_id,
+            subsite_id: sub.subsite_id, // ✅ add it
+          })) || [];
+
+          const roomPoEs = room.poes?.map((poe) => ({
+            id: poe.id,
+            name: poe.name,
+            type: "subsite-poe",
+            location_type: poe.location_type,
+            location_id: poe.location_id,
+            subsite_id: sub.subsite_id, // ✅
+          })) || [];
+
+          return {
+            id: room.id,
+            name: room.name,
+            type: "subsite-room",
+            floor_id: room.floor_id,
+            subsite_id: sub.subsite_id, // ✅
+            children: [...roomSegmentNodes, ...roomPoEs],
+          };
+        }) || [];
+
+        const floorPoEs = floor.poes?.map((poe) => ({
+          id: poe.id,
+          name: poe.name,
+          type: "subsite-poe",
+          location_type: poe.location_type,
+          location_id: poe.location_id,
+          subsite_id: sub.subsite_id, // ✅
+        })) || [];
+
+        floorNode.children = [...floorAreaNodes, ...floorRoomNodes, ...floorPoEs];
+        return floorNode;
+      }) || [];
+
       return {
-        id: fa.id,
-        name: fa.name,
-        type: "subsite-floor-area",
-        floor_id: fa.floor_id,
-        subsite_id: sub.subsite_id, // ✅ important
-        children: faPoEs,
+        id: sub.subSiteId || sub.subsite_id,
+        name: `Sub-site - ${sub.subSiteName}`,
+        type: "subsite",
+        subsite_id: sub.subSiteId || sub.subsite_id,
+        children: subsiteFloorNodes,
+        ...sub,
       };
-    }) || [];
 
-    const floorRoomNodes = floor.rooms?.map((room) => {
-      const roomSegmentNodes = room.roomSegments?.map((seg) => ({
-        id: seg.id,
-        name: seg.name,
-        type: "subsite-room-segment",
-        room_id: seg.room_id,
-        subsite_id: sub.subsite_id, // ✅ add it
-      })) || [];
-
-      const roomPoEs = room.poes?.map((poe) => ({
-        id: poe.id,
-        name: poe.name,
-        type: "subsite-poe",
-        location_type: poe.location_type,
-        location_id: poe.location_id,
-        subsite_id: sub.subsite_id, // ✅
-      })) || [];
-
-      return {
-        id: room.id,
-        name: room.name,
-        type: "subsite-room",
-        floor_id: room.floor_id,
-        subsite_id: sub.subsite_id, // ✅
-        children: [...roomSegmentNodes, ...roomPoEs],
-      };
-    }) || [];
-
-    const floorPoEs = floor.poes?.map((poe) => ({
-      id: poe.id,
-      name: poe.name,
-      type: "subsite-poe",
-      location_type: poe.location_type,
-      location_id: poe.location_id,
-      subsite_id: sub.subsite_id, // ✅
-    })) || [];
-
-    floorNode.children = [...floorAreaNodes, ...floorRoomNodes, ...floorPoEs];
-    return floorNode;
-  }) || [];
-
-  return {
-    id: sub.subsite_id,
-    name: `Sub-site - ${sub.subSiteName}`,
-    type: "subsite",
-    subsite_id: sub.subsite_id,
-    children: subsiteFloorNodes,
-    ...sub,
-  };
-});
+    });
 
 
     return [siteNode, ...subsiteNodes];

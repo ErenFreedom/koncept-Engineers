@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity } from "../../../redux/actions/siteActions";
+import { addSubsiteEntity } from "../../../redux/actions/subsiteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
@@ -14,30 +14,23 @@ const AddSubsiteFloorForm = ({ data, setActiveForm }) => {
 
   useEffect(() => {
     console.log("🪵 AddSubsiteFloorForm data:", data);
-    if (data && data.name) {
+    if (data) {
       setName(data.name || "");
       setFloorLevel(data.floor_level || "");
       setSubsiteId(
-        data.subsite_id ||
-        data.subSiteId ||
-        data.parentId ||
-        data.id || ""
+        data.subsite_id ??
+        data.subSiteId ??
+        data.parentId ??
+        data.id ??
+        ""
       );
-    } else if (data && data.parentType === "subsite" && data.parentId) {
-      setName("");
-      setFloorLevel("");
-      setSubsiteId(data.parentId);
-    } else {
-      setName("");
-      setFloorLevel("");
-      setSubsiteId("");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, floor_level: floorLevel, subsite_id: subsiteId };
-    await dispatch(addEntity("subsite-floor", payload, accessToken));
+    await dispatch(addSubsiteEntity("floor", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
   };

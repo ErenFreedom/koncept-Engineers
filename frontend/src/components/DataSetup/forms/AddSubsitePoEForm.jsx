@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity } from "../../../redux/actions/siteActions";
+import { addSubsiteEntity } from "../../../redux/actions/subsiteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
@@ -15,33 +15,23 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
 
   useEffect(() => {
     console.log("🪵 AddSubsitePoEForm data:", data);
-    if (data && data.name) {
+    if (data) {
       setName(data.name || "");
-      setLocationType(data.location_type || "");
-      setLocationId(data.location_id || "");
+      setLocationType(data.location_type ?? data.parentType ?? "");
+      setLocationId(data.location_id ?? data.parentId ?? "");
       setSubsiteId(
-        data.subsite_id ||
-        data.subSiteId ||
-        data.parentId ||
-        data.id || ""
+        data.subsite_id ??
+        data.subSiteId ??
+        data.subsiteId ??
+        ""
       );
-    } else if (data && data.parentType && data.parentId) {
-      setName("");
-      setLocationType(data.parentType);
-      setLocationId(data.parentId);
-      setSubsiteId(data.subsite_id || data.subSiteId || "");
-    } else {
-      setName("");
-      setLocationType("");
-      setLocationId("");
-      setSubsiteId("");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
-    await dispatch(addEntity("subsite-poe", payload, accessToken));
+    await dispatch(addSubsiteEntity("poe", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
   };
