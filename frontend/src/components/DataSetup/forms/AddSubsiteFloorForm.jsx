@@ -44,7 +44,8 @@ const AddSubsiteFloorForm = ({ data, setActiveForm }) => {
       <h3>{data && data.name ? "Edit Sub-site Floor" : "Add Sub-site Floor"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
       <input value={floorLevel} onChange={(e) => setFloorLevel(e.target.value)} placeholder="Floor Level" />
-      <input value={subsiteId} onChange={(e) => setSubsiteId(e.target.value)} placeholder="Sub-site ID" />
+      <label>Sub-site ID</label>
+      <input value={subsiteId} readOnly placeholder="Sub-site ID" />
       <button type="submit">{data && data.name ? "Update Floor" : "Add Floor"}</button>
     </form>
   );

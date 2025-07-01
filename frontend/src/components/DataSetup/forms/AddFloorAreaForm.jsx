@@ -13,12 +13,15 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
 
   useEffect(() => {
     if (data && data.name) {
+      // Editing existing area: populate fields
       setName(data.name || "");
       setFloorId(data.floor_id || "");
     } else if (data && data.parentType === "floor" && data.parentId) {
+      // Adding new area to a floor: set floorId automatically
       setName("");
       setFloorId(data.parentId);
     } else {
+      // Default
       setName("");
       setFloorId("");
     }
@@ -37,9 +40,20 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{data && data.name ? "Edit Floor Area" : "Add Floor Area"}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Area Name" />
-      <input value={floorId} onChange={(e) => setFloorId(e.target.value)} placeholder="Floor ID" />
-      <button type="submit">{data && data.name ? "Update Floor Area" : "Add Floor Area"}</button>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Area Name"
+      />
+      <label>Floor ID</label>
+      <input
+        value={floorId}
+        readOnly
+        placeholder="Floor ID"
+      />
+      <button type="submit">
+        {data && data.name ? "Update Floor Area" : "Add Floor Area"}
+      </button>
     </form>
   );
 };

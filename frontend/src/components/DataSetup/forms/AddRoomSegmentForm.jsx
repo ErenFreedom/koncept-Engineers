@@ -38,7 +38,8 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{data && data.name ? "Edit Room Segment" : "Add Room Segment"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Segment Name" />
-      <input value={roomId} onChange={(e) => setRoomId(e.target.value)} placeholder="Room ID" />
+      <label>Room ID</label>
+      <input value={roomId} readOnly placeholder="Room ID" />
       <button type="submit">{data && data.name ? "Update Segment" : "Add Segment"}</button>
     </form>
   );

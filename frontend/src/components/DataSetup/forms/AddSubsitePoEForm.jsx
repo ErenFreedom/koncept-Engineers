@@ -48,9 +48,12 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{data && data.name ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="PoE Name" />
-      <input value={locationType} onChange={(e) => setLocationType(e.target.value)} placeholder="Location Type (e.g., room, floor)" />
-      <input value={locationId} onChange={(e) => setLocationId(e.target.value)} placeholder="Location ID" />
-      <input value={subsiteId} onChange={(e) => setSubsiteId(e.target.value)} placeholder="Sub-site ID" />
+      <label>Location Type</label>
+      <input value={locationType} readOnly placeholder="Location Type (e.g., room, floor)" />
+      <label>Location ID</label>
+      <input value={locationId} readOnly placeholder="Location ID" />
+      <label>Sub-site ID</label>
+      <input value={subsiteId} readOnly placeholder="Sub-site ID" />
       <button type="submit">{data && data.name ? "Update PoE" : "Add PoE"}</button>
     </form>
   );

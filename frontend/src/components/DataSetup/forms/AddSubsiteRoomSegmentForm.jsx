@@ -43,8 +43,10 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{data && data.name ? "Edit Sub-site Room Segment" : "Add Sub-site Room Segment"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Segment Name" />
-      <input value={roomId} onChange={(e) => setRoomId(e.target.value)} placeholder="Room ID" />
-      <input value={subsiteId} onChange={(e) => setSubsiteId(e.target.value)} placeholder="Sub-site ID" />
+      <label>Room ID</label>
+      <input value={roomId} readOnly placeholder="Room ID" />
+      <label>Sub-site ID</label>
+      <input value={subsiteId} readOnly placeholder="Sub-site ID" />
       <button type="submit">{data && data.name ? "Update Segment" : "Add Segment"}</button>
     </form>
   );

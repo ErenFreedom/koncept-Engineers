@@ -110,7 +110,8 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
         <option value="room">Room</option>
         <option value="room_segment">Room Segment</option>
       </select>
-      <input name="location_id" value={formData.location_id} onChange={handleChange} placeholder="Location ID" />
+      <label>Location ID</label>
+      <input name="location_id" value={formData.location_id} readOnly placeholder="Location ID" />
       <button type="submit">{data && data.name ? "Update Equipment" : "Add Equipment"}</button>
     </form>
   );

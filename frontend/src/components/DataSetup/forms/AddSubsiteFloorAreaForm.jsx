@@ -43,8 +43,10 @@ const AddSubsiteFloorAreaForm = ({ data, setActiveForm }) => {
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{data && data.name ? "Edit Sub-site Floor Area" : "Add Sub-site Floor Area"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Area Name" />
-      <input value={floorId} onChange={(e) => setFloorId(e.target.value)} placeholder="Floor ID" />
-      <input value={subsiteId} onChange={(e) => setSubsiteId(e.target.value)} placeholder="Sub-site ID" />
+      <label>Floor ID</label>
+      <input value={floorId} readOnly placeholder="Floor ID" />
+      <label>Sub-site ID</label>
+      <input value={subsiteId} readOnly placeholder="Sub-site ID" />
       <button type="submit">{data && data.name ? "Update Area" : "Add Floor Area"}</button>
     </form>
   );
