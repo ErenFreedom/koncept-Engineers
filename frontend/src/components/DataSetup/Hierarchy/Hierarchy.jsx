@@ -156,6 +156,7 @@ const Hierarchy = () => {
 
   const buildDynamicTree = () => {
     const siteNode = {
+      id: admin?.companyId, // Optional: useful if you want site-level actions
       site: `Main Site - ${admin?.companyName || "Company"}`,
       type: "main-site",
       children: [],
@@ -163,6 +164,7 @@ const Hierarchy = () => {
 
     const floorNodes = floors.map((floor) => {
       const floorNode = {
+        id: floor.id, // ✅ include DB ID
         name: floor.name,
         type: "floor",
         children: [],
@@ -172,6 +174,7 @@ const Hierarchy = () => {
         .filter((r) => r.floor_id === floor.id)
         .map((room) => {
           const roomNode = {
+            id: room.id, // ✅
             name: room.name,
             type: "room",
             children: [],
@@ -180,6 +183,7 @@ const Hierarchy = () => {
           const roomSegmentNodes = roomSegments
             .filter((seg) => seg.room_id === room.id)
             .map((seg) => ({
+              id: seg.id, // ✅
               name: seg.name,
               type: "room-segment",
             }));
@@ -187,6 +191,7 @@ const Hierarchy = () => {
           const roomPoEs = poes
             .filter((poe) => poe.location_type === "room" && poe.location_id === room.id)
             .map((poe) => ({
+              id: poe.id, // ✅
               name: poe.name,
               type: "poe",
             }));
@@ -201,10 +206,12 @@ const Hierarchy = () => {
           const faPoEs = poes
             .filter((poe) => poe.location_type === "floor_area" && poe.location_id === fa.id)
             .map((poe) => ({
+              id: poe.id, // ✅
               name: poe.name,
               type: "poe",
             }));
           return {
+            id: fa.id, // ✅
             name: fa.name,
             type: "floor-area",
             children: faPoEs,
@@ -214,6 +221,7 @@ const Hierarchy = () => {
       const floorPoEs = poes
         .filter((poe) => poe.location_type === "floor" && poe.location_id === floor.id)
         .map((poe) => ({
+          id: poe.id, // ✅
           name: poe.name,
           type: "poe",
         }));
@@ -225,6 +233,7 @@ const Hierarchy = () => {
     const sitePoEs = poes
       .filter((poe) => poe.location_type === "site")
       .map((poe) => ({
+        id: poe.id, // ✅
         name: poe.name,
         type: "poe",
       }));
@@ -232,6 +241,7 @@ const Hierarchy = () => {
     siteNode.children = [...floorNodes, ...sitePoEs];
 
     const subsiteNodes = subsites.map((sub) => ({
+      id: sub.subsite_id, 
       name: `Sub-site - ${sub.subSiteName}`,
       type: "subsite",
       children: [],
