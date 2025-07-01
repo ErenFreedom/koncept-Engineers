@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useAuth } from "../../../context/AuthContext";
+import { addEntity } from "../../../redux/actions/siteActions";
+import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddPieceOfEquipmentForm = ({ data, onSubmit }) => {
+const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
+  const dispatch = useDispatch();
+  const { accessToken } = useAuth();
   const [formData, setFormData] = useState({
     name: "",
     installation_date: "",
@@ -57,9 +63,25 @@ const AddPieceOfEquipmentForm = ({ data, onSubmit }) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    await dispatch(addEntity("poe", formData, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setDropdownAction(null); // ✅ reset
+    setFormData({
+      name: "",
+      installation_date: "",
+      model: "",
+      year_of_manufacture: "",
+      discipline: "",
+      type: "",
+      subtype: "",
+      serial_number: "",
+      manufacturer: "",
+      comment: "",
+      location_type: "site",
+      location_id: "",
+    });
   };
 
   return (
@@ -75,7 +97,6 @@ const AddPieceOfEquipmentForm = ({ data, onSubmit }) => {
       <input name="serial_number" value={formData.serial_number} onChange={handleChange} placeholder="Serial Number" />
       <input name="manufacturer" value={formData.manufacturer} onChange={handleChange} placeholder="Manufacturer" />
       <textarea name="comment" value={formData.comment} onChange={handleChange} placeholder="Comment" rows={3} />
-
       <select name="location_type" value={formData.location_type} onChange={handleChange}>
         <option value="site">Site</option>
         <option value="floor">Floor</option>
@@ -83,7 +104,6 @@ const AddPieceOfEquipmentForm = ({ data, onSubmit }) => {
         <option value="room">Room</option>
         <option value="room_segment">Room Segment</option>
       </select>
-
       <input name="location_id" value={formData.location_id} onChange={handleChange} placeholder="Location ID" />
       <button type="submit">{data ? "Update Equipment" : "Add Equipment"}</button>
     </form>

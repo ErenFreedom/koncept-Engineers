@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useAuth } from "../../../context/AuthContext";
+import { addEntity } from "../../../redux/actions/siteActions";
+import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddSubsitePoEForm = ({ data, onSubmit }) => {
+const AddSubsitePoEForm = ({ data, setDropdownAction }) => {
+  const dispatch = useDispatch();
+  const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [locationType, setLocationType] = useState("");
   const [locationId, setLocationId] = useState("");
@@ -21,9 +27,16 @@ const AddSubsitePoEForm = ({ data, onSubmit }) => {
     }
   }, [data]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ name, locationType, locationId, subsiteId });
+    const payload = { name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
+    await dispatch(addEntity("subsite-poe", payload, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setDropdownAction(null); // ✅ reset
+    setName("");
+    setLocationType("");
+    setLocationId("");
+    setSubsiteId("");
   };
 
   return (

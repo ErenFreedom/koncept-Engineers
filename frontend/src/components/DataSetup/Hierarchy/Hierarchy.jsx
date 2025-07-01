@@ -127,23 +127,26 @@ const Hierarchy = () => {
 
 
   const renderFormForAction = (type, node) => {
-    switch (type) {
-      case "floor": return <AddFloorForm data={node} />;
-      case "room": return <AddRoomForm data={node} />;
-      case "floor-area": return <AddFloorAreaForm data={node} />;
-      case "room-segment": return <AddRoomSegmentForm data={node} />;
-      case "poe": return <AddPieceOfEquipmentForm data={node} />;
-      case "data-point": return <div>Data Point Form Placeholder</div>;
-      case "main-site": return <MainSiteInfoForm data={node} />;
-      case "subsite": return <RegisterSubSiteForm data={node} />;
-      case "subsite-floor": return <AddSubsiteFloorForm data={node} />;
-      case "subsite-room": return <AddSubsiteRoomForm data={node} />;
-      case "subsite-floor-area": return <AddSubsiteFloorAreaForm data={node} />;
-      case "subsite-room-segment": return <AddSubsiteRoomSegmentForm data={node} />;
-      case "subsite-poe": return <AddSubsitePoEForm data={node} />;
-      default: return <p className="no-selection">🛈 No form available for this node</p>;
-    }
-  };
+  const commonProps = { data: node, setDropdownAction };
+
+  switch (type) {
+    case "floor": return <AddFloorForm {...commonProps} />;
+    case "room": return <AddRoomForm {...commonProps} />;
+    case "floor-area": return <AddFloorAreaForm {...commonProps} />;
+    case "room-segment": return <AddRoomSegmentForm {...commonProps} />;
+    case "poe": return <AddPieceOfEquipmentForm {...commonProps} />;
+    case "data-point": return <div>Data Point Form Placeholder</div>;
+    case "main-site": return <MainSiteInfoForm {...commonProps} />;
+    case "subsite": return <RegisterSubSiteForm {...commonProps} />;
+    case "subsite-floor": return <AddSubsiteFloorForm {...commonProps} />;
+    case "subsite-room": return <AddSubsiteRoomForm {...commonProps} />;
+    case "subsite-floor-area": return <AddSubsiteFloorAreaForm {...commonProps} />;
+    case "subsite-room-segment": return <AddSubsiteRoomSegmentForm {...commonProps} />;
+    case "subsite-poe": return <AddSubsitePoEForm {...commonProps} />;
+    default: return <p className="no-selection">🛈 No form available for this node</p>;
+  }
+};
+
 
 
 
@@ -310,11 +313,21 @@ const Hierarchy = () => {
         {/* 📄 Form Panel */}
         <div className="form-panel">
           <div className="form-box">
-            <h4>{selectedNode?.label || "Select a Node"}</h4>
-            {selectedNode ? renderFormForAction(selectedNode.type, selectedNode) : (
+            <h4>
+              {dropdownAction
+                ? labelMap[dropdownAction]
+                : selectedNode?.label || "Select a Node"}
+            </h4>
+
+            {dropdownAction && dropdownNode ? (
+              renderFormForAction(dropdownAction, dropdownNode)
+            ) : selectedNode ? (
+              renderFormForAction(selectedNode.type, selectedNode)
+            ) : (
               <p className="no-selection">🛈 Select a node to view its details</p>
             )}
           </div>
+
 
 
           <div className="form-box">

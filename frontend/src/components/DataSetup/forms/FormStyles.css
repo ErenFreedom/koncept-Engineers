@@ -61,3 +61,11 @@
 .form-container button[type="submit"]:hover {
   background-color: #3377cc;
 }
+
+
+.success-message {
+  color: #4caf50;
+  font-weight: bold;
+  margin-top: 1rem;
+  font-size: 1.1rem;
+}

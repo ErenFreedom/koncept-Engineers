@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useAuth } from "../../../context/AuthContext";
+import { addEntity } from "../../../redux/actions/siteActions";
+import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddRoomForm = ({ data, onSubmit }) => {
+const AddRoomForm = ({ data, setDropdownAction }) => {
+  const dispatch = useDispatch();
+  const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [floorId, setFloorId] = useState("");
 
@@ -15,9 +21,14 @@ const AddRoomForm = ({ data, onSubmit }) => {
     }
   }, [data]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ name, floor_id: floorId });
+    const payload = { name, floor_id: floorId };
+    await dispatch(addEntity("room", payload, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setDropdownAction(null); // ✅ reset
+    setName("");
+    setFloorId("");
   };
 
   return (

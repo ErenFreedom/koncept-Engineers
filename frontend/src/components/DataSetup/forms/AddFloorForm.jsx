@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useAuth } from "../../../context/AuthContext";
+import { addEntity } from "../../../redux/actions/siteActions";
+import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddFloorForm = ({ data, onSubmit }) => {
+const AddFloorForm = ({ data, setDropdownAction }) => {
+  const dispatch = useDispatch();
+  const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [level, setLevel] = useState("");
 
@@ -15,25 +21,21 @@ const AddFloorForm = ({ data, onSubmit }) => {
     }
   }, [data]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSubmit({ name, floor_level: level });
+    const payload = { name, floor_level: level, site_id: data?.site_id || null };
+    await dispatch(addEntity("floor", payload, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setDropdownAction(null); // ✅ Reset form panel after success
+    setName("");
+    setLevel("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{data ? "Edit Floor" : "Add Floor"}</h3>
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Floor Name"
-      />
-      <input
-        type="number"
-        value={level}
-        onChange={(e) => setLevel(e.target.value)}
-        placeholder="Floor Level"
-      />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
+      <input type="number" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Floor Level" />
       <button type="submit">{data ? "Update Floor" : "Add Floor"}</button>
     </form>
   );
