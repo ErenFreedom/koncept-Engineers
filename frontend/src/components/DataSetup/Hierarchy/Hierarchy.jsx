@@ -84,7 +84,9 @@ const Hierarchy = () => {
   const handleNodeClick = (label, type, node) => {
     setSelectedNode({ label, type, ...node });
     setDropdownNode(null);
+    setActiveForm(null); 
   };
+
 
 
   const handleDropdownSelect = (actionType) => {
@@ -241,7 +243,7 @@ const Hierarchy = () => {
     siteNode.children = [...floorNodes, ...sitePoEs];
 
     const subsiteNodes = subsites.map((sub) => ({
-      id: sub.subsite_id, 
+      id: sub.subsite_id,
       name: `Sub-site - ${sub.subSiteName}`,
       type: "subsite",
       children: [],
