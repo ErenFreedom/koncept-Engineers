@@ -157,6 +157,7 @@ const Hierarchy = () => {
 
 
   const buildDynamicTree = () => {
+    // 🌐 Main Site
     const siteNode = {
       id: admin?.companyId,
       site: `Main Site - ${admin?.companyName || "Company"}`,
@@ -164,49 +165,17 @@ const Hierarchy = () => {
       children: [],
     };
 
+    // Main site: Floors
     const floorNodes = floors.map((floor) => {
       const floorNode = {
         id: floor.id,
         name: floor.name,
         type: "floor",
-        site_id: admin?.companyId, // Optional: include site_id if needed
+        site_id: admin?.companyId,
         children: [],
       };
 
-      const roomNodes = rooms
-        .filter((r) => r.floor_id === floor.id)
-        .map((room) => {
-          const roomNode = {
-            id: room.id,
-            name: room.name,
-            type: "room",
-            floor_id: room.floor_id, // ✅ relational key
-            children: [],
-          };
-
-          const roomSegmentNodes = roomSegments
-            .filter((seg) => seg.room_id === room.id)
-            .map((seg) => ({
-              id: seg.id,
-              name: seg.name,
-              type: "room-segment",
-              room_id: seg.room_id, // ✅ relational key
-            }));
-
-          const roomPoEs = poes
-            .filter((poe) => poe.location_type === "room" && poe.location_id === room.id)
-            .map((poe) => ({
-              id: poe.id,
-              name: poe.name,
-              type: "poe",
-              location_type: poe.location_type,
-              location_id: poe.location_id,
-            }));
-
-          roomNode.children = [...roomSegmentNodes, ...roomPoEs];
-          return roomNode;
-        });
-
+      // Floor areas under floor
       const floorAreaNodes = floorAreas
         .filter((fa) => fa.floor_id === floor.id)
         .map((fa) => {
@@ -223,11 +192,44 @@ const Hierarchy = () => {
             id: fa.id,
             name: fa.name,
             type: "floor-area",
-            floor_id: fa.floor_id, // ✅ relational key
+            floor_id: fa.floor_id,
             children: faPoEs,
           };
         });
 
+      // Rooms under floor
+      const roomNodes = rooms
+        .filter((r) => r.floor_id === floor.id)
+        .map((room) => {
+          const roomSegmentNodes = roomSegments
+            .filter((seg) => seg.room_id === room.id)
+            .map((seg) => ({
+              id: seg.id,
+              name: seg.name,
+              type: "room-segment",
+              room_id: seg.room_id,
+            }));
+
+          const roomPoEs = poes
+            .filter((poe) => poe.location_type === "room" && poe.location_id === room.id)
+            .map((poe) => ({
+              id: poe.id,
+              name: poe.name,
+              type: "poe",
+              location_type: poe.location_type,
+              location_id: poe.location_id,
+            }));
+
+          return {
+            id: room.id,
+            name: room.name,
+            type: "room",
+            floor_id: room.floor_id,
+            children: [...roomSegmentNodes, ...roomPoEs],
+          };
+        });
+
+      // PoEs directly on floor
       const floorPoEs = poes
         .filter((poe) => poe.location_type === "floor" && poe.location_id === floor.id)
         .map((poe) => ({
@@ -254,17 +256,93 @@ const Hierarchy = () => {
 
     siteNode.children = [...floorNodes, ...sitePoEs];
 
-    const subsiteNodes = subsites.map((sub) => ({
-      id: sub.subsite_id,
-      name: `Sub-site - ${sub.subSiteName}`,
-      type: "subsite",
-      subsite_id: sub.subsite_id,
-      children: [],
-      ...sub,
-    }));
+    // 🏢 Subsites
+    const subsiteNodes = subsites.map((sub) => {
+      // Subsite-level floors
+      const subsiteFloorNodes = sub.subsiteFloors?.map((floor) => {
+        const floorNode = {
+          id: floor.id,
+          name: floor.name,
+          type: "subsite-floor",
+          subsite_id: sub.subsite_id,
+          children: [],
+        };
+
+        // Floor areas in subsite floor
+        const floorAreaNodes = floor.floorAreas?.map((fa) => {
+          const faPoEs = fa.poes?.map((poe) => ({
+            id: poe.id,
+            name: poe.name,
+            type: "subsite-poe",
+            location_type: poe.location_type,
+            location_id: poe.location_id,
+            subsite_id: sub.subsite_id,
+          })) || [];
+          return {
+            id: fa.id,
+            name: fa.name,
+            type: "subsite-floor-area",
+            floor_id: fa.floor_id,
+            subsite_id: sub.subsite_id,
+            children: faPoEs,
+          };
+        }) || [];
+
+        // Rooms in subsite floor
+        const floorRoomNodes = floor.rooms?.map((room) => {
+          const roomSegmentNodes = room.roomSegments?.map((seg) => ({
+            id: seg.id,
+            name: seg.name,
+            type: "subsite-room-segment",
+            room_id: seg.room_id,
+            subsite_id: sub.subsite_id,
+          })) || [];
+
+          const roomPoEs = room.poes?.map((poe) => ({
+            id: poe.id,
+            name: poe.name,
+            type: "subsite-poe",
+            location_type: poe.location_type,
+            location_id: poe.location_id,
+            subsite_id: sub.subsite_id,
+          })) || [];
+
+          return {
+            id: room.id,
+            name: room.name,
+            type: "subsite-room",
+            floor_id: room.floor_id,
+            subsite_id: sub.subsite_id,
+            children: [...roomSegmentNodes, ...roomPoEs],
+          };
+        }) || [];
+
+        const floorPoEs = floor.poes?.map((poe) => ({
+          id: poe.id,
+          name: poe.name,
+          type: "subsite-poe",
+          location_type: poe.location_type,
+          location_id: poe.location_id,
+          subsite_id: sub.subsite_id,
+        })) || [];
+
+        floorNode.children = [...floorAreaNodes, ...floorRoomNodes, ...floorPoEs];
+        return floorNode;
+      }) || [];
+
+      return {
+        id: sub.subsite_id,
+        name: `Sub-site - ${sub.subSiteName}`,
+        type: "subsite",
+        subsite_id: sub.subsite_id,
+        children: subsiteFloorNodes,
+        ...sub,
+      };
+    });
 
     return [siteNode, ...subsiteNodes];
   };
+
 
 
 
