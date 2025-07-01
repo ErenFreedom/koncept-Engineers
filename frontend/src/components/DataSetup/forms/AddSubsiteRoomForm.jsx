@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addSubsiteEntity } from "../../../redux/actions/subsiteActions";
+import { addSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
