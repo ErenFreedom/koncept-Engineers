@@ -13,14 +13,20 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
   const [subsiteId, setSubsiteId] = useState("");
 
   useEffect(() => {
+    console.log("🪵 AddSubsiteRoomSegmentForm data:", data);
     if (data && data.name) {
       setName(data.name || "");
-      setRoomId(data.room_id || "");
-      setSubsiteId(data.subsite_id || "");
+      setRoomId(data.room_id || data.parentId || "");
+      setSubsiteId(
+        data.subsite_id ||
+        data.subSiteId ||
+        data.parentId ||
+        data.id || ""
+      );
     } else if (data && data.parentType === "subsite-room" && data.parentId) {
       setName("");
       setRoomId(data.parentId);
-      setSubsiteId(data.subsiteId);
+      setSubsiteId(data.subsite_id || data.subSiteId || "");
     } else {
       setName("");
       setRoomId("");
@@ -34,20 +40,17 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
     await dispatch(addEntity("subsite-room-segment", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-    setName("");
-    setRoomId("");
-    setSubsiteId("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data && data.name ? "Edit Sub-site Room Segment" : "Add Sub-site Room Segment"}</h3>
+      <h3>{data?.name ? "Edit Sub-site Room Segment" : "Add Sub-site Room Segment"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Segment Name" />
       <label>Room ID</label>
       <input value={roomId} readOnly placeholder="Room ID" />
       <label>Sub-site ID</label>
       <input value={subsiteId} readOnly placeholder="Sub-site ID" />
-      <button type="submit">{data && data.name ? "Update Segment" : "Add Segment"}</button>
+      <button type="submit">{data?.name ? "Update Segment" : "Add Segment"}</button>
     </form>
   );
 };

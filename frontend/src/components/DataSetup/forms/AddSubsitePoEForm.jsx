@@ -14,16 +14,22 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
   const [subsiteId, setSubsiteId] = useState("");
 
   useEffect(() => {
+    console.log("🪵 AddSubsitePoEForm data:", data);
     if (data && data.name) {
       setName(data.name || "");
       setLocationType(data.location_type || "");
       setLocationId(data.location_id || "");
-      setSubsiteId(data.subsite_id || "");
+      setSubsiteId(
+        data.subsite_id ||
+        data.subSiteId ||
+        data.parentId ||
+        data.id || ""
+      );
     } else if (data && data.parentType && data.parentId) {
       setName("");
       setLocationType(data.parentType);
       setLocationId(data.parentId);
-      setSubsiteId(data.subsiteId);
+      setSubsiteId(data.subsite_id || data.subSiteId || "");
     } else {
       setName("");
       setLocationType("");
@@ -38,15 +44,11 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
     await dispatch(addEntity("subsite-poe", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-    setName("");
-    setLocationType("");
-    setLocationId("");
-    setSubsiteId("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data && data.name ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
+      <h3>{data?.name ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="PoE Name" />
       <label>Location Type</label>
       <input value={locationType} readOnly placeholder="Location Type (e.g., room, floor)" />
@@ -54,7 +56,7 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
       <input value={locationId} readOnly placeholder="Location ID" />
       <label>Sub-site ID</label>
       <input value={subsiteId} readOnly placeholder="Sub-site ID" />
-      <button type="submit">{data && data.name ? "Update PoE" : "Add PoE"}</button>
+      <button type="submit">{data?.name ? "Update PoE" : "Add PoE"}</button>
     </form>
   );
 };
