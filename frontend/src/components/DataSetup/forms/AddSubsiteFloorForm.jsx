@@ -13,10 +13,14 @@ const AddSubsiteFloorForm = ({ data, setDropdownAction }) => {
   const [subsiteId, setSubsiteId] = useState("");
 
   useEffect(() => {
-    if (data) {
+    if (data && data.name) {
       setName(data.name || "");
       setFloorLevel(data.floor_level || "");
       setSubsiteId(data.subsite_id || "");
+    } else if (data && data.parentType === "subsite" && data.parentId) {
+      setName("");
+      setFloorLevel("");
+      setSubsiteId(data.parentId);
     } else {
       setName("");
       setFloorLevel("");
@@ -29,7 +33,7 @@ const AddSubsiteFloorForm = ({ data, setDropdownAction }) => {
     const payload = { name, floor_level: floorLevel, subsite_id: subsiteId };
     await dispatch(addEntity("subsite-floor", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null); // ✅ reset
+    setDropdownAction(null);
     setName("");
     setFloorLevel("");
     setSubsiteId("");
@@ -37,11 +41,11 @@ const AddSubsiteFloorForm = ({ data, setDropdownAction }) => {
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data ? "Edit Sub-site Floor" : "Add Sub-site Floor"}</h3>
+      <h3>{data && data.name ? "Edit Sub-site Floor" : "Add Sub-site Floor"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
       <input value={floorLevel} onChange={(e) => setFloorLevel(e.target.value)} placeholder="Floor Level" />
       <input value={subsiteId} onChange={(e) => setSubsiteId(e.target.value)} placeholder="Sub-site ID" />
-      <button type="submit">{data ? "Update Floor" : "Add Floor"}</button>
+      <button type="submit">{data && data.name ? "Update Floor" : "Add Floor"}</button>
     </form>
   );
 };

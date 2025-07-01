@@ -12,7 +12,7 @@ const AddFloorForm = ({ data, setDropdownAction }) => {
   const [level, setLevel] = useState("");
 
   useEffect(() => {
-    if (data) {
+    if (data && data.name) {
       setName(data.name || "");
       setLevel(data.floor_level || "");
     } else {
@@ -23,20 +23,20 @@ const AddFloorForm = ({ data, setDropdownAction }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { name, floor_level: level, site_id: data?.site_id || null };
+    const payload = { name, floor_level: level, site_id: data?.parentId || null };
     await dispatch(addEntity("floor", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null); // ✅ Reset form panel after success
+    setDropdownAction(null);
     setName("");
     setLevel("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data ? "Edit Floor" : "Add Floor"}</h3>
+      <h3>{data && data.name ? "Edit Floor" : "Add Floor"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
       <input type="number" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Floor Level" />
-      <button type="submit">{data ? "Update Floor" : "Add Floor"}</button>
+      <button type="submit">{data && data.name ? "Update Floor" : "Add Floor"}</button>
     </form>
   );
 };

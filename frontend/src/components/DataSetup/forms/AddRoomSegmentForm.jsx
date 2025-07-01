@@ -12,9 +12,12 @@ const AddRoomSegmentForm = ({ data, setDropdownAction }) => {
   const [roomId, setRoomId] = useState("");
 
   useEffect(() => {
-    if (data) {
+    if (data && data.name) {
       setName(data.name || "");
       setRoomId(data.room_id || "");
+    } else if (data && data.parentType === "room" && data.parentId) {
+      setName("");
+      setRoomId(data.parentId);
     } else {
       setName("");
       setRoomId("");
@@ -26,17 +29,17 @@ const AddRoomSegmentForm = ({ data, setDropdownAction }) => {
     const payload = { name, room_id: roomId };
     await dispatch(addEntity("room-segment", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null); // ✅ reset
+    setDropdownAction(null);
     setName("");
     setRoomId("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data ? "Edit Room Segment" : "Add Room Segment"}</h3>
+      <h3>{data && data.name ? "Edit Room Segment" : "Add Room Segment"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Segment Name" />
       <input value={roomId} onChange={(e) => setRoomId(e.target.value)} placeholder="Room ID" />
-      <button type="submit">{data ? "Update Segment" : "Add Segment"}</button>
+      <button type="submit">{data && data.name ? "Update Segment" : "Add Segment"}</button>
     </form>
   );
 };

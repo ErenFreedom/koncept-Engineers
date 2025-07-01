@@ -14,11 +14,16 @@ const AddSubsitePoEForm = ({ data, setDropdownAction }) => {
   const [subsiteId, setSubsiteId] = useState("");
 
   useEffect(() => {
-    if (data) {
+    if (data && data.name) {
       setName(data.name || "");
       setLocationType(data.location_type || "");
       setLocationId(data.location_id || "");
       setSubsiteId(data.subsite_id || "");
+    } else if (data && data.parentType && data.parentId) {
+      setName("");
+      setLocationType(data.parentType);
+      setLocationId(data.parentId);
+      setSubsiteId(data.subsiteId);
     } else {
       setName("");
       setLocationType("");
@@ -32,7 +37,7 @@ const AddSubsitePoEForm = ({ data, setDropdownAction }) => {
     const payload = { name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
     await dispatch(addEntity("subsite-poe", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null); // ✅ reset
+    setDropdownAction(null);
     setName("");
     setLocationType("");
     setLocationId("");
@@ -41,12 +46,12 @@ const AddSubsitePoEForm = ({ data, setDropdownAction }) => {
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
+      <h3>{data && data.name ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="PoE Name" />
       <input value={locationType} onChange={(e) => setLocationType(e.target.value)} placeholder="Location Type (e.g., room, floor)" />
       <input value={locationId} onChange={(e) => setLocationId(e.target.value)} placeholder="Location ID" />
       <input value={subsiteId} onChange={(e) => setSubsiteId(e.target.value)} placeholder="Sub-site ID" />
-      <button type="submit">{data ? "Update PoE" : "Add PoE"}</button>
+      <button type="submit">{data && data.name ? "Update PoE" : "Add PoE"}</button>
     </form>
   );
 };

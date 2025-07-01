@@ -24,7 +24,7 @@ const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
   });
 
   useEffect(() => {
-    if (data) {
+    if (data && data.name) {
       setFormData((prev) => ({
         ...prev,
         name: data.name || "",
@@ -39,6 +39,12 @@ const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
         comment: data.comment || "",
         location_type: data.location_type || "site",
         location_id: data.location_id || "",
+      }));
+    } else if (data && data.parentType && data.parentId) {
+      setFormData((prev) => ({
+        ...prev,
+        location_type: data.parentType,
+        location_id: data.parentId,
       }));
     } else {
       setFormData({
@@ -67,7 +73,7 @@ const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
     e.preventDefault();
     await dispatch(addEntity("poe", formData, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null); // ✅ reset
+    setDropdownAction(null);
     setFormData({
       name: "",
       installation_date: "",
@@ -86,7 +92,7 @@ const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data ? "Edit Piece of Equipment" : "Add Piece of Equipment"}</h3>
+      <h3>{data && data.name ? "Edit Piece of Equipment" : "Add Piece of Equipment"}</h3>
       <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" />
       <input name="installation_date" type="date" value={formData.installation_date} onChange={handleChange} />
       <input name="model" value={formData.model} onChange={handleChange} placeholder="Model" />
@@ -105,7 +111,7 @@ const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
         <option value="room_segment">Room Segment</option>
       </select>
       <input name="location_id" value={formData.location_id} onChange={handleChange} placeholder="Location ID" />
-      <button type="submit">{data ? "Update Equipment" : "Add Equipment"}</button>
+      <button type="submit">{data && data.name ? "Update Equipment" : "Add Equipment"}</button>
     </form>
   );
 };
