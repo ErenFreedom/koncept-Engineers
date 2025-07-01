@@ -17,20 +17,14 @@ const AddSubsiteFloorForm = ({ data, setActiveForm }) => {
     if (data) {
       setName(data.name || "");
       setFloorLevel(data.floor_level || "");
-      setSubsiteId(
-        data.subsite_id ??
-        data.subSiteId ??
-        data.parentId ??
-        data.id ??
-        ""
-      );
+      setSubsiteId(data.subsite_id ?? data.subSiteId ?? data.parentId ?? data.id ?? "");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, floor_level: floorLevel, subsite_id: subsiteId };
-    await dispatch(addSubsiteEntity("floor", payload, accessToken));
+    await dispatch(addSubsiteEntity("floor/add", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
   };

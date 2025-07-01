@@ -17,19 +17,14 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
     if (data) {
       setName(data.name || "");
       setRoomId(data.room_id ?? data.parentId ?? "");
-      setSubsiteId(
-        data.subsite_id ??
-        data.subSiteId ??
-        data.subsiteId ??
-        ""
-      );
+      setSubsiteId(data.subsite_id ?? data.subSiteId ?? "");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, room_id: roomId, subsite_id: subsiteId };
-    await dispatch(addSubsiteEntity("room-segment", payload, accessToken));
+    await dispatch(addSubsiteEntity("room-segment/add", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
   };

@@ -19,19 +19,14 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
       setName(data.name || "");
       setLocationType(data.location_type ?? data.parentType ?? "");
       setLocationId(data.location_id ?? data.parentId ?? "");
-      setSubsiteId(
-        data.subsite_id ??
-        data.subSiteId ??
-        data.subsiteId ??
-        ""
-      );
+      setSubsiteId(data.subsite_id ?? data.subSiteId ?? "");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
-    await dispatch(addSubsiteEntity("poe", payload, accessToken));
+    await dispatch(addSubsiteEntity("poe/add", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
   };
