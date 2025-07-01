@@ -5,44 +5,65 @@ import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddFloorAreaForm = ({ data, setActiveForm }) => {
+const AddFloorForm = ({ data, setActiveForm }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
-  const [floorId, setFloorId] = useState("");
+  const [level, setLevel] = useState("");
+  const [siteId, setSiteId] = useState("");
 
   useEffect(() => {
     if (data && data.name) {
       setName(data.name || "");
-      setFloorId(data.floor_id || "");
-    } else if (data && data.parentType === "floor" && data.parentId) {
+      setLevel(data.floor_level || "");
+      setSiteId(data.site_id || "");
+    } else if (data && data.parentType === "main-site" && data.parentId) {
       setName("");
-      setFloorId(data.parentId);
+      setLevel("");
+      setSiteId(data.parentId);
     } else {
       setName("");
-      setFloorId("");
+      setLevel("");
+      setSiteId("");
     }
   }, [data]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { name, floor_id: floorId };
-    await dispatch(addEntity("floor-area", payload, accessToken));
+    const payload = { name, floor_level: level, site_id: siteId };
+    await dispatch(addEntity("floor", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
     setName("");
-    setFloorId("");
+    setLevel("");
+    setSiteId("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data && data.name ? "Edit Floor Area" : "Add Floor Area"}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Area Name" />
-      <label>Floor ID</label>
-      <input value={floorId} readOnly placeholder="Floor ID" />
-      <button type="submit">{data && data.name ? "Update Floor Area" : "Add Floor Area"}</button>
+      <h3>{data && data.name ? "Edit Floor" : "Add Floor"}</h3>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Floor Name"
+      />
+      <input
+        type="number"
+        value={level}
+        onChange={(e) => setLevel(e.target.value)}
+        placeholder="Floor Level"
+      />
+      {siteId && (
+        <>
+          <label>Site ID</label>
+          <input value={siteId} readOnly placeholder="Site ID" />
+        </>
+      )}
+      <button type="submit">
+        {data && data.name ? "Update Floor" : "Add Floor"}
+      </button>
     </form>
   );
 };
 
-export default AddFloorAreaForm;
+export default AddFloorForm;

@@ -84,7 +84,7 @@ const Hierarchy = () => {
   const handleNodeClick = (label, type, node) => {
     setSelectedNode({ label, type, ...node });
     setDropdownNode(null);
-    setActiveForm(null); 
+    setActiveForm(null);
   };
 
 
@@ -158,7 +158,7 @@ const Hierarchy = () => {
 
   const buildDynamicTree = () => {
     const siteNode = {
-      id: admin?.companyId, // Optional: useful if you want site-level actions
+      id: admin?.companyId,
       site: `Main Site - ${admin?.companyName || "Company"}`,
       type: "main-site",
       children: [],
@@ -166,9 +166,10 @@ const Hierarchy = () => {
 
     const floorNodes = floors.map((floor) => {
       const floorNode = {
-        id: floor.id, // ✅ include DB ID
+        id: floor.id,
         name: floor.name,
         type: "floor",
+        site_id: admin?.companyId, // Optional: include site_id if needed
         children: [],
       };
 
@@ -176,26 +177,30 @@ const Hierarchy = () => {
         .filter((r) => r.floor_id === floor.id)
         .map((room) => {
           const roomNode = {
-            id: room.id, // ✅
+            id: room.id,
             name: room.name,
             type: "room",
+            floor_id: room.floor_id, // ✅ relational key
             children: [],
           };
 
           const roomSegmentNodes = roomSegments
             .filter((seg) => seg.room_id === room.id)
             .map((seg) => ({
-              id: seg.id, // ✅
+              id: seg.id,
               name: seg.name,
               type: "room-segment",
+              room_id: seg.room_id, // ✅ relational key
             }));
 
           const roomPoEs = poes
             .filter((poe) => poe.location_type === "room" && poe.location_id === room.id)
             .map((poe) => ({
-              id: poe.id, // ✅
+              id: poe.id,
               name: poe.name,
               type: "poe",
+              location_type: poe.location_type,
+              location_id: poe.location_id,
             }));
 
           roomNode.children = [...roomSegmentNodes, ...roomPoEs];
@@ -208,14 +213,17 @@ const Hierarchy = () => {
           const faPoEs = poes
             .filter((poe) => poe.location_type === "floor_area" && poe.location_id === fa.id)
             .map((poe) => ({
-              id: poe.id, // ✅
+              id: poe.id,
               name: poe.name,
               type: "poe",
+              location_type: poe.location_type,
+              location_id: poe.location_id,
             }));
           return {
-            id: fa.id, // ✅
+            id: fa.id,
             name: fa.name,
             type: "floor-area",
+            floor_id: fa.floor_id, // ✅ relational key
             children: faPoEs,
           };
         });
@@ -223,9 +231,11 @@ const Hierarchy = () => {
       const floorPoEs = poes
         .filter((poe) => poe.location_type === "floor" && poe.location_id === floor.id)
         .map((poe) => ({
-          id: poe.id, // ✅
+          id: poe.id,
           name: poe.name,
           type: "poe",
+          location_type: poe.location_type,
+          location_id: poe.location_id,
         }));
 
       floorNode.children = [...floorAreaNodes, ...roomNodes, ...floorPoEs];
@@ -235,9 +245,11 @@ const Hierarchy = () => {
     const sitePoEs = poes
       .filter((poe) => poe.location_type === "site")
       .map((poe) => ({
-        id: poe.id, // ✅
+        id: poe.id,
         name: poe.name,
         type: "poe",
+        location_type: poe.location_type,
+        location_id: poe.location_id,
       }));
 
     siteNode.children = [...floorNodes, ...sitePoEs];
@@ -246,12 +258,14 @@ const Hierarchy = () => {
       id: sub.subsite_id,
       name: `Sub-site - ${sub.subSiteName}`,
       type: "subsite",
+      subsite_id: sub.subsite_id,
       children: [],
       ...sub,
     }));
 
     return [siteNode, ...subsiteNodes];
   };
+
 
 
   const dynamicTree = useMemo(() => buildDynamicTree(), [floors, rooms, floorAreas, roomSegments, poes, subsites]);
