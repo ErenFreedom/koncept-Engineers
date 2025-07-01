@@ -5,7 +5,7 @@ import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddSubsiteFloorAreaForm = ({ data, setDropdownAction }) => {
+const AddSubsiteFloorAreaForm = ({ data, setActiveForm }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
@@ -33,7 +33,7 @@ const AddSubsiteFloorAreaForm = ({ data, setDropdownAction }) => {
     const payload = { name, floor_id: floorId, subsite_id: subsiteId };
     await dispatch(addEntity("subsite-floor-area", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
+    setActiveForm(null);
     setName("");
     setFloorId("");
     setSubsiteId("");

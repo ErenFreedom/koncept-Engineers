@@ -5,7 +5,7 @@ import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
+const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [formData, setFormData] = useState({
@@ -73,7 +73,7 @@ const AddPieceOfEquipmentForm = ({ data, setDropdownAction }) => {
     e.preventDefault();
     await dispatch(addEntity("poe", formData, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
+    setActiveForm(null);
     setFormData({
       name: "",
       installation_date: "",

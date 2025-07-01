@@ -5,7 +5,7 @@ import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddFloorForm = ({ data, setDropdownAction }) => {
+const AddFloorForm = ({ data, setActiveForm }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
@@ -26,7 +26,7 @@ const AddFloorForm = ({ data, setDropdownAction }) => {
     const payload = { name, floor_level: level, site_id: data?.parentId || null };
     await dispatch(addEntity("floor", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
+    setActiveForm(null);
     setName("");
     setLevel("");
   };

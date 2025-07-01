@@ -5,7 +5,7 @@ import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
-const AddSubsitePoEForm = ({ data, setDropdownAction }) => {
+const AddSubsitePoEForm = ({ data, setActiveForm }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
@@ -37,7 +37,7 @@ const AddSubsitePoEForm = ({ data, setDropdownAction }) => {
     const payload = { name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
     await dispatch(addEntity("subsite-poe", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
+    setActiveForm(null);
     setName("");
     setLocationType("");
     setLocationId("");

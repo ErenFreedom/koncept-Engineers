@@ -23,6 +23,8 @@ import MainSiteInfoForm from "../forms/MainSiteInfoForm";
 
 const Hierarchy = () => {
   const { admin, accessToken } = useAuth();
+  const [activeForm, setActiveForm] = useState(null);
+
   const dispatch = useDispatch();
   const {
     floors = [],
@@ -86,9 +88,11 @@ const Hierarchy = () => {
 
 
   const handleDropdownSelect = (actionType) => {
-    setDropdownAction(actionType);
-    setDropdownNode(selectedNode);
+    setActiveForm({ actionType, parentNode: dropdownNode });
+    setDropdownAction(null);
+    setDropdownNode(null);
   };
+
 
 
   const allowedForms = {
@@ -319,16 +323,17 @@ const Hierarchy = () => {
                 : selectedNode?.label || "Select a Node"}
             </h4>
 
-            {dropdownAction && dropdownNode ? (
-              renderFormForAction(dropdownAction, {
-                parentId: dropdownNode?.id,
-                parentType: dropdownNode?.type,
+            {activeForm ? (
+              renderFormForAction(activeForm.actionType, {
+                parentId: activeForm.parentNode?.id,
+                parentType: activeForm.parentNode?.type,
               })
             ) : selectedNode ? (
               renderFormForAction(selectedNode.type, selectedNode)
             ) : (
               <p className="no-selection">🛈 Select a node to view its details</p>
             )}
+
 
           </div>
 
