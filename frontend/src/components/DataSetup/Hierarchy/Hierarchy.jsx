@@ -87,7 +87,7 @@ const Hierarchy = () => {
 
   const handleDropdownSelect = (actionType) => {
     setDropdownAction(actionType);
-    setDropdownNode(null);
+    setDropdownNode(selectedNode);
   };
 
 
