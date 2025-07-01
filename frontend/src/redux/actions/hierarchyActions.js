@@ -24,7 +24,7 @@ export const fetchHierarchyData = (subsiteId = null, token) => async (dispatch) 
         return res.data;
       } catch (e) {
         console.error(`❌ ${name} API failed:`, e.response?.data || e.message);
-        return null; // do not throw, just return null
+        return null; 
       }
     };
 
@@ -53,6 +53,32 @@ export const fetchHierarchyData = (subsiteId = null, token) => async (dispatch) 
         payload: "All hierarchy data requests failed",
       });
       return;
+    }
+
+    for (const subsite of subsitesData?.subsites || []) {
+      const subsiteId = subsite.subSiteId;
+      const subQuery = `?subsite_id=${subsiteId}`;
+      const subBase = `${process.env.REACT_APP_API_BASE_URL}/api/subsite`;
+
+      const [
+        subFloors,
+        subRooms,
+        subFloorAreas,
+        subRoomSegments,
+        subPoes,
+      ] = await Promise.all([
+        safeGet(`${subBase}/floors${subQuery}`, `Subsite ${subsiteId} Floors`),
+        safeGet(`${subBase}/rooms${subQuery}`, `Subsite ${subsiteId} Rooms`),
+        safeGet(`${subBase}/floor-areas${subQuery}`, `Subsite ${subsiteId} FloorAreas`),
+        safeGet(`${subBase}/room-segments${subQuery}`, `Subsite ${subsiteId} RoomSegments`),
+        safeGet(`${subBase}/poes${subQuery}`, `Subsite ${subsiteId} PoEs`),
+      ]);
+
+      subsite.subsiteFloors = subFloors?.floors || [];
+      subsite.rooms = subRooms?.rooms || [];
+      subsite.floorAreas = subFloorAreas?.floorAreas || [];
+      subsite.roomSegments = subRoomSegments?.roomSegments || [];
+      subsite.poes = subPoes?.piecesOfEquipment || [];
     }
 
     dispatch({

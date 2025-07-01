@@ -18,7 +18,11 @@ const initialState = {
 export const hierarchyReducer = (state = initialState, action) => {
   switch (action.type) {
     case FETCH_HIERARCHY_DATA_REQUEST:
-      return { ...state, loading: true, error: null };
+      return {
+        ...state,
+        loading: true,
+        error: null,
+      };
 
     case FETCH_HIERARCHY_DATA_SUCCESS:
       return {
@@ -28,7 +32,11 @@ export const hierarchyReducer = (state = initialState, action) => {
       };
 
     case FETCH_HIERARCHY_DATA_FAIL:
-      return { ...state, loading: false, error: action.payload };
+      return {
+        ...state,
+        loading: false,
+        error: action.payload,
+      };
 
     default:
       return state;
