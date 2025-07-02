@@ -42,9 +42,14 @@ const MainSiteInfoForm = ({ data }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.company_name.trim()) {
+      alert("Company name is required");
+      return;
+    }
     await dispatch(editMainSiteInfo(formData, accessToken));
     setIsEditing(false);
   };
+
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>

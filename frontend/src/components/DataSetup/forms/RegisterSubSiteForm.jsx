@@ -46,7 +46,7 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    await dispatch(editSubSite(formData, accessToken)); // ✅ call your edit redux action
+    await dispatch(editSubSiteInfo(formData, accessToken)); // ✅ corrected action name
     setIsEditing(false);
     setDropdownAction(null);
   };
