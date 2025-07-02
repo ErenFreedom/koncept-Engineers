@@ -159,7 +159,6 @@ const Hierarchy = () => {
 
 
   const buildDynamicTree = () => {
-    // 🌐 Main Site
     const siteNode = {
       id: admin?.companyId,
       site: `Main Site - ${admin?.companyName || "Company"}`,
@@ -260,7 +259,7 @@ const Hierarchy = () => {
           id: floor.id,
           name: floor.name,
           type: "subsite-floor",
-          subsite_id: sub.subsite_id, // ✅ required for forms
+          subsite_id: sub.subsite_id, 
           children: [],
         };
 
