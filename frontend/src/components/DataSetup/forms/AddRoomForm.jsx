@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity } from "../../../redux/actions/siteActions";
+import { addEntity, editEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
 import "./FormStyles.css";
 
@@ -10,6 +10,7 @@ const AddRoomForm = ({ data, setActiveForm }) => {
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [floorId, setFloorId] = useState("");
+  const isEditing = data?.isEditing || false;
 
   useEffect(() => {
     if (data && data.name) {
@@ -27,20 +28,27 @@ const AddRoomForm = ({ data, setActiveForm }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const payload = { name, floor_id: floorId };
-    await dispatch(addEntity("room", payload, accessToken));
+    if (isEditing) {
+      await dispatch(editEntity("room", { ...payload, id: data.id }, accessToken));
+    } else {
+      await dispatch(addEntity("room", payload, accessToken));
+    }
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-    setName("");
-    setFloorId("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data && data.name ? "Edit Room" : "Add Room"}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Room Name" />
+      <h3>{isEditing ? "Edit Room" : "Add Room"}</h3>
+      <input
+        value={name}
+        onChange={(e) => isEditing && setName(e.target.value)}
+        placeholder="Room Name"
+        readOnly={!isEditing && !!data?.name}
+      />
       <label>Floor ID</label>
       <input value={floorId} readOnly placeholder="Floor ID" />
-      <button type="submit">{data && data.name ? "Update Room" : "Add Room"}</button>
+      <button type="submit">{isEditing ? "Update Room" : "Add Room"}</button>
     </form>
   );
 };
