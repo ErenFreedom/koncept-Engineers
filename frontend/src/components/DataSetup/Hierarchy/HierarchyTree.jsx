@@ -18,7 +18,11 @@ const HierarchyTree = ({ treeData, onSelect, onEdit, onDelete, expandedNodes = {
         >
           <div className="tree-node-header">
             {typeof node !== "string" && node.children ? (
-              <span onClick={() => toggleNode(path, idx)} className="toggle-arrow">
+              <span
+                onClick={() => toggleNode(path, idx)}
+                className="toggle-arrow"
+                title={isExpanded ? "Collapse" : "Expand"}
+              >
                 {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
               </span>
             ) : (
@@ -28,6 +32,7 @@ const HierarchyTree = ({ treeData, onSelect, onEdit, onDelete, expandedNodes = {
             <div
               className="node-label"
               onClick={() => onSelect(label, nodeType, node)}
+              title={`Select ${label}`}
             >
               <div className="node-main-text">{label}</div>
               <div className="node-type-text">
@@ -37,6 +42,7 @@ const HierarchyTree = ({ treeData, onSelect, onEdit, onDelete, expandedNodes = {
 
             <div className="node-actions">
               <button
+                className="edit-btn"
                 onClick={(e) => {
                   e.stopPropagation();
                   onEdit(node);
@@ -47,6 +53,7 @@ const HierarchyTree = ({ treeData, onSelect, onEdit, onDelete, expandedNodes = {
               </button>
               {nodeType !== "main-site" && (
                 <button
+                  className="delete-btn"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDelete(node);
