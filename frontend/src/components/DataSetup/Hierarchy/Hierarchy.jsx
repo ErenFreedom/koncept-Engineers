@@ -104,11 +104,25 @@ const Hierarchy = () => {
 
 
   const handleDropdownSelect = (actionType) => {
-    console.log("🪵 Dropdown node on select:", dropdownNode);
-    setActiveForm({ actionType, parentNode: dropdownNode });
-    setDropdownAction(null);
-    setDropdownNode(null);
-  };
+  console.log("🪵 Dropdown node on select:", dropdownNode);
+
+  if (!dropdownNode?.id) {
+    console.warn("Dropdown node missing ID; cannot set parent ID!");
+  }
+
+  setActiveForm({
+    actionType,
+    parentNode: {
+      ...dropdownNode,
+      parentId: dropdownNode?.id, 
+      parentType: dropdownNode?.type, 
+    },
+  });
+
+  setDropdownAction(null);
+  setDropdownNode(null);
+};
+
 
   const handleEditNode = (node) => {
     console.log("Editing node:", node);

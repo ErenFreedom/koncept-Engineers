@@ -12,15 +12,23 @@ const AddSubsiteFloorForm = ({ data, setActiveForm }) => {
   const [floorLevel, setFloorLevel] = useState("");
   const [subsiteId, setSubsiteId] = useState("");
 
-  const isEditing = !!data?.isEditing; // ✅ recomputed on each render
+  const isEditing = !!data?.isEditing;
 
   useEffect(() => {
-    if (data) {
+    if (isEditing && data) {
       setName(data.name || "");
       setFloorLevel(data.floor_level || "");
-      setSubsiteId(data.subsite_id ?? data.subSiteId ?? data.parentId ?? data.id ?? "");
+      setSubsiteId(data.subsite_id ?? data.subSiteId ?? "");
+    } else if (data && data.parentId) {
+      setName("");
+      setFloorLevel("");
+      setSubsiteId(data.subsite_id ?? data.subSiteId ?? data.parentId ?? "");
+    } else {
+      setName("");
+      setFloorLevel("");
+      setSubsiteId("");
     }
-  }, [data]);
+  }, [data, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,8 +45,8 @@ const AddSubsiteFloorForm = ({ data, setActiveForm }) => {
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{isEditing ? "Edit Sub-site Floor" : "Add Sub-site Floor"}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" readOnly={!isEditing && !!data?.name} />
-      <input value={floorLevel} onChange={(e) => setFloorLevel(e.target.value)} placeholder="Floor Level" readOnly={!isEditing && !!data?.name} />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
+      <input value={floorLevel} onChange={(e) => setFloorLevel(e.target.value)} placeholder="Floor Level" />
       <label>Sub-site ID</label>
       <input value={subsiteId} readOnly placeholder="Sub-site ID" />
       <button type="submit">{isEditing ? "Update Floor" : "Add Floor"}</button>

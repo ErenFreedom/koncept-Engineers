@@ -15,12 +15,20 @@ const AddSubsiteRoomForm = ({ data, setActiveForm }) => {
   const isEditing = !!data?.isEditing;
 
   useEffect(() => {
-    if (data) {
+    if (isEditing && data) {
       setName(data.name || "");
-      setFloorId(data.floor_id ?? data.parentId ?? "");
+      setFloorId(data.floor_id || "");
       setSubsiteId(data.subsite_id ?? data.subSiteId ?? "");
+    } else if (data && data.parentId) {
+      setName("");
+      setFloorId(data.parentId);
+      setSubsiteId(data.subsite_id ?? data.subSiteId ?? "");
+    } else {
+      setName("");
+      setFloorId("");
+      setSubsiteId("");
     }
-  }, [data]);
+  }, [data, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,7 +45,7 @@ const AddSubsiteRoomForm = ({ data, setActiveForm }) => {
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{isEditing ? "Edit Sub-site Room" : "Add Sub-site Room"}</h3>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Room Name" readOnly={!isEditing && !!data?.name} />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Room Name" />
       <label>Floor ID</label>
       <input value={floorId} readOnly placeholder="Floor ID" />
       <label>Sub-site ID</label>
