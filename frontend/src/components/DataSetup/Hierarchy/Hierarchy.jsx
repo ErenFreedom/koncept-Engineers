@@ -110,6 +110,13 @@ const Hierarchy = () => {
     setDropdownNode(null);
   };
 
+  const handleEditNode = (node) => {
+    console.log("Editing node:", node);
+    setSelectedNode({ ...node });
+    setActiveForm({ actionType: node.type, parentNode: node });
+  };
+
+
 
 
 
