@@ -6,6 +6,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useMemo } from "react";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
+import { editEntity, deleteEntity } from "../../../redux/actions/siteActions";
+import { editMainSiteInfo, editSubSiteInfo, deleteSubSite } from "../../../redux/actions/subsiteActions";
+import { editSubsiteEntity, deleteSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
+
 
 
 import AddFloorForm from "../forms/AddFloorForm";
@@ -81,6 +85,41 @@ const Hierarchy = () => {
     }));
   };
 
+  const handleEditNode = async (node) => {
+    if (!node?.id) return;
+
+    if (node.type === "main-site") {
+      await dispatch(editMainSiteInfo(node, accessToken));
+    } else if (["floor", "room", "floor-area", "room-segment", "poe"].includes(node.type)) {
+      await dispatch(editEntity(node.type, node, accessToken));
+    } else if (node.type === "subsite") {
+      await dispatch(editSubSiteInfo(node, accessToken));
+    } else if (node.type.startsWith("subsite-")) {
+      const endpoint = `${node.type.replace("subsite-", "")}/edit`;
+      await dispatch(editSubsiteEntity(endpoint, node, accessToken));
+    }
+
+    dispatch(fetchHierarchyData(null, accessToken));
+    setDropdownAction(null);
+  };
+
+  const handleDeleteNode = async (node) => {
+    if (!node?.id) return;
+
+    if (["floor", "room", "floor-area", "room-segment", "poe"].includes(node.type)) {
+      await dispatch(deleteEntity(node.type, node.id, accessToken));
+    } else if (node.type === "subsite") {
+      await dispatch(deleteSubSite({ subsite_id: node.subsite_id }, accessToken));
+    } else if (node.type.startsWith("subsite-")) {
+      const endpoint = `${node.type.replace("subsite-", "")}/delete`;
+      await dispatch(deleteSubsiteEntity(endpoint, { id: node.id, subsite_id: node.subsite_id }, accessToken));
+    }
+
+    dispatch(fetchHierarchyData(null, accessToken));
+    setDropdownAction(null);
+  };
+
+
   const handleNodeClick = (label, type, node) => {
     setSelectedNode({ label, type, ...node });
     setDropdownNode(null);
@@ -100,18 +139,18 @@ const Hierarchy = () => {
 
 
   const allowedForms = {
-    "main-site": ["floor", "poe"],                  
-    floor: ["room", "floor-area", "poe"],           
-    room: ["room-segment", "poe"],                  
-    "floor-area": ["poe"],                          
-    "room-segment": ["poe"],                        
-    poe: ["data-point"],                           
-    subsite: ["subsite-floor"],                    
-    "subsite-floor": ["subsite-room"],             
-    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"], 
-    "subsite-floor-area": [],                      
-    "subsite-room-segment": [],                    
-    "subsite-poe": [],                             
+    "main-site": ["floor", "poe"],
+    floor: ["room", "floor-area", "poe"],
+    room: ["room-segment", "poe"],
+    "floor-area": ["poe"],
+    "room-segment": ["poe"],
+    poe: ["data-point"],
+    subsite: ["subsite-floor"],
+    "subsite-floor": ["subsite-room"],
+    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"],
+    "subsite-floor-area": [],
+    "subsite-room-segment": [],
+    "subsite-poe": [],
   };
 
 
@@ -259,7 +298,7 @@ const Hierarchy = () => {
           id: floor.id,
           name: floor.name,
           type: "subsite-floor",
-          subsite_id: sub.subsite_id, 
+          subsite_id: sub.subsite_id,
           children: [],
         };
 
@@ -270,14 +309,14 @@ const Hierarchy = () => {
             type: "subsite-poe",
             location_type: poe.location_type,
             location_id: poe.location_id,
-            subsite_id: sub.subsite_id, 
+            subsite_id: sub.subsite_id,
           })) || [];
           return {
             id: fa.id,
             name: fa.name,
             type: "subsite-floor-area",
             floor_id: fa.floor_id,
-            subsite_id: sub.subsite_id, 
+            subsite_id: sub.subsite_id,
             children: faPoEs,
           };
         }) || [];
@@ -288,7 +327,7 @@ const Hierarchy = () => {
             name: seg.name,
             type: "subsite-room-segment",
             room_id: seg.room_id,
-            subsite_id: sub.subsite_id, 
+            subsite_id: sub.subsite_id,
           })) || [];
 
           const roomPoEs = room.poes?.map((poe) => ({
@@ -297,7 +336,7 @@ const Hierarchy = () => {
             type: "subsite-poe",
             location_type: poe.location_type,
             location_id: poe.location_id,
-            subsite_id: sub.subsite_id, 
+            subsite_id: sub.subsite_id,
           })) || [];
 
           return {
@@ -305,7 +344,7 @@ const Hierarchy = () => {
             name: room.name,
             type: "subsite-room",
             floor_id: room.floor_id,
-            subsite_id: sub.subsite_id, 
+            subsite_id: sub.subsite_id,
             children: [...roomSegmentNodes, ...roomPoEs],
           };
         }) || [];
@@ -316,7 +355,7 @@ const Hierarchy = () => {
           type: "subsite-poe",
           location_type: poe.location_type,
           location_id: poe.location_id,
-          subsite_id: sub.subsite_id, 
+          subsite_id: sub.subsite_id,
         })) || [];
 
         floorNode.children = [...floorAreaNodes, ...floorRoomNodes, ...floorPoEs];
@@ -392,20 +431,17 @@ const Hierarchy = () => {
 
           {dropdownNode && (
             <div className="context-dropdown">
-              {(Object.keys(labelMap) || []).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => handleDropdownSelect(key)}
-                  disabled={
-                    !allowedForms[dropdownNode.type] ||
-                    !allowedForms[dropdownNode.type].includes(key)
-                  }
-                >
-                  {labelMap[key]}
-                </button>
-              ))}
+              {dropdownNode.type === "main-site" ? (
+                <button onClick={() => handleEditNode(dropdownNode)}>✏️ Edit</button>
+              ) : (
+                <>
+                  <button onClick={() => handleEditNode(dropdownNode)}>✏️ Edit</button>
+                  <button onClick={() => handleDeleteNode(dropdownNode)}>🗑️ Delete</button>
+                </>
+              )}
             </div>
           )}
+
 
         </div>
 
