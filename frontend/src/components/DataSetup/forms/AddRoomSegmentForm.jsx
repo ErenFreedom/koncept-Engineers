@@ -11,10 +11,10 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
   const [name, setName] = useState("");
   const [roomId, setRoomId] = useState("");
 
-  const isEditing = !!data?.isEditing; // ✅ reactive
+  const isEditing = !!data?.isEditing;
 
   useEffect(() => {
-    if (data && data.name) {
+    if (isEditing && data && data.name) {
       setName(data.name || "");
       setRoomId(data.room_id || "");
     } else if (data && data.parentType === "room" && data.parentId) {
@@ -24,7 +24,7 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
       setName("");
       setRoomId("");
     }
-  }, [data]);
+  }, [data, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +45,6 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Segment Name"
-        readOnly={!isEditing && !!data?.name}
       />
       <label>Room ID</label>
       <input value={roomId} readOnly placeholder="Room ID" />

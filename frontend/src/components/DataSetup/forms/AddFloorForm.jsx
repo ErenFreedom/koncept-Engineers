@@ -12,14 +12,16 @@ const AddFloorForm = ({ data, setActiveForm }) => {
   const [level, setLevel] = useState("");
   const [siteId, setSiteId] = useState("");
 
-  const isEditing = !!data?.isEditing; // ✅ derived every render
+  const isEditing = !!data?.isEditing; // recomputed every render
 
   useEffect(() => {
-    if (data && data.name) {
+    if (isEditing && data && data.name) {
+      // Edit mode: load existing
       setName(data.name || "");
       setLevel(data.floor_level || "");
       setSiteId(data.site_id || "");
     } else if (data && data.parentType === "main-site" && data.parentId) {
+      // Add mode: parent context
       setName("");
       setLevel("");
       setSiteId(data.parentId);
@@ -28,7 +30,7 @@ const AddFloorForm = ({ data, setActiveForm }) => {
       setLevel("");
       setSiteId("");
     }
-  }, [data]);
+  }, [data, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,14 +51,12 @@ const AddFloorForm = ({ data, setActiveForm }) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Floor Name"
-        readOnly={!isEditing && !!data?.name}
       />
       <input
         type="number"
         value={level}
         onChange={(e) => setLevel(e.target.value)}
         placeholder="Floor Level"
-        readOnly={!isEditing && !!data?.name}
       />
       {siteId && (
         <>

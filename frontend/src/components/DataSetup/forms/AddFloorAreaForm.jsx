@@ -11,10 +11,10 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
   const [name, setName] = useState("");
   const [floorId, setFloorId] = useState("");
 
-  const isEditing = !!data?.isEditing; // ✅ reactive
+  const isEditing = !!data?.isEditing;
 
   useEffect(() => {
-    if (data && data.name) {
+    if (isEditing && data && data.name) {
       setName(data.name || "");
       setFloorId(data.floor_id || "");
     } else if (data && data.parentType === "floor" && data.parentId) {
@@ -24,7 +24,7 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
       setName("");
       setFloorId("");
     }
-  }, [data]);
+  }, [data, isEditing]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,7 +45,6 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Area Name"
-        readOnly={!isEditing && !!data?.name}
       />
       <label>Floor ID</label>
       <input value={floorId} readOnly placeholder="Floor ID" />

@@ -23,11 +23,10 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
     location_id: "",
   });
 
-  const isEditing = !!data?.isEditing; 
+  const isEditing = !!data?.isEditing;
 
   useEffect(() => {
-    if (data && data.name) {
-      // Populate form for editing
+    if (isEditing && data && data.name) {
       setFormData({
         name: data.name || "",
         installation_date: data.installation_date || "",
@@ -64,11 +63,11 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
         location_id: "",
       });
     }
-  }, [data]);
+  }, [data, isEditing]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value })); 
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
@@ -99,17 +98,17 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{isEditing ? "Edit Piece of Equipment" : "Add Piece of Equipment"}</h3>
-      <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" readOnly={!isEditing && !!data?.name} />
-      <input name="installation_date" type="date" value={formData.installation_date} onChange={handleChange} readOnly={!isEditing && !!data?.name} />
-      <input name="model" value={formData.model} onChange={handleChange} placeholder="Model" readOnly={!isEditing && !!data?.name} />
-      <input name="year_of_manufacture" value={formData.year_of_manufacture} onChange={handleChange} placeholder="Year of Manufacture" readOnly={!isEditing && !!data?.name} />
-      <input name="discipline" value={formData.discipline} onChange={handleChange} placeholder="Discipline" readOnly={!isEditing && !!data?.name} />
-      <input name="type" value={formData.type} onChange={handleChange} placeholder="Type" readOnly={!isEditing && !!data?.name} />
-      <input name="subtype" value={formData.subtype} onChange={handleChange} placeholder="Subtype" readOnly={!isEditing && !!data?.name} />
-      <input name="serial_number" value={formData.serial_number} onChange={handleChange} placeholder="Serial Number" readOnly={!isEditing && !!data?.name} />
-      <input name="manufacturer" value={formData.manufacturer} onChange={handleChange} placeholder="Manufacturer" readOnly={!isEditing && !!data?.name} />
-      <textarea name="comment" value={formData.comment} onChange={handleChange} placeholder="Comment" rows={3} readOnly={!isEditing && !!data?.name} />
-      <select name="location_type" value={formData.location_type} onChange={handleChange} disabled={!isEditing && !!data?.name}>
+      <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" />
+      <input name="installation_date" type="date" value={formData.installation_date} onChange={handleChange} />
+      <input name="model" value={formData.model} onChange={handleChange} placeholder="Model" />
+      <input name="year_of_manufacture" value={formData.year_of_manufacture} onChange={handleChange} placeholder="Year of Manufacture" />
+      <input name="discipline" value={formData.discipline} onChange={handleChange} placeholder="Discipline" />
+      <input name="type" value={formData.type} onChange={handleChange} placeholder="Type" />
+      <input name="subtype" value={formData.subtype} onChange={handleChange} placeholder="Subtype" />
+      <input name="serial_number" value={formData.serial_number} onChange={handleChange} placeholder="Serial Number" />
+      <input name="manufacturer" value={formData.manufacturer} onChange={handleChange} placeholder="Manufacturer" />
+      <textarea name="comment" value={formData.comment} onChange={handleChange} placeholder="Comment" rows={3} />
+      <select name="location_type" value={formData.location_type} onChange={handleChange}>
         <option value="site">Site</option>
         <option value="floor">Floor</option>
         <option value="floor_area">Floor Area</option>
