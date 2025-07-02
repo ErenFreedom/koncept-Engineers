@@ -112,8 +112,8 @@ const Hierarchy = () => {
 
   const handleEditNode = (node) => {
     console.log("Editing node:", node);
-    setSelectedNode({ ...node, isEditing: true });           
-    setActiveForm({ actionType: node.type, parentNode: { ...node, isEditing: true } }); 
+    setSelectedNode({ ...node, isEditing: true });
+    setActiveForm({ actionType: node.type, parentNode: { ...node, isEditing: true } });
   };
 
 
@@ -444,15 +444,13 @@ const Hierarchy = () => {
             </h4>
 
             {activeForm ? (
-              renderFormForAction(activeForm.actionType, {
-                parentId: activeForm.parentNode?.id,
-                parentType: activeForm.parentNode?.type,
-              })
+              renderFormForAction(activeForm.actionType, activeForm.parentNode)
             ) : selectedNode ? (
               renderFormForAction(selectedNode.type, selectedNode)
             ) : (
               <p className="no-selection">🛈 Select a node to view its details</p>
             )}
+
 
 
 
