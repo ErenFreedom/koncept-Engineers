@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { sendSubSiteOtp, registerSubSite, editSubSite } from "../../../redux/actions/subsiteActions";
+import { sendSubSiteOtp, registerSubSite, editSubSiteInfo } from "../../../redux/actions/subsiteActions";
 import "./FormStyles.css";
 
 const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
