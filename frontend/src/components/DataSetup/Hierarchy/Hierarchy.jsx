@@ -100,18 +100,18 @@ const Hierarchy = () => {
 
 
   const allowedForms = {
-    "main-site": ["floor", "poe"],                  // In site: floors + PoEs
-    floor: ["room", "floor-area", "poe"],           // Floor: rooms + floor areas + PoEs
-    room: ["room-segment", "poe"],                  // Room: room segments + PoEs
-    "floor-area": ["poe"],                          // Floor area: PoEs
-    "room-segment": ["poe"],                        // Room segment: PoEs
-    poe: ["data-point"],                           // PoEs: sensors
-    subsite: ["subsite-floor"],                    // Subsite: subsite floors
-    "subsite-floor": ["subsite-room"],             // Subsite floor: subsite rooms
-    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"], // Subsite room
-    "subsite-floor-area": [],                      // Subsite floor area: nothing more
-    "subsite-room-segment": [],                    // Subsite room segment: nothing more
-    "subsite-poe": [],                             // Subsite PoE: nothing more
+    "main-site": ["floor", "poe"],                  
+    floor: ["room", "floor-area", "poe"],           
+    room: ["room-segment", "poe"],                  
+    "floor-area": ["poe"],                          
+    "room-segment": ["poe"],                        
+    poe: ["data-point"],                           
+    subsite: ["subsite-floor"],                    
+    "subsite-floor": ["subsite-room"],             
+    "subsite-room": ["subsite-floor-area", "subsite-room-segment", "subsite-poe"], 
+    "subsite-floor-area": [],                      
+    "subsite-room-segment": [],                    
+    "subsite-poe": [],                             
   };
 
 
@@ -167,7 +167,6 @@ const Hierarchy = () => {
       children: [],
     };
 
-    // Main site: Floors
     const floorNodes = floors.map((floor) => {
       const floorNode = {
         id: floor.id,
@@ -177,7 +176,6 @@ const Hierarchy = () => {
         children: [],
       };
 
-      // Floor areas under floor
       const floorAreaNodes = floorAreas
         .filter((fa) => fa.floor_id === floor.id)
         .map((fa) => {
@@ -199,7 +197,6 @@ const Hierarchy = () => {
           };
         });
 
-      // Rooms under floor
       const roomNodes = rooms
         .filter((r) => r.floor_id === floor.id)
         .map((room) => {
@@ -231,7 +228,6 @@ const Hierarchy = () => {
           };
         });
 
-      // PoEs directly on floor
       const floorPoEs = poes
         .filter((poe) => poe.location_type === "floor" && poe.location_id === floor.id)
         .map((poe) => ({
@@ -258,7 +254,6 @@ const Hierarchy = () => {
 
     siteNode.children = [...floorNodes, ...sitePoEs];
 
-    // 🏢 Subsites
     const subsiteNodes = subsites.map((sub) => {
       const subsiteFloorNodes = sub.subsiteFloors?.map((floor) => {
         const floorNode = {
@@ -276,14 +271,14 @@ const Hierarchy = () => {
             type: "subsite-poe",
             location_type: poe.location_type,
             location_id: poe.location_id,
-            subsite_id: sub.subsite_id, // ✅ here too
+            subsite_id: sub.subsite_id, 
           })) || [];
           return {
             id: fa.id,
             name: fa.name,
             type: "subsite-floor-area",
             floor_id: fa.floor_id,
-            subsite_id: sub.subsite_id, // ✅ important
+            subsite_id: sub.subsite_id, 
             children: faPoEs,
           };
         }) || [];
@@ -294,7 +289,7 @@ const Hierarchy = () => {
             name: seg.name,
             type: "subsite-room-segment",
             room_id: seg.room_id,
-            subsite_id: sub.subsite_id, // ✅ add it
+            subsite_id: sub.subsite_id, 
           })) || [];
 
           const roomPoEs = room.poes?.map((poe) => ({
@@ -303,7 +298,7 @@ const Hierarchy = () => {
             type: "subsite-poe",
             location_type: poe.location_type,
             location_id: poe.location_id,
-            subsite_id: sub.subsite_id, // ✅
+            subsite_id: sub.subsite_id, 
           })) || [];
 
           return {
@@ -311,7 +306,7 @@ const Hierarchy = () => {
             name: room.name,
             type: "subsite-room",
             floor_id: room.floor_id,
-            subsite_id: sub.subsite_id, // ✅
+            subsite_id: sub.subsite_id, 
             children: [...roomSegmentNodes, ...roomPoEs],
           };
         }) || [];
@@ -322,7 +317,7 @@ const Hierarchy = () => {
           type: "subsite-poe",
           location_type: poe.location_type,
           location_id: poe.location_id,
-          subsite_id: sub.subsite_id, // ✅
+          subsite_id: sub.subsite_id, 
         })) || [];
 
         floorNode.children = [...floorAreaNodes, ...floorRoomNodes, ...floorPoEs];
@@ -354,7 +349,6 @@ const Hierarchy = () => {
 
   return (
     <div className="hierarchy-tab">
-      {/* 🔍 Search Bar */}
       <div className="search-container">
         <input
           type="text"
@@ -365,9 +359,7 @@ const Hierarchy = () => {
         />
       </div>
 
-      {/* Main Layout */}
       <div className="hierarchy-container">
-        {/* 🌳 Tree Panel */}
         <div className="tree-panel" ref={treePanelRef} style={{ position: "relative" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <h3>Hierarchy Tree</h3>
@@ -399,7 +391,6 @@ const Hierarchy = () => {
 
           </div>
 
-          {/* 🎯 Context Dropdown */}
           {dropdownNode && (
             <div className="context-dropdown">
               {(Object.keys(labelMap) || []).map((key) => (
@@ -419,7 +410,6 @@ const Hierarchy = () => {
 
         </div>
 
-        {/* 📄 Form Panel */}
         <div className="form-panel">
           <div className="form-box">
             <h4>
