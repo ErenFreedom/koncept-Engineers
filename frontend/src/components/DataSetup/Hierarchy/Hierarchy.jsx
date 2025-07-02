@@ -398,8 +398,12 @@ const Hierarchy = () => {
             <HierarchyTree
               treeData={dynamicTree}
               onSelect={handleNodeClick}
-              setDropdownNode={setDropdownNode}
+              onEdit={handleEditNode}
+              onDelete={handleDeleteNode}
+              expandedNodes={expandedNodes}
+              toggleNode={toggleNode}
             />
+
 
 
           </div>
