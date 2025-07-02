@@ -81,3 +81,25 @@
   margin-top: 0.2rem;             
   text-transform: capitalize;
 }
+
+
+.node-actions {
+  display: flex;
+  gap: 0.3rem;
+  opacity: 0.7;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.node-actions button {
+  background: none;
+  border: none;
+  color: #cccccc;
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.node-actions button:hover {
+  color: #4d90fe;
+  transform: translateY(-1px); /* subtle bounce */
+  opacity: 1;
+}

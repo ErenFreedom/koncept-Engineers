@@ -6,9 +6,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { useMemo } from "react";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
-import { editEntity, deleteEntity } from "../../../redux/actions/siteActions";
-import { editMainSiteInfo, editSubSiteInfo, deleteSubSite } from "../../../redux/actions/subsiteActions";
-import { editSubsiteEntity, deleteSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
 
 
 
@@ -74,6 +71,9 @@ const Hierarchy = () => {
   const [dropdownNode, setDropdownNode] = useState(null);
   const [dropdownAction, setDropdownAction] = useState(null);
   const treePanelRef = useRef(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [nodeToDelete, setNodeToDelete] = useState(null);
+
 
 
 
@@ -85,38 +85,9 @@ const Hierarchy = () => {
     }));
   };
 
-  const handleEditNode = async (node) => {
-    if (!node?.id) return;
-
-    if (node.type === "main-site") {
-      await dispatch(editMainSiteInfo(node, accessToken));
-    } else if (["floor", "room", "floor-area", "room-segment", "poe"].includes(node.type)) {
-      await dispatch(editEntity(node.type, node, accessToken));
-    } else if (node.type === "subsite") {
-      await dispatch(editSubSiteInfo(node, accessToken));
-    } else if (node.type.startsWith("subsite-")) {
-      const endpoint = `${node.type.replace("subsite-", "")}/edit`;
-      await dispatch(editSubsiteEntity(endpoint, node, accessToken));
-    }
-
-    dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
-  };
-
-  const handleDeleteNode = async (node) => {
-    if (!node?.id) return;
-
-    if (["floor", "room", "floor-area", "room-segment", "poe"].includes(node.type)) {
-      await dispatch(deleteEntity(node.type, node.id, accessToken));
-    } else if (node.type === "subsite") {
-      await dispatch(deleteSubSite({ subsite_id: node.subsite_id }, accessToken));
-    } else if (node.type.startsWith("subsite-")) {
-      const endpoint = `${node.type.replace("subsite-", "")}/delete`;
-      await dispatch(deleteSubsiteEntity(endpoint, { id: node.id, subsite_id: node.subsite_id }, accessToken));
-    }
-
-    dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
+  const handleDeleteNode = (node) => {
+    setNodeToDelete(node);
+    setShowDeleteModal(true);
   };
 
 
@@ -431,17 +402,20 @@ const Hierarchy = () => {
 
           {dropdownNode && (
             <div className="context-dropdown">
-              {dropdownNode.type === "main-site" ? (
-                <button onClick={() => handleEditNode(dropdownNode)}>✏️ Edit</button>
-              ) : (
-                <>
-                  <button onClick={() => handleEditNode(dropdownNode)}>✏️ Edit</button>
-                  <button onClick={() => handleDeleteNode(dropdownNode)}>🗑️ Delete</button>
-                </>
-              )}
+              {(Object.keys(labelMap) || []).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => handleDropdownSelect(key)}
+                  disabled={
+                    !allowedForms[dropdownNode.type] ||
+                    !allowedForms[dropdownNode.type].includes(key)
+                  }
+                >
+                  {labelMap[key]}
+                </button>
+              ))}
             </div>
           )}
-
 
         </div>
 
@@ -465,6 +439,8 @@ const Hierarchy = () => {
             )}
 
 
+
+
           </div>
 
 
@@ -480,8 +456,45 @@ const Hierarchy = () => {
           </div>
         </div>
       </div>
+
+      {showDeleteModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <h4>Are you sure you want to delete <span style={{ color: "#f66" }}>{nodeToDelete?.name}</span>?</h4>
+            <div className="modal-buttons">
+              <button
+                className="confirm-btn"
+                onClick={async () => {
+                  // existing delete logic:
+                  if (["floor", "room", "floor-area", "room-segment", "poe"].includes(nodeToDelete.type)) {
+                    await dispatch(deleteEntity(nodeToDelete.type, nodeToDelete.id, accessToken));
+                  } else if (nodeToDelete.type === "subsite") {
+                    await dispatch(deleteSubSite({ subsite_id: nodeToDelete.subsite_id }, accessToken));
+                  } else if (nodeToDelete.type.startsWith("subsite-")) {
+                    const endpoint = `${nodeToDelete.type.replace("subsite-", "")}/delete`;
+                    await dispatch(deleteSubsiteEntity(endpoint, { id: nodeToDelete.id, subsite_id: nodeToDelete.subsite_id }, accessToken));
+                  }
+                  dispatch(fetchHierarchyData(null, accessToken));
+                  setShowDeleteModal(false);
+                  setNodeToDelete(null);
+                }}
+              >Yes, Delete</button>
+              <button
+                className="cancel-btn"
+                onClick={() => {
+                  setShowDeleteModal(false);
+                  setNodeToDelete(null);
+                }}
+              >Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
+
+
 
 export default Hierarchy;

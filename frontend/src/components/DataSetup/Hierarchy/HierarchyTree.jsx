@@ -1,13 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
+import { FaChevronRight, FaChevronDown, FaEdit, FaTrash } from "react-icons/fa";
 import "./HierarchyTree.css";
 
-const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
-  const [expandedNodes, setExpandedNodes] = useState({});
-
-  const toggleExpand = (path) => {
-    setExpandedNodes((prev) => ({ ...prev, [path]: !prev[path] }));
-  };
-
+const HierarchyTree = ({ treeData, onSelect, onEdit, onDelete, expandedNodes = {}, toggleNode }) => {
   const renderTree = (nodes, path = "", depth = 0) => {
     return nodes.map((node, idx) => {
       const currentPath = `${path}-${idx}`;
@@ -23,8 +18,8 @@ const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
         >
           <div className="tree-node-header">
             {typeof node !== "string" && node.children ? (
-              <span onClick={() => toggleExpand(currentPath)} className="toggle-arrow">
-                {isExpanded ? "▼" : "▶"}
+              <span onClick={() => toggleNode(path, idx)} className="toggle-arrow">
+                {isExpanded ? <FaChevronDown /> : <FaChevronRight />}
               </span>
             ) : (
               <span className="leaf-dot">•</span>
@@ -40,17 +35,27 @@ const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
               </div>
             </div>
 
-
-
-
-            <div
-              className="three-dot-menu"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDropdownNode(node); 
-              }}
-            >
-              ⋮
+            <div className="node-actions">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onEdit(node);
+                }}
+                title="Edit"
+              >
+                <FaEdit size={14} />
+              </button>
+              {nodeType !== "main-site" && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(node);
+                  }}
+                  title="Delete"
+                >
+                  <FaTrash size={14} />
+                </button>
+              )}
             </div>
           </div>
 
