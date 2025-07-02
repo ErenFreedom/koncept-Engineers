@@ -112,9 +112,10 @@ const Hierarchy = () => {
 
   const handleEditNode = (node) => {
     console.log("Editing node:", node);
-    setSelectedNode({ ...node });
-    setActiveForm({ actionType: node.type, parentNode: node });
+    setSelectedNode({ ...node, isEditing: true });           
+    setActiveForm({ actionType: node.type, parentNode: { ...node, isEditing: true } }); 
   };
+
 
 
 
@@ -480,7 +481,6 @@ const Hierarchy = () => {
               <button
                 className="confirm-btn"
                 onClick={async () => {
-                  // existing delete logic:
                   if (["floor", "room", "floor-area", "room-segment", "poe"].includes(nodeToDelete.type)) {
                     await dispatch(deleteEntity(nodeToDelete.type, nodeToDelete.id, accessToken));
                   } else if (nodeToDelete.type === "subsite") {
