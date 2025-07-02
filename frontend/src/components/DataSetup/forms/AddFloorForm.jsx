@@ -11,7 +11,8 @@ const AddFloorForm = ({ data, setActiveForm }) => {
   const [name, setName] = useState("");
   const [level, setLevel] = useState("");
   const [siteId, setSiteId] = useState("");
-  const isEditing = data?.isEditing || false;
+
+  const isEditing = !!data?.isEditing; // ✅ derived every render
 
   useEffect(() => {
     if (data && data.name) {
@@ -46,14 +47,14 @@ const AddFloorForm = ({ data, setActiveForm }) => {
       <h3>{isEditing ? "Edit Floor" : "Add Floor"}</h3>
       <input
         value={name}
-        onChange={(e) => isEditing && setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
         placeholder="Floor Name"
         readOnly={!isEditing && !!data?.name}
       />
       <input
         type="number"
         value={level}
-        onChange={(e) => isEditing && setLevel(e.target.value)}
+        onChange={(e) => setLevel(e.target.value)}
         placeholder="Floor Level"
         readOnly={!isEditing && !!data?.name}
       />

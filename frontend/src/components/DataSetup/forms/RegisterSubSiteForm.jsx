@@ -8,8 +8,10 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
 
-  const [phase, setPhase] = useState(data ? "success" : "register"); // if editing, start in success phase
-  const [isEditing, setIsEditing] = useState(false);
+  const [phase, setPhase] = useState(data ? "success" : "register"); // success → editing view
+  const [editingMode, setEditingMode] = useState(false);
+  const isEditing = !!editingMode; // ✅ recomputed every render for fresh behavior
+
   const [formData, setFormData] = useState({
     adminEmail: data?.adminEmail || "",
     adminPhone: data?.adminPhone || "",
@@ -23,6 +25,7 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
     sitePanS3: data?.sitePanS3 || "",
     siteGstS3: data?.siteGstS3 || "",
   });
+
   const [otp, setOtp] = useState("");
 
   const handleChange = (e) => {
@@ -41,13 +44,13 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
     const finalData = { ...formData, otp };
     await dispatch(registerSubSite(finalData, accessToken));
     setPhase("success");
-    setDropdownAction(null); // ✅ reset dropdown on success
+    setDropdownAction(null); // ✅ reset dropdown after registration
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    await dispatch(editSubSiteInfo(formData, accessToken)); // ✅ corrected action name
-    setIsEditing(false);
+    await dispatch(editSubSiteInfo(formData, accessToken));
+    setEditingMode(false);
     setDropdownAction(null);
   };
 
@@ -64,7 +67,7 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
     >
       {phase === "register" && (
         <>
-          <h3>Register Sub-Site</h3>
+          <h3>Register Sub-site</h3>
           <input name="adminEmail" value={formData.adminEmail} onChange={handleChange} placeholder="Admin Email" />
           <input name="adminPhone" value={formData.adminPhone} onChange={handleChange} placeholder="Admin Phone" />
           <select name="otpMethod" value={formData.otpMethod} onChange={handleChange}>
@@ -106,7 +109,7 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
           {isEditing ? (
             <button type="submit">Save Changes</button>
           ) : (
-            <button type="button" onClick={() => setIsEditing(true)}>Edit Sub-site Info</button>
+            <button type="button" onClick={() => setEditingMode(true)}>Edit Sub-site Info</button>
           )}
         </>
       )}

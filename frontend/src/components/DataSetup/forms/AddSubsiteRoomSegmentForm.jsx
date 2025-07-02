@@ -11,7 +11,8 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
   const [name, setName] = useState("");
   const [roomId, setRoomId] = useState("");
   const [subsiteId, setSubsiteId] = useState("");
-  const isEditing = data?.isEditing || false;
+
+  const isEditing = !!data?.isEditing;
 
   useEffect(() => {
     if (data) {
@@ -36,7 +37,7 @@ const AddSubsiteRoomSegmentForm = ({ data, setActiveForm }) => {
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{isEditing ? "Edit Sub-site Room Segment" : "Add Sub-site Room Segment"}</h3>
-      <input value={name} onChange={(e) => isEditing && setName(e.target.value)} placeholder="Segment Name" readOnly={!isEditing && !!data?.name} />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Segment Name" readOnly={!isEditing && !!data?.name} />
       <label>Room ID</label>
       <input value={roomId} readOnly placeholder="Room ID" />
       <label>Sub-site ID</label>

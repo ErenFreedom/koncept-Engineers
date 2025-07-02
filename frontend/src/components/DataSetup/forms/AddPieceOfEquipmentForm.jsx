@@ -22,7 +22,8 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
     location_type: "site",
     location_id: "",
   });
-  const isEditing = data?.isEditing || false;
+
+  const isEditing = !!data?.isEditing; 
 
   useEffect(() => {
     if (data && data.name) {
@@ -42,14 +43,12 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
         location_id: data.location_id || "",
       });
     } else if (data && data.parentType && data.parentId) {
-      // Adding new PoE under a parent node
       setFormData((prev) => ({
         ...prev,
         location_type: data.parentType,
         location_id: data.parentId,
       }));
     } else {
-      // Reset form
       setFormData({
         name: "",
         installation_date: "",
@@ -69,8 +68,7 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (!isEditing && data?.name) return; // prevent edits if not editing mode
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value })); 
   };
 
   const handleSubmit = async (e) => {

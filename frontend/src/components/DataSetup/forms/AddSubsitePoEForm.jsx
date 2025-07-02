@@ -12,7 +12,8 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
   const [locationType, setLocationType] = useState("");
   const [locationId, setLocationId] = useState("");
   const [subsiteId, setSubsiteId] = useState("");
-  const isEditing = data?.isEditing || false;
+
+  const isEditing = !!data?.isEditing; 
 
   useEffect(() => {
     if (data) {
@@ -25,7 +26,12 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const payload = { name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
+    const payload = {
+      name,
+      location_type: locationType,
+      location_id: locationId,
+      subsite_id: subsiteId,
+    };
     if (isEditing) {
       await dispatch(editSubsiteEntity("poe/edit", { ...payload, id: data.id }, accessToken));
     } else {
@@ -38,7 +44,7 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
   return (
     <form className="form-container" onSubmit={handleSubmit}>
       <h3>{isEditing ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
-      <input value={name} onChange={(e) => isEditing && setName(e.target.value)} placeholder="PoE Name" readOnly={!isEditing && !!data?.name} />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="PoE Name" readOnly={!isEditing && !!data?.name} />
       <label>Location Type</label>
       <input value={locationType} readOnly placeholder="Location Type (e.g., room, floor)" />
       <label>Location ID</label>

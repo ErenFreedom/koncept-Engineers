@@ -10,7 +10,8 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [floorId, setFloorId] = useState("");
-  const isEditing = data?.isEditing || false;
+
+  const isEditing = !!data?.isEditing; // ✅ reactive
 
   useEffect(() => {
     if (data && data.name) {
@@ -42,7 +43,7 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
       <h3>{isEditing ? "Edit Floor Area" : "Add Floor Area"}</h3>
       <input
         value={name}
-        onChange={(e) => isEditing && setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
         placeholder="Area Name"
         readOnly={!isEditing && !!data?.name}
       />

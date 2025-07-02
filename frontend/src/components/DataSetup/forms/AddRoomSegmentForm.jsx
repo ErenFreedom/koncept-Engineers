@@ -10,7 +10,8 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
   const { accessToken } = useAuth();
   const [name, setName] = useState("");
   const [roomId, setRoomId] = useState("");
-  const isEditing = data?.isEditing || false;
+
+  const isEditing = !!data?.isEditing; // ✅ reactive
 
   useEffect(() => {
     if (data && data.name) {
@@ -42,7 +43,7 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
       <h3>{isEditing ? "Edit Room Segment" : "Add Room Segment"}</h3>
       <input
         value={name}
-        onChange={(e) => isEditing && setName(e.target.value)}
+        onChange={(e) => setName(e.target.value)}
         placeholder="Segment Name"
         readOnly={!isEditing && !!data?.name}
       />
