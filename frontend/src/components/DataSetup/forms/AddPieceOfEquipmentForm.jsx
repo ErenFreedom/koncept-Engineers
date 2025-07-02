@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity, editEntity, deleteEntity } from "../../../redux/actions/siteActions";
+import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
-import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
 const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
@@ -75,32 +74,25 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
     await dispatch(addEntity("poe", formData, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-  };
-
-  const handleEdit = async () => {
-    if (!data?.id) return;
-    const payload = { id: data.id, ...formData };
-    await dispatch(editEntity("poe", payload, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
-  };
-
-  const handleDelete = async () => {
-    if (!data?.id) return;
-    await dispatch(deleteEntity("poe", data.id, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
+    setFormData({
+      name: "",
+      installation_date: "",
+      model: "",
+      year_of_manufacture: "",
+      discipline: "",
+      type: "",
+      subtype: "",
+      serial_number: "",
+      manufacturer: "",
+      comment: "",
+      location_type: "site",
+      location_id: "",
+    });
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <FormHeader
-        title={data?.name ? "Edit Piece of Equipment" : "Add Piece of Equipment"}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        showEdit={!!data?.id}
-        showDelete={!!data?.id}
-      />
+      <h3>{data && data.name ? "Edit Piece of Equipment" : "Add Piece of Equipment"}</h3>
       <input name="name" value={formData.name} onChange={handleChange} placeholder="Name" />
       <input name="installation_date" type="date" value={formData.installation_date} onChange={handleChange} />
       <input name="model" value={formData.model} onChange={handleChange} placeholder="Model" />
@@ -120,7 +112,7 @@ const AddPieceOfEquipmentForm = ({ data, setActiveForm }) => {
       </select>
       <label>Location ID</label>
       <input name="location_id" value={formData.location_id} readOnly placeholder="Location ID" />
-      <button type="submit">{data?.name ? "Update Equipment" : "Add Equipment"}</button>
+      <button type="submit">{data && data.name ? "Update Equipment" : "Add Equipment"}</button>
     </form>
   );
 };

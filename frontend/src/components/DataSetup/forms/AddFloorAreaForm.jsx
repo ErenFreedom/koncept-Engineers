@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity, editEntity, deleteEntity } from "../../../redux/actions/siteActions";
+import { addEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
-import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
 const AddFloorAreaForm = ({ data, setActiveForm }) => {
@@ -14,12 +13,15 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
 
   useEffect(() => {
     if (data && data.name) {
+      // Editing existing area: populate fields
       setName(data.name || "");
       setFloorId(data.floor_id || "");
     } else if (data && data.parentType === "floor" && data.parentId) {
+      // Adding new area to a floor: set floorId automatically
       setName("");
       setFloorId(data.parentId);
     } else {
+      // Default
       setName("");
       setFloorId("");
     }
@@ -31,36 +33,27 @@ const AddFloorAreaForm = ({ data, setActiveForm }) => {
     await dispatch(addEntity("floor-area", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-  };
-
-  const handleEdit = async () => {
-    if (!data?.id) return;
-    const payload = { id: data.id, name, floor_id: floorId };
-    await dispatch(editEntity("floor-area", payload, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
-  };
-
-  const handleDelete = async () => {
-    if (!data?.id) return;
-    await dispatch(deleteEntity("floor-area", data.id, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
+    setName("");
+    setFloorId("");
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <FormHeader
-        title={data?.name ? "Edit Floor Area" : "Add Floor Area"}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        showEdit={!!data?.id}
-        showDelete={!!data?.id}
+      <h3>{data && data.name ? "Edit Floor Area" : "Add Floor Area"}</h3>
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Area Name"
       />
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Area Name" />
       <label>Floor ID</label>
-      <input value={floorId} readOnly placeholder="Floor ID" />
-      <button type="submit">{data?.name ? "Update Floor Area" : "Add Floor Area"}</button>
+      <input
+        value={floorId}
+        readOnly
+        placeholder="Floor ID"
+      />
+      <button type="submit">
+        {data && data.name ? "Update Floor Area" : "Add Floor Area"}
+      </button>
     </form>
   );
 };

@@ -1,21 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import {
-  sendSubSiteOtp,
-  registerSubSite,
-  editSubSiteInfo,
-  deleteSubSite,
-} from "../../../redux/actions/subsiteActions";
-import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
-import FormHeader from "../../common/FormHeader";
+import { sendSubSiteOtp, registerSubSite } from "../../../redux/actions/subsiteActions";
 import "./FormStyles.css";
 
-const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
+const RegisterSubSiteForm = ({ setDropdownAction }) => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
 
-  const [phase, setPhase] = useState("register");
+  const [phase, setPhase] = useState("register"); 
   const [formData, setFormData] = useState({
     adminEmail: "",
     adminPhone: "",
@@ -30,22 +23,6 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
     siteGstS3: "",
   });
   const [otp, setOtp] = useState("");
-
-  useEffect(() => {
-    if (data && data.id) {
-      setFormData((prev) => ({
-        ...prev,
-        siteName: data.subSiteName || "",
-        siteEmail: data.subSiteEmail || "",
-        siteAltEmail: data.subSiteAltEmail || "",
-        siteAddress1: data.subSiteAddress1 || "",
-        siteAddress2: data.subSiteAddress2 || "",
-        sitePincode: data.subSitePincode || "",
-        sitePanS3: data.subSitePanS3 || "",
-        siteGstS3: data.subSiteGstS3 || "",
-      }));
-    }
-  }, [data]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -62,38 +39,15 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
     e.preventDefault();
     const finalData = { ...formData, otp };
     await dispatch(registerSubSite(finalData, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
     setPhase("success");
-    setDropdownAction(null);
-  };
-
-  const handleEdit = async () => {
-    if (!data?.id) return;
-    const payload = { id: data.id, ...formData };
-    await dispatch(editSubSiteInfo(payload, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
-  };
-
-  const handleDelete = async () => {
-    if (!data?.id) return;
-    await dispatch(deleteSubSite({ id: data.id }, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setDropdownAction(null);
+    setDropdownAction(null); // ✅ reset dropdown
   };
 
   return (
     <form className="form-container" onSubmit={phase === "otp" ? handleOtpSubmit : handleRegister}>
-      <FormHeader
-        title="Register / Edit Sub-Site"
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        showEdit={!!data?.id}
-        showDelete={!!data?.id}
-      />
-
       {phase === "register" && (
         <>
+          <h3>Register Sub-Site</h3>
           <input name="adminEmail" value={formData.adminEmail} onChange={handleChange} placeholder="Admin Email" />
           <input name="adminPhone" value={formData.adminPhone} onChange={handleChange} placeholder="Admin Phone" />
           <select name="otpMethod" value={formData.otpMethod} onChange={handleChange}>
@@ -121,7 +75,9 @@ const RegisterSubSiteForm = ({ data, setDropdownAction }) => {
       )}
 
       {phase === "success" && (
-        <div className="success-message">✅ Sub-site registered successfully!</div>
+        <div className="success-message">
+          ✅ Sub-site registered successfully!
+        </div>
       )}
     </form>
   );

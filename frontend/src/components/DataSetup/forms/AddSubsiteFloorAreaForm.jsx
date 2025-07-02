@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addSubsiteEntity, editSubsiteEntity, deleteSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
+import { addSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
-import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
 const AddSubsiteFloorAreaForm = ({ data, setActiveForm }) => {
@@ -14,6 +13,7 @@ const AddSubsiteFloorAreaForm = ({ data, setActiveForm }) => {
   const [subsiteId, setSubsiteId] = useState("");
 
   useEffect(() => {
+    console.log("🪵 AddSubsiteFloorAreaForm data:", data);
     if (data) {
       setName(data.name || "");
       setFloorId(data.floor_id ?? data.parentId ?? "");
@@ -29,30 +29,9 @@ const AddSubsiteFloorAreaForm = ({ data, setActiveForm }) => {
     setActiveForm(null);
   };
 
-  const handleEdit = async () => {
-    if (!data?.id) return;
-    const payload = { id: data.id, name, floor_id: floorId, subsite_id: subsiteId };
-    await dispatch(editSubsiteEntity("floor-area/edit", payload, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
-  };
-
-  const handleDelete = async () => {
-    if (!data?.id) return;
-    await dispatch(deleteSubsiteEntity("floor-area/delete", { id: data.id }, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
-  };
-
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <FormHeader
-        title={data?.name ? "Edit Sub-site Floor Area" : "Add Sub-site Floor Area"}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        showEdit={!!data?.id}
-        showDelete={!!data?.id}
-      />
+      <h3>{data?.name ? "Edit Sub-site Floor Area" : "Add Sub-site Floor Area"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Area Name" />
       <label>Floor ID</label>
       <input value={floorId} readOnly placeholder="Floor ID" />

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addSubsiteEntity, editSubsiteEntity, deleteSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
+import { addSubsiteEntity } from "../../../redux/actions/subSiteStructureActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
-import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
 const AddSubsitePoEForm = ({ data, setActiveForm }) => {
@@ -15,6 +14,7 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
   const [subsiteId, setSubsiteId] = useState("");
 
   useEffect(() => {
+    console.log("🪵 AddSubsitePoEForm data:", data);
     if (data) {
       setName(data.name || "");
       setLocationType(data.location_type ?? data.parentType ?? "");
@@ -31,30 +31,9 @@ const AddSubsitePoEForm = ({ data, setActiveForm }) => {
     setActiveForm(null);
   };
 
-  const handleEdit = async () => {
-    if (!data?.id) return;
-    const payload = { id: data.id, name, location_type: locationType, location_id: locationId, subsite_id: subsiteId };
-    await dispatch(editSubsiteEntity("poe/edit", payload, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
-  };
-
-  const handleDelete = async () => {
-    if (!data?.id) return;
-    await dispatch(deleteSubsiteEntity("poe/delete", { id: data.id }, accessToken));
-    dispatch(fetchHierarchyData(null, accessToken));
-    setActiveForm(null);
-  };
-
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <FormHeader
-        title={data?.name ? "Edit Sub-site PoE" : "Add Sub-site PoE"}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        showEdit={!!data?.id}
-        showDelete={!!data?.id}
-      />
+      <h3>{data?.name ? "Edit Sub-site PoE" : "Add Sub-site PoE"}</h3>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="PoE Name" />
       <label>Location Type</label>
       <input value={locationType} readOnly placeholder="Location Type (e.g., room, floor)" />
