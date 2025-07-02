@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { editMainSiteInfo } from "../../../redux/actions/siteActions"; // ✅ make sure you have this action
+import { editMainSiteInfo } from "../../../redux/actions/subsiteActions"; // ✅ make sure you have this action
 import "./FormStyles.css";
 
 const MainSiteInfoForm = ({ data }) => {
