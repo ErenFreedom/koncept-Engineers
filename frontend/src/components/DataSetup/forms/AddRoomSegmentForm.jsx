@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity } from "../../../redux/actions/siteActions";
+import { addEntity, editEntity, deleteEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
+import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
 const AddRoomSegmentForm = ({ data, setActiveForm }) => {
@@ -30,17 +31,36 @@ const AddRoomSegmentForm = ({ data, setActiveForm }) => {
     await dispatch(addEntity("room-segment", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-    setName("");
-    setRoomId("");
+  };
+
+  const handleEdit = async () => {
+    if (!data?.id) return;
+    const payload = { id: data.id, name, room_id: roomId };
+    await dispatch(editEntity("room-segment", payload, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setActiveForm(null);
+  };
+
+  const handleDelete = async () => {
+    if (!data?.id) return;
+    await dispatch(deleteEntity("room-segment", data.id, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setActiveForm(null);
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data && data.name ? "Edit Room Segment" : "Add Room Segment"}</h3>
+      <FormHeader
+        title={data?.name ? "Edit Room Segment" : "Add Room Segment"}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        showEdit={!!data?.id}
+        showDelete={!!data?.id}
+      />
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Segment Name" />
       <label>Room ID</label>
       <input value={roomId} readOnly placeholder="Room ID" />
-      <button type="submit">{data && data.name ? "Update Segment" : "Add Segment"}</button>
+      <button type="submit">{data?.name ? "Update Segment" : "Add Segment"}</button>
     </form>
   );
 };

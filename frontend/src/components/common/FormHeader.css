@@ -1,0 +1,30 @@
+.form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.form-header-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.form-header-actions button {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.9rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.edit-btn {
+  background-color: #2d8cf0;
+  color: white;
+}
+
+.delete-btn {
+  background-color: #f56c6c;
+  color: white;
+}

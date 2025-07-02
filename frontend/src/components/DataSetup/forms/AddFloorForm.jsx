@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useAuth } from "../../../context/AuthContext";
-import { addEntity } from "../../../redux/actions/siteActions";
+import { addEntity, editEntity, deleteEntity } from "../../../redux/actions/siteActions";
 import { fetchHierarchyData } from "../../../redux/actions/hierarchyActions";
+import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
 const AddFloorForm = ({ data, setActiveForm }) => {
@@ -34,34 +35,41 @@ const AddFloorForm = ({ data, setActiveForm }) => {
     await dispatch(addEntity("floor", payload, accessToken));
     dispatch(fetchHierarchyData(null, accessToken));
     setActiveForm(null);
-    setName("");
-    setLevel("");
-    setSiteId("");
+  };
+
+  const handleEdit = async () => {
+    if (!data?.id) return;
+    const payload = { id: data.id, name, floor_level: level, site_id: siteId };
+    await dispatch(editEntity("floor", payload, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setActiveForm(null);
+  };
+
+  const handleDelete = async () => {
+    if (!data?.id) return;
+    await dispatch(deleteEntity("floor", data.id, accessToken));
+    dispatch(fetchHierarchyData(null, accessToken));
+    setActiveForm(null);
   };
 
   return (
     <form className="form-container" onSubmit={handleSubmit}>
-      <h3>{data && data.name ? "Edit Floor" : "Add Floor"}</h3>
-      <input
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-        placeholder="Floor Name"
+      <FormHeader
+        title={data?.name ? "Edit Floor" : "Add Floor"}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        showEdit={!!data?.id}
+        showDelete={!!data?.id}
       />
-      <input
-        type="number"
-        value={level}
-        onChange={(e) => setLevel(e.target.value)}
-        placeholder="Floor Level"
-      />
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Floor Name" />
+      <input type="number" value={level} onChange={(e) => setLevel(e.target.value)} placeholder="Floor Level" />
       {siteId && (
         <>
           <label>Site ID</label>
           <input value={siteId} readOnly placeholder="Site ID" />
         </>
       )}
-      <button type="submit">
-        {data && data.name ? "Update Floor" : "Add Floor"}
-      </button>
+      <button type="submit">{data?.name ? "Update Floor" : "Add Floor"}</button>
     </form>
   );
 };

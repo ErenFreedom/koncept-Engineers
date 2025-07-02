@@ -1,7 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { useDispatch } from "react-redux";
+import { useAuth } from "../../../context/AuthContext";
+import { editMainSiteInfo } from "../../../redux/actions/subsiteActions";
+import { fetchMainSiteInfo } from "../../../redux/actions/subsiteActions";
+import FormHeader from "../../common/FormHeader";
 import "./FormStyles.css";
 
-const MainSiteInfoForm = ({ data }) => {
+const MainSiteInfoForm = ({ data, setDropdownAction }) => {
+  const dispatch = useDispatch();
+  const { accessToken } = useAuth();
+
   const [formData, setFormData] = useState({
     company_name: "",
     company_email: "",
@@ -13,7 +21,6 @@ const MainSiteInfoForm = ({ data }) => {
     gst_s3: "",
   });
 
-  // Update form when new data prop arrives
   useEffect(() => {
     if (data) {
       setFormData({
@@ -34,15 +41,21 @@ const MainSiteInfoForm = ({ data }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Updated Main Site Info:", formData);
-    // Here you'd dispatch editMainSiteInfo(formData, token) redux action.
+  const handleEdit = async () => {
+    await dispatch(editMainSiteInfo(formData, accessToken));
+    dispatch(fetchMainSiteInfo(accessToken));
+    setDropdownAction(null);
   };
 
   return (
-    <form className="form-container" onSubmit={handleSubmit}>
-      <h3>Company Info</h3>
+    <form className="form-container">
+      <FormHeader
+        title="Main Site Info"
+        onEdit={handleEdit}
+        showEdit={true}
+        showDelete={false}
+      />
+
       <input
         name="company_name"
         value={formData.company_name}
@@ -93,8 +106,6 @@ const MainSiteInfoForm = ({ data }) => {
         onChange={handleChange}
         placeholder="GST URL"
       />
-
-      <button type="submit">Save Changes</button>
     </form>
   );
 };
