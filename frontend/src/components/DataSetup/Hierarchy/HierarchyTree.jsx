@@ -47,7 +47,7 @@ const HierarchyTree = ({ treeData, onSelect, setDropdownNode }) => {
               className="three-dot-menu"
               onClick={(e) => {
                 e.stopPropagation();
-                setDropdownNode(node); // ✅ opens dropdown for this specific node
+                setDropdownNode(node); 
               }}
             >
               ⋮
