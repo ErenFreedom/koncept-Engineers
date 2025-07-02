@@ -10,10 +10,11 @@
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   column-gap: 8rem;
-  row-gap: 1.5rem; /* ⬅️ more vertical spacing between rows */
+  row-gap: 1.5rem;
+  position: relative; /* Allows positioning of buttons */
 }
 
-/* Section Headings (like Admin Details, Company Details) */
+/* Section Headings */
 .form-container h3 {
   grid-column: 1 / -1;
   font-size: 1.2rem;
@@ -24,9 +25,10 @@
   padding-bottom: 0.3rem;
 }
 
-/* Inputs and selects */
+/* Inputs & selects */
 .form-container input,
-.form-container select {
+.form-container select,
+.form-container textarea {
   background-color: #15192f;
   border: 1px solid #303c57;
   color: #cdd8ff;
@@ -34,15 +36,23 @@
   font-size: 0.95rem;
   border-radius: 6px;
   width: 100%;
-  transition: 0.2s;
   box-sizing: border-box;
+  transition: 0.2s;
 }
 
 .form-container input:focus,
-.form-container select:focus {
+.form-container select:focus,
+.form-container textarea:focus {
   border-color: #4d90fe;
   outline: none;
   background-color: #1b1f36;
+}
+
+/* Placeholders */
+.form-container input::placeholder,
+.form-container textarea::placeholder {
+  color: #8894b0;
+  opacity: 0.85;
 }
 
 /* Submit Button */
@@ -62,10 +72,55 @@
   background-color: #3377cc;
 }
 
-
+/* Success Message */
 .success-message {
   color: #4caf50;
   font-weight: bold;
   margin-top: 1rem;
   font-size: 1.1rem;
+}
+
+/* Top-right Edit/Delete buttons container */
+.form-header-buttons {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  display: flex;
+  gap: 0.6rem;
+}
+
+/* Buttons */
+.form-header-buttons button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.8rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.25s ease;
+}
+
+.form-header-buttons button:hover {
+  transform: translateY(-3px) rotate(2deg);
+}
+
+.form-header-buttons .edit-button {
+  background-color: #4a90e2;
+  color: white;
+}
+
+.form-header-buttons .delete-button {
+  background-color: #e94e4e;
+  color: white;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .form-container {
+    grid-template-columns: 1fr;
+    column-gap: 0;
+  }
 }
