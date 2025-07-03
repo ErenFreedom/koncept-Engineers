@@ -104,24 +104,24 @@ const Hierarchy = () => {
 
 
   const handleDropdownSelect = (actionType) => {
-  console.log("🪵 Dropdown node on select:", dropdownNode);
+    console.log("🪵 Dropdown node on select:", dropdownNode);
 
-  if (!dropdownNode?.id) {
-    console.warn("Dropdown node missing ID; cannot set parent ID!");
-  }
+    if (!dropdownNode?.id) {
+      console.warn("Dropdown node missing ID; cannot set parent ID!");
+    }
 
-  setActiveForm({
-    actionType,
-    parentNode: {
-      ...dropdownNode,
-      parentId: dropdownNode?.id, 
-      parentType: dropdownNode?.type, 
-    },
-  });
+    setActiveForm({
+      actionType,
+      parentNode: {
+        ...dropdownNode,
+        parentId: dropdownNode?.id,
+        parentType: dropdownNode?.type,
+      },
+    });
 
-  setDropdownAction(null);
-  setDropdownNode(null);
-};
+    setDropdownAction(null);
+    setDropdownNode(null);
+  };
 
 
   const handleEditNode = (node) => {
@@ -496,7 +496,7 @@ const Hierarchy = () => {
                   if (["floor", "room", "floor-area", "room-segment", "poe"].includes(nodeToDelete.type)) {
                     await dispatch(deleteEntity(nodeToDelete.type, nodeToDelete.id, accessToken));
                   } else if (nodeToDelete.type === "subsite") {
-                    await dispatch(deleteSubSite({ subsite_id: nodeToDelete.subsite_id }, accessToken));
+                    await dispatch(deleteSubSite(nodeToDelete.subsite_id, accessToken)); // ✅ corrected line
                   } else if (nodeToDelete.type.startsWith("subsite-")) {
                     const endpoint = `${nodeToDelete.type.replace("subsite-", "")}/delete`;
                     await dispatch(deleteSubsiteEntity(endpoint, { id: nodeToDelete.id, subsite_id: nodeToDelete.subsite_id }, accessToken));
@@ -505,7 +505,10 @@ const Hierarchy = () => {
                   setShowDeleteModal(false);
                   setNodeToDelete(null);
                 }}
-              >Yes, Delete</button>
+              >
+                Yes, Delete
+              </button>
+
               <button
                 className="cancel-btn"
                 onClick={() => {

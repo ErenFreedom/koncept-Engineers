@@ -68,10 +68,21 @@ export const deleteEntity = (entity, id, token) => async (dispatch) => {
   const label = ENTITY_CONFIG[entity] || entity;
   dispatch(setLoading(true));
   try {
+    let payloadKey;
+    switch (entity) {
+      case "floor": payloadKey = "floor_id"; break;
+      case "room": payloadKey = "room_id"; break;
+      case "floor-area": payloadKey = "floor_area_id"; break;
+      case "room-segment": payloadKey = "room_segment_id"; break;
+      case "poe": payloadKey = "poe_id"; break;
+      default: payloadKey = "id";  
+    }
+
     await axios.delete(`${API}/api/${entity}/delete`, {
-      data: { id },
+      data: { [payloadKey]: id },  
       headers: { Authorization: `Bearer ${token}` },
     });
+
     toast.success(`🗑️ ${label} deleted`);
     dispatch(setSuccess());
   } catch (err) {
@@ -80,3 +91,4 @@ export const deleteEntity = (entity, id, token) => async (dispatch) => {
     dispatch(setLoading(false));
   }
 };
+

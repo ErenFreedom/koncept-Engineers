@@ -114,21 +114,30 @@ export const editSubSiteInfo = (data, token) => async (dispatch) => {
   }
 };
 
-// 🔹 Delete sub-site
-export const deleteSubSite = (data, token) => async (dispatch) => {
+export const deleteSubsiteEntity = (endpoint, { id, subsite_id }, token) => async (dispatch) => {
+  dispatch(setSubsiteLoading(true));
   try {
-    dispatch({ type: SUBSITE_REQUEST });
-    await axios.delete(`${API}/subsite/delete`, {
-      data,
+    let payloadKey;
+    switch (endpoint.replace("/delete", "")) {
+      case "floor": payloadKey = "floor_id"; break;
+      case "room": payloadKey = "room_id"; break;
+      case "floor-area": payloadKey = "floor_area_id"; break;
+      case "room-segment": payloadKey = "room_segment_id"; break;
+      case "poe": payloadKey = "poe_id"; break;
+      default: payloadKey = "id";
+    }
+
+    await axios.delete(`${API_BASE}/${endpoint}`, {
+      data: { [payloadKey]: id, subsite_id },  
       headers: { Authorization: `Bearer ${token}` },
     });
-    toast.success("🗑️ Sub-site deleted");
-    dispatch({ type: SUBSITE_SUCCESS });
+
+    toast.success(`🗑️ ${endpoint.replace("/delete", "")} deleted`);
+    dispatch(setSubsiteSuccess());
   } catch (err) {
-    toast.error(`❌ Delete sub-site failed: ${err.response?.data?.message || err.message}`);
-    dispatch({
-      type: SUBSITE_FAIL,
-      payload: err.response?.data?.message || err.message,
-    });
+    handleError(dispatch, err, `Delete ${endpoint.replace("/delete", "")}`);
+  } finally {
+    dispatch(setSubsiteLoading(false));
   }
 };
+
