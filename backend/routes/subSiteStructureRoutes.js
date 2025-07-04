@@ -17,7 +17,8 @@ const {
   editSubsiteRoom,
   editSubsiteFloorArea,
   editSubsiteRoomSegment,
-  editSubsitePieceOfEquipment
+  editSubsitePieceOfEquipment,
+  getPoePath_SubSite,
 } = require("../controllers/subSiteStructureController");
 
 router.post("/floor/add", addFloor);
@@ -40,6 +41,8 @@ router.put("/room/edit", editSubsiteRoom);
 router.put("/floor-area/edit", editSubsiteFloorArea);
 router.put("/room-segment/edit", editSubsiteRoomSegment);
 router.put("/poe/edit", editSubsitePieceOfEquipment);
+
+router.get("/poe/subsite/path", getPoePath_SubSite);
 
 
 

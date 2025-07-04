@@ -17,7 +17,8 @@ const {
   editRoom,
   editFloorArea,
   editRoomSegment,
-  editPieceOfEquipment
+  editPieceOfEquipment,
+  getPoePath,
 } = require("../controllers/floorRoomController");
 
 router.post("/floor/add", addFloor);
@@ -40,6 +41,8 @@ router.put("/room/edit", editRoom);
 router.put("/floor-area/edit", editFloorArea);
 router.put("/room-segment/edit", editRoomSegment);
 router.put("/poe/edit", editPieceOfEquipment);
+
+router.get("/poe/path", getPoePath);
 
 
 module.exports = router;

@@ -304,8 +304,22 @@ const assignSensorToPoE = async (req, res) => {
 
   const companyId = decoded.companyId;
   const sensorTable = `Sensor_${companyId}`;
+  const poeTable = `PieceOfEquipment_${companyId}`;
 
   try {
+    // 🔹 Validate sensor exists
+    const [sensorRows] = await db.execute(`SELECT id FROM ${sensorTable} WHERE id = ?`, [sensor_id]);
+    if (sensorRows.length === 0) return res.status(404).json({ message: "Sensor not found" });
+
+    // 🔹 Validate PoE exists
+    const [poeRows] = await db.execute(`SELECT id FROM ${poeTable} WHERE id = ?`, [poe_id]);
+    if (poeRows.length === 0) return res.status(404).json({ message: "PoE not found" });
+
+    // 🔹 Check if sensor is already mounted
+    const [mounted] = await db.execute(`SELECT poe_id FROM ${sensorTable} WHERE id = ? AND poe_id IS NOT NULL`, [sensor_id]);
+    if (mounted.length > 0) return res.status(400).json({ message: "Sensor is already mounted to a PoE" });
+
+    // 🔹 Assign sensor to PoE
     const [result] = await db.execute(
       `UPDATE ${sensorTable} SET poe_id = ? WHERE id = ?`,
       [poe_id, sensor_id]
@@ -349,6 +363,7 @@ const unassignSensorFromPoE = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: err.message });
   }
 };
+
 
 
 
@@ -486,6 +501,66 @@ const editPieceOfEquipment = async (req, res) => {
 };
 
 
+const getPoePath = async (req, res) => {
+  const { poe_id } = req.query;  // use query param for GET route
+  const decoded = decodeToken(req);
+
+  if (!decoded || !decoded.companyId)
+    return res.status(401).json({ message: "Unauthorized or invalid token" });
+
+  const companyId = decoded.companyId;
+  const poeTable = `PieceOfEquipment_${companyId}`;
+  const floorTable = `Floor_${companyId}`;
+  const roomTable = `Room_${companyId}`;
+  const floorAreaTable = `FloorArea_${companyId}`;
+  const roomSegmentTable = `RoomSegment_${companyId}`;
+
+  try {
+    const [poeRows] = await db.execute(`SELECT location_type, location_id FROM ${poeTable} WHERE id = ?`, [poe_id]);
+    if (poeRows.length === 0) return res.status(404).json({ message: "PoE not found" });
+
+    const { location_type, location_id } = poeRows[0];
+    let path = `Main Site`;
+
+    if (location_type === "site") {
+      path += " → Site";
+    } else if (location_type === "floor") {
+      const [floorRows] = await db.execute(`SELECT name FROM ${floorTable} WHERE id = ?`, [location_id]);
+      if (floorRows.length === 0) return res.status(404).json({ message: "Floor not found" });
+      path += ` → Floor: ${floorRows[0].name}`;
+    } else if (location_type === "floor_area") {
+      const [faRows] = await db.execute(`SELECT name, floor_id FROM ${floorAreaTable} WHERE id = ?`, [location_id]);
+      if (faRows.length === 0) return res.status(404).json({ message: "Floor area not found" });
+      const floorId = faRows[0].floor_id;
+      const [floorRows] = await db.execute(`SELECT name FROM ${floorTable} WHERE id = ?`, [floorId]);
+      path += ` → Floor: ${floorRows[0].name} → Floor Area: ${faRows[0].name}`;
+    } else if (location_type === "room") {
+      const [roomRows] = await db.execute(`SELECT name, floor_id FROM ${roomTable} WHERE id = ?`, [location_id]);
+      if (roomRows.length === 0) return res.status(404).json({ message: "Room not found" });
+      const floorId = roomRows[0].floor_id;
+      const [floorRows] = await db.execute(`SELECT name FROM ${floorTable} WHERE id = ?`, [floorId]);
+      path += ` → Floor: ${floorRows[0].name} → Room: ${roomRows[0].name}`;
+    } else if (location_type === "room_segment") {
+      const [segRows] = await db.execute(`SELECT name, room_id FROM ${roomSegmentTable} WHERE id = ?`, [location_id]);
+      if (segRows.length === 0) return res.status(404).json({ message: "Room segment not found" });
+      const roomId = segRows[0].room_id;
+      const [roomRows] = await db.execute(`SELECT name, floor_id FROM ${roomTable} WHERE id = ?`, [roomId]);
+      const floorId = roomRows[0].floor_id;
+      const [floorRows] = await db.execute(`SELECT name FROM ${floorTable} WHERE id = ?`, [floorId]);
+      path += ` → Floor: ${floorRows[0].name} → Room: ${roomRows[0].name} → Room Segment: ${segRows[0].name}`;
+    } else {
+      return res.status(400).json({ message: "Unknown location type" });
+    }
+
+    res.status(200).json({ poe_id, path });
+  } catch (err) {
+    console.error("❌ Failed to get PoE path:", err.message);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
+  }
+};
+
+
+
 
 module.exports = {
   addFloor,
@@ -504,5 +579,6 @@ module.exports = {
   editRoom,
   editFloorArea,
   editRoomSegment,
-  editPieceOfEquipment
+  editPieceOfEquipment,
+  getPoePath,
 };
