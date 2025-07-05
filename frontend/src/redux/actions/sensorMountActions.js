@@ -7,7 +7,6 @@ export const SENSOR_MOUNT_FAIL = "SENSOR_MOUNT_FAIL";
 
 const API = process.env.REACT_APP_API_BASE_URL;
 
-// 🔹 Helper to dispatch errors
 const handleError = (dispatch, err, label) => {
   const msg = err?.response?.data?.message || err.message;
   toast.error(`${label} failed: ${msg}`);
