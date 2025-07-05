@@ -4,7 +4,7 @@ import DashboardHeader from "../DashboardHeader/DashboardHeader";
 import "./DataSetup.css";
 import { useAuth } from "../../context/AuthContext";
 
-const tabRoutes = ["overview", "hierarchy", "tables", "relationships"];
+const tabRoutes = ["overview", "hierarchy", "tables", "data-mount-point"];
 
 const DataSetup = () => {
   const { admin } = useAuth();
@@ -12,7 +12,7 @@ const DataSetup = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const currentTab = location.pathname.split("/").pop(); // gets 'overview' etc.
+  const currentTab = location.pathname.split("/").pop(); 
 
   useEffect(() => {
     if (!tabRoutes.includes(currentTab)) {

@@ -8,7 +8,6 @@ import {
 
 const API = process.env.REACT_APP_API_BASE_URL + "/api";
 
-// 🔹 Send OTP for sub-site registration
 export const sendSubSiteOtp = (data, token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });
@@ -26,7 +25,6 @@ export const sendSubSiteOtp = (data, token) => async (dispatch) => {
   }
 };
 
-// 🔹 Register a new sub-site
 export const registerSubSite = (data, token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });
@@ -44,7 +42,6 @@ export const registerSubSite = (data, token) => async (dispatch) => {
   }
 };
 
-// 🔹 Fetch all sub-sites
 export const fetchSubSites = (token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });
@@ -61,7 +58,6 @@ export const fetchSubSites = (token) => async (dispatch) => {
   }
 };
 
-// 🔹 Fetch main site info
 export const fetchMainSiteInfo = (token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });
@@ -78,7 +74,6 @@ export const fetchMainSiteInfo = (token) => async (dispatch) => {
   }
 };
 
-// 🔹 Edit main site info
 export const editMainSiteInfo = (data, token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });
@@ -96,7 +91,6 @@ export const editMainSiteInfo = (data, token) => async (dispatch) => {
   }
 };
 
-// 🔹 Edit sub-site info
 export const editSubSiteInfo = (data, token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });
@@ -114,7 +108,6 @@ export const editSubSiteInfo = (data, token) => async (dispatch) => {
   }
 };
 
-// 🔹 Delete sub-site
 export const deleteSubSite = (data, token) => async (dispatch) => {
   try {
     dispatch({ type: SUBSITE_REQUEST });

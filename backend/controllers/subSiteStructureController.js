@@ -361,10 +361,11 @@ const getPoePath_SubSite = async (req, res) => {
   const roomSegmentTable = `RoomSegment_${companyId}_${subsiteId}`;
 
   try {
-    const [poeRows] = await db.execute(`SELECT location_type, location_id FROM ${poeTable} WHERE id = ?`, [poe_id]);
+    const [poeRows] = await db.execute(`SELECT * FROM ${poeTable} WHERE id = ?`, [poe_id]);
     if (poeRows.length === 0) return res.status(404).json({ message: "PoE not found" });
 
-    const { location_type, location_id } = poeRows[0];
+    const poeInfo = poeRows[0]; 
+    const { location_type, location_id } = poeInfo;
     let path = `Sub-site ID ${subsiteId}`;
 
     if (location_type === "site") {
@@ -397,7 +398,7 @@ const getPoePath_SubSite = async (req, res) => {
       return res.status(400).json({ message: "Unknown location type" });
     }
 
-    res.status(200).json({ poe_id, subsiteId, path });
+    res.status(200).json({ poe: poeInfo, path });
   } catch (err) {
     console.error("❌ Failed to get PoE path (Sub-site):", err.message);
     res.status(500).json({ message: "Internal Server Error", error: err.message });

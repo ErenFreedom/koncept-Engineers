@@ -27,7 +27,7 @@ import DataSetup from "./components/DataSetup/DataSetup";
 import Overview from "./components/DataSetup/Overview/Overview";
 import Hierarchy from "./components/DataSetup/Hierarchy/Hierarchy";
 import Tables from "./components/DataSetup/Tables/Tables";
-import Relationships from "./components/DataSetup/Relationships/Relationships";
+import DataMountPoint from "./components/DataSetup/DataMountPoint/DataMountPoint";
 
 import { FormDataProvider } from "./context/FormDataContext";
 import { AuthProvider } from "./context/AuthContext";
@@ -63,7 +63,7 @@ const App = () => {
                   <Route path="overview" element={<Overview />} />
                   <Route path="hierarchy" element={<Hierarchy />} />
                   <Route path="tables" element={<Tables />} />
-                  <Route path="relationships" element={<Relationships />} />
+                  <Route path="data-mount-point" element={<DataMountPoint />} />
                 </Route>
               </Routes>
             </Router>

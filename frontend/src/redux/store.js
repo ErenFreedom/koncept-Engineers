@@ -8,6 +8,10 @@ import siteReducer from "./reducers/siteReducer";
 import subSiteStructureReducer from "./reducers/subSiteStructureReducer";
 import { hierarchyReducer } from "./reducers/hierarchyReducer"; 
 import { subsiteReducer } from "./reducers/subsiteReducer";
+import { sensorMountReducer } from "./reducers/sensorMountReducer";
+import { displaySensorDataReducer } from "./reducers/displaySensorDataReducer";
+import { floorRoomFetchReducer } from "./reducers/floorRoomFetchReducer";
+
 
 const persistConfig = {
   key: "root",
@@ -20,6 +24,9 @@ const rootReducer = combineReducers({
   subSiteStructure: subSiteStructureReducer,
   hierarchy: hierarchyReducer, 
   subsite: subsiteReducer,
+  sensorMount: sensorMountReducer,
+  displaySensorData: displaySensorDataReducer,
+  floorRoomFetch: floorRoomFetchReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
