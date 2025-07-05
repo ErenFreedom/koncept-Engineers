@@ -3,7 +3,7 @@ import { SENSOR_MOUNT_REQUEST, SENSOR_MOUNT_SUCCESS, SENSOR_MOUNT_FAIL } from ".
 const initialState = {
   loading: false,
   error: null,
-  path: null,  
+  poePath: null,  
 };
 
 export const sensorMountReducer = (state = initialState, action) => {
@@ -11,7 +11,7 @@ export const sensorMountReducer = (state = initialState, action) => {
     case SENSOR_MOUNT_REQUEST:
       return { ...state, loading: true, error: null };
     case SENSOR_MOUNT_SUCCESS:
-      return { ...state, loading: false, error: null, path: action.payload || null };
+      return { ...state, loading: false, error: null, poePath: action.payload || null }; 
     case SENSOR_MOUNT_FAIL:
       return { ...state, loading: false, error: action.payload };
     default:
