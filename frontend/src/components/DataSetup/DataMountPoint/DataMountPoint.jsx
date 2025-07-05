@@ -9,22 +9,16 @@ const DataMountPoint = () => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [selectedPoeId, setSelectedPoeId] = useState("");
-  const [poeOptions, setPoeOptions] = useState([]);
 
-  const { floorRoomData, frLoading } = useSelector((state) => state.floorRoomFetch || {});
+  const frLoading = useSelector((state) => state.floorRoomFetch?.loading);
+  const poes = useSelector((state) => state.floorRoomFetch?.data?.poes?.piecesOfEquipment || []);
   const poePath = useSelector((state) => state.sensorMount?.poePath);
 
   useEffect(() => {
     if (accessToken) {
-      dispatch(fetchFloorRoomEntity("/poes", "poes", accessToken));
+      dispatch(fetchFloorRoomEntity("/api/poes", "poes", accessToken)); 
     }
   }, [dispatch, accessToken]);
-
-  useEffect(() => {
-    if (floorRoomData?.poes?.piecesOfEquipment?.length) {
-      setPoeOptions(floorRoomData.poes.piecesOfEquipment);
-    }
-  }, [floorRoomData]);
 
   useEffect(() => {
     if (selectedPoeId) {
@@ -37,7 +31,7 @@ const DataMountPoint = () => {
       <div className="dmp-header">
         <div className="dmp-poe-name">
           <h3>POE NAME</h3>
-          <p>{poeOptions.find((p) => p.id === Number(selectedPoeId))?.name || "Select a PoE"}</p>
+          <p>{poes.find((p) => p.id === Number(selectedPoeId))?.name || "Select a PoE"}</p>
         </div>
         <div className="dmp-controls">
           <select
@@ -45,7 +39,7 @@ const DataMountPoint = () => {
             onChange={(e) => setSelectedPoeId(e.target.value)}
           >
             <option value="">Select PoE</option>
-            {poeOptions.map((poe) => (
+            {poes.map((poe) => (
               <option key={poe.id} value={poe.id}>
                 {poe.name}
               </option>
