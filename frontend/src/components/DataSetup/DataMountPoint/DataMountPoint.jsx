@@ -29,10 +29,15 @@ const DataMountPoint = () => {
   return (
     <div className="data-mount-point-tab">
       <div className="dmp-header">
-        <div className="dmp-poe-name">
-          <h3>POE NAME</h3>
-          <p>{poes.find((p) => p.id === Number(selectedPoeId))?.name || "Select a PoE"}</p>
+        <div className="dmp-poe-display">
+          <h1 className="dmp-poe-title">
+            {poes.find((p) => p.id === Number(selectedPoeId))?.name || "Select a PoE"}
+          </h1>
+          <p className="dmp-poe-path">
+            {frLoading ? "Loading..." : (poePath?.path || "<path>")}
+          </p>
         </div>
+
         <div className="dmp-controls">
           <select
             value={selectedPoeId}
@@ -45,6 +50,7 @@ const DataMountPoint = () => {
               </option>
             ))}
           </select>
+
           <button
             disabled={!selectedPoeId}
             onClick={() => dispatch(getPoePath(selectedPoeId, accessToken))}
@@ -52,17 +58,6 @@ const DataMountPoint = () => {
             Active Sensors
           </button>
         </div>
-      </div>
-
-      <div className="dmp-path-section">
-        <h4>Hierarchy Path</h4>
-        {frLoading ? (
-          <p>Loading...</p>
-        ) : (
-          <p className="dmp-path">
-            {poePath?.path || "Select a PoE to display its path"}
-          </p>
-        )}
       </div>
 
       <div className="dmp-card-grid">
