@@ -60,9 +60,11 @@ export const getPoePath = (poeId, token, isSubsite = false, subsiteId = null) =>
       ? { poe_id: poeId, subsiteId }
       : { poe_id: poeId };
 
-    const url = isSubsite ? `${API}/subsite-structure/poe/subsite/path` : `${API}/poe/path`;
+    const endpoint = isSubsite
+      ? `/api/subsite-structure/poe/subsite/path`
+      : `/api/poe/path`;
 
-    const { data } = await axios.get(url, {
+    const { data } = await axios.get(`${API}${endpoint}`, {
       params,
       headers: { Authorization: `Bearer ${token}` },
     });
