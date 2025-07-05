@@ -22,8 +22,9 @@ const handleError = (dispatch, err, label) => {
 export const fetchFloorRoomEntity = (endpoint, entityKey, token, params = {}) => async (dispatch) => {
   dispatch(setFRLoading(true));
   try {
-    // ✅ Add `/api` prefix here for floor-room fetch endpoints
-    const { data } = await axios.get(`${API}/api${endpoint}`, {
+    const fullEndpoint = endpoint.startsWith("/api") ? endpoint : `/api${endpoint}`;
+
+    const { data } = await axios.get(`${API}${fullEndpoint}`, {
       headers: { Authorization: `Bearer ${token}` },
       params,
     });
