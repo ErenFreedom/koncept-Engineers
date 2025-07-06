@@ -75,3 +75,23 @@ export const getPoePath = (poeId, token, isSubsite = false, subsiteId = null) =>
     handleError(dispatch, err, "Get PoE Path");
   }
 };
+
+export const fetchActiveSensors = (token, isSubsite = false, subsiteId = null) => async (dispatch) => {
+  dispatch({ type: SENSOR_MOUNT_REQUEST });
+  try {
+    const params = isSubsite && subsiteId ? { subsite_id: subsiteId } : {};
+    const endpoint = isSubsite
+      ? `/api/subsite/active-sensors`
+      : `/api/active-sensors`;
+
+    const { data } = await axios.get(`${API}${endpoint}`, {
+      params,
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    toast.success(`✅ Retrieved active sensors`);
+    dispatch({ type: SENSOR_MOUNT_SUCCESS, payload: { activeSensors: data.sensors } });
+  } catch (err) {
+    handleError(dispatch, err, "Fetch Active Sensors");
+  }
+};

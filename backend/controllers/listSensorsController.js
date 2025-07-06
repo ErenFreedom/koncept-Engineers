@@ -56,7 +56,7 @@ const listSensors = async (req, res) => {
 
 const listFullSensorInfo = async (req, res) => {
     try {
-      const { companyId } = req.admin; // ✅ Injected by middleware
+      const { companyId } = req.admin; 
   
       const bankTable = `SensorBank_${companyId}`;
       const activeTable = `Sensor_${companyId}`;
@@ -107,4 +107,71 @@ const listFullSensorInfo = async (req, res) => {
     }
   };
 
-module.exports = { listSensors , listFullSensorInfo};
+
+  const listActiveSensorsMainSite = async (req, res) => {
+  const admin = getAdminDetailsFromToken(req);
+  if (!admin) return res.status(401).json({ message: "Unauthorized" });
+  const { companyId } = admin;
+
+  const sensorTable = `Sensor_${companyId}`;
+  const bankTable = `SensorBank_${companyId}`;
+
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        s.id AS sensor_id,
+        s.bank_id,
+        s.poe_id,
+        s.is_active,
+        sb.name AS sensor_name,
+        sb.description,
+        sb.object_id,
+        sb.property_name,
+        sb.data_type
+      FROM ${sensorTable} s
+      JOIN ${bankTable} sb ON s.bank_id = sb.id
+      WHERE s.is_active = 1
+    `);
+
+    res.status(200).json({ sensors: rows });
+  } catch (err) {
+    console.error("❌ Error fetching main site active sensors:", err.message);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
+  }
+};
+
+const listActiveSensorsSubSite = async (req, res) => {
+  const admin = getAdminDetailsFromToken(req);
+  const subsiteId = req.query.subsite_id || req.query.subsiteId;
+
+  if (!admin || !subsiteId) return res.status(401).json({ message: "Unauthorized or missing sub-site ID" });
+  const { companyId } = admin;
+
+  const sensorTable = `Sensor_${companyId}_${subsiteId}`;
+  const bankTable = `SensorBank_${companyId}_${subsiteId}`;
+
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        s.id AS sensor_id,
+        s.bank_id,
+        s.poe_id,
+        s.is_active,
+        sb.name AS sensor_name,
+        sb.description,
+        sb.object_id,
+        sb.property_name,
+        sb.data_type
+      FROM ${sensorTable} s
+      JOIN ${bankTable} sb ON s.bank_id = sb.id
+      WHERE s.is_active = 1
+    `);
+
+    res.status(200).json({ sensors: rows });
+  } catch (err) {
+    console.error("❌ Error fetching sub-site active sensors:", err.message);
+    res.status(500).json({ message: "Internal Server Error", error: err.message });
+  }
+};
+
+module.exports = { listSensors , listFullSensorInfo, listActiveSensorsMainSite, listActiveSensorsSubSite,};

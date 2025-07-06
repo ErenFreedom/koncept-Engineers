@@ -1,7 +1,7 @@
 .data-mount-point-tab {
   padding: 20px;
-  background-color: #0d1b2a; /* dark blue background */
-  color: #e0e1dd; /* light text */
+  background-color: #0d1b2a;
+  color: #e0e1dd;
   border-radius: 8px;
 }
 
@@ -37,19 +37,13 @@
   margin-top: 10px;
 }
 
-.dmp-controls select,
-.dmp-controls button {
+.dmp-controls select {
   padding: 8px 12px;
   font-size: 1rem;
   background-color: #0077b6;
   color: #fff;
   border: none;
   border-radius: 4px;
-}
-
-.dmp-controls button:disabled {
-  background-color: #555;
-  cursor: not-allowed;
 }
 
 /* Cards Grid */
@@ -59,10 +53,10 @@
   gap: 20px;
 }
 
-/* Card Style */
+/* Add Sensor Card */
 .dmp-card {
   background-color: #1a2a40;
-  height: 180px; /* taller rectangular cards */
+  height: 180px;
   border-radius: 12px;
   display: flex;
   justify-content: center;
@@ -77,7 +71,6 @@
   transform: scale(1.02);
 }
 
-/* Big Encircled Plus inside Card */
 .dmp-card-plus {
   font-size: 4rem;
   color: #00b4d8;
@@ -88,4 +81,34 @@
   line-height: 70px;
   text-align: center;
   user-select: none;
+}
+
+/* Assigned Sensor Card */
+.dmp-sensor-card {
+  background-color: #1a2a40;
+  height: 180px;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: left;
+  color: #e0e1dd;
+  border: 2px solid #00b4d8;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.dmp-sensor-card:hover {
+  background-color: #25415f;
+}
+
+.dmp-sensor-card h3 {
+  margin: 0 0 8px;
+  color: #00b4d8;
+  font-size: 1.2rem;
+}
+
+.dmp-sensor-card p {
+  margin: 4px 0;
+  font-size: 0.95rem;
 }
