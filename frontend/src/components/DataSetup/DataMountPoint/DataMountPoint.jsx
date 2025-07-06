@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchFloorRoomEntity } from "../../../redux/actions/floorRoomFetchActions";
-import { getPoePath } from "../../../redux/actions/sensorMountActions";
+import { getPoePath, fetchActiveSensors } from "../../../redux/actions/sensorMountActions";
 import { fetchMainSiteSensorData } from "../../../redux/actions/displaySensorDataActions";
 import { useAuth } from "../../../context/AuthContext";
 import "./DataMountPoint.css";
@@ -10,11 +10,12 @@ const DataMountPoint = () => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [selectedPoeId, setSelectedPoeId] = useState("");
-  const [assignedSensors, setAssignedSensors] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const frLoading = useSelector((state) => state.floorRoomFetch?.loading);
   const poes = useSelector((state) => state.floorRoomFetch?.data?.poes?.piecesOfEquipment || []);
   const poePathData = useSelector((state) => state.sensorMount?.poePath);
+  const activeSensors = useSelector((state) => state.sensorMount?.activeSensors || []);
 
   useEffect(() => {
     if (accessToken) {
@@ -30,9 +31,8 @@ const DataMountPoint = () => {
 
   const handleAddSensor = () => {
     if (!selectedPoeId) return;
-    console.log("Opening sensor selection modal...");
-    dispatch(fetchMainSiteSensorData(accessToken));
-    // Show your modal with sensor list here
+    dispatch(fetchActiveSensors(accessToken)); // fetch active sensors list
+    setIsModalOpen(true);
   };
 
   return (
@@ -43,9 +43,7 @@ const DataMountPoint = () => {
             {poes.find((p) => p.id === Number(selectedPoeId))?.name || "Select a PoE"}
           </h1>
           <p className="dmp-poe-path">
-            {frLoading
-              ? "Loading..."
-              : poePathData?.path || "<path>"}
+            {frLoading ? "Loading..." : (poePathData?.path || "<path>")}
           </p>
         </div>
 
@@ -65,14 +63,6 @@ const DataMountPoint = () => {
       </div>
 
       <div className="dmp-card-grid">
-        {assignedSensors.map((sensor, index) => (
-          <div key={index} className="dmp-sensor-card">
-            <h3>{sensor.name}</h3>
-            <p>ID: {sensor.bank_id}</p>
-            <p>Active: {sensor.is_active ? "Yes" : "No"}</p>
-          </div>
-        ))}
-
         <div
           className={`dmp-card dmp-add-card ${!selectedPoeId ? "dmp-disabled" : ""}`}
           onClick={handleAddSensor}
@@ -81,6 +71,41 @@ const DataMountPoint = () => {
           <div className="dmp-card-plus">+</div>
         </div>
       </div>
+
+      {isModalOpen && (
+        <div className="dmp-modal-backdrop">
+          <div className="dmp-modal">
+            <button className="dmp-modal-close" onClick={() => setIsModalOpen(false)}>✖</button>
+            <h2>Select a Sensor to Assign</h2>
+            <table className="dmp-sensor-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Bank ID</th>
+                  <th>PoE Assigned</th>
+                  <th>Data Type</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activeSensors.length === 0 ? (
+                  <tr><td colSpan="5" className="no-sensors">No active sensors found.</td></tr>
+                ) : (
+                  activeSensors.map((sensor) => (
+                    <tr key={sensor.bank_id}>
+                      <td>{sensor.sensor_name}</td>
+                      <td>{sensor.bank_id}</td>
+                      <td>{sensor.poe_id ? "Yes" : "No"}</td>
+                      <td>{sensor.data_type}</td>
+                      <td>{sensor.description}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
