@@ -80,15 +80,13 @@ export const fetchActiveSensors = (token, isSubsite = false, subsiteId = null) =
   try {
     const params = isSubsite && subsiteId ? { subsite_id: subsiteId } : {};
     const endpoint = isSubsite
-      ? `/api/subsite/active-sensors`
-      : `/api/active-sensors`;
-
+      ? `/api/sensors/subsite/active-sensors`
+      : `/api/sensors/active-sensors`; 
     const { data } = await axios.get(`${API}${endpoint}`, {
       params,
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    toast.success(`✅ Retrieved active sensors`);
     dispatch({ type: SENSOR_MOUNT_SUCCESS, payload: { activeSensors: data.sensors } });
   } catch (err) {
     handleError(dispatch, err, "Fetch Active Sensors");
