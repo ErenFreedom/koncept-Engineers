@@ -112,3 +112,8 @@
   margin: 4px 0;
   font-size: 0.95rem;
 }
+
+.dmp-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

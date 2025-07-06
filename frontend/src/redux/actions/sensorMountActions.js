@@ -69,7 +69,6 @@ export const getPoePath = (poeId, token, isSubsite = false, subsiteId = null) =>
       headers: { Authorization: `Bearer ${token}` },
     });
 
-    toast.success(`✅ Retrieved PoE path`);
     dispatch({ type: SENSOR_MOUNT_SUCCESS, payload: data });
   } catch (err) {
     handleError(dispatch, err, "Get PoE Path");

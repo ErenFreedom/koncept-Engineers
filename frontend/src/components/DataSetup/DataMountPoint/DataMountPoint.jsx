@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchFloorRoomEntity } from "../../../redux/actions/floorRoomFetchActions";
-import { getPoePath, fetchActiveSensors } from "../../../redux/actions/sensorMountActions";
+import { getPoePath } from "../../../redux/actions/sensorMountActions";
 import { fetchMainSiteSensorData } from "../../../redux/actions/displaySensorDataActions";
 import { useAuth } from "../../../context/AuthContext";
 import "./DataMountPoint.css";
@@ -10,11 +10,11 @@ const DataMountPoint = () => {
   const dispatch = useDispatch();
   const { accessToken } = useAuth();
   const [selectedPoeId, setSelectedPoeId] = useState("");
-  const [assignedSensors, setAssignedSensors] = useState([]); // sensors assigned to this PoE
+  const [assignedSensors, setAssignedSensors] = useState([]);
 
   const frLoading = useSelector((state) => state.floorRoomFetch?.loading);
   const poes = useSelector((state) => state.floorRoomFetch?.data?.poes?.piecesOfEquipment || []);
-  const poePath = useSelector((state) => state.sensorMount?.poePath);
+  const poePathData = useSelector((state) => state.sensorMount?.poePath);
 
   useEffect(() => {
     if (accessToken) {
@@ -29,10 +29,10 @@ const DataMountPoint = () => {
   }, [selectedPoeId, dispatch, accessToken]);
 
   const handleAddSensor = () => {
+    if (!selectedPoeId) return;
     console.log("Opening sensor selection modal...");
-    // Fetch active sensors list:
     dispatch(fetchMainSiteSensorData(accessToken));
-    // Here you can show a modal and populate it with the fetched sensors
+    // Show your modal with sensor list here
   };
 
   return (
@@ -43,7 +43,9 @@ const DataMountPoint = () => {
             {poes.find((p) => p.id === Number(selectedPoeId))?.name || "Select a PoE"}
           </h1>
           <p className="dmp-poe-path">
-            {frLoading ? "Loading..." : (poePath?.path || "<path>")}
+            {frLoading
+              ? "Loading..."
+              : poePathData?.path || "<path>"}
           </p>
         </div>
 
@@ -71,7 +73,11 @@ const DataMountPoint = () => {
           </div>
         ))}
 
-        <div className="dmp-card dmp-add-card" onClick={handleAddSensor}>
+        <div
+          className={`dmp-card dmp-add-card ${!selectedPoeId ? "dmp-disabled" : ""}`}
+          onClick={handleAddSensor}
+          style={{ pointerEvents: selectedPoeId ? "auto" : "none" }}
+        >
           <div className="dmp-card-plus">+</div>
         </div>
       </div>
