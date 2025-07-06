@@ -16,7 +16,7 @@ const DataMountPoint = () => {
 
   useEffect(() => {
     if (accessToken) {
-      dispatch(fetchFloorRoomEntity("/api/poes", "poes", accessToken)); 
+      dispatch(fetchFloorRoomEntity("/api/poes", "poes", accessToken));
     }
   }, [dispatch, accessToken]);
 
@@ -25,6 +25,11 @@ const DataMountPoint = () => {
       dispatch(getPoePath(selectedPoeId, accessToken));
     }
   }, [selectedPoeId, dispatch, accessToken]);
+
+  const handleAddSensor = (index) => {
+    console.log(`Open modal for adding sensor to slot ${index + 1}`);
+    // TODO: Open your modal here
+  };
 
   return (
     <div className="data-mount-point-tab">
@@ -50,20 +55,15 @@ const DataMountPoint = () => {
               </option>
             ))}
           </select>
-
-          <button
-            disabled={!selectedPoeId}
-            onClick={() => dispatch(getPoePath(selectedPoeId, accessToken))}
-          >
-            Active Sensors
-          </button>
         </div>
       </div>
 
       <div className="dmp-card-grid">
-        <div className="dmp-card">CARD (3 in 1 row)</div>
-        <div className="dmp-card">CARD</div>
-        <div className="dmp-card">CARD</div>
+        {[...Array(3)].map((_, index) => (
+          <div key={index} className="dmp-card" onClick={() => handleAddSensor(index)}>
+            <div className="dmp-card-plus">+</div>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -52,18 +52,40 @@
   cursor: not-allowed;
 }
 
+/* Cards Grid */
 .dmp-card-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 20px;
 }
 
+/* Card Style */
 .dmp-card {
   background-color: #1a2a40;
-  padding: 20px;
-  border-radius: 8px;
+  height: 180px; /* taller rectangular cards */
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
+  border: 2px dashed #00b4d8;
+}
+
+.dmp-card:hover {
+  background-color: #25415f;
+  transform: scale(1.02);
+}
+
+/* Big Encircled Plus inside Card */
+.dmp-card-plus {
+  font-size: 4rem;
+  color: #00b4d8;
+  border: 2px solid #00b4d8;
+  border-radius: 50%;
+  width: 80px;
+  height: 80px;
+  line-height: 70px;
   text-align: center;
-  font-weight: bold;
-  color: #e0e1dd;
-  border: 1px solid #00b4d8;
+  user-select: none;
 }
